@@ -41,6 +41,15 @@ def _verify(data: bytes, certificate: DigitalCertificate) -> None:
 @pytest.mark.parametrize(
     "operation,parameters",
     [
+        ("GetExchangeEmails", ()),
+        (
+            "GetNumberingRange",
+            (
+                ("accountCode", "000123"),
+                ("accountCodeT", "000456"),
+                ("softwareCode", 'SYNTHETIC<&"SOFTWARE'),
+            ),
+        ),
         ("GetStatusEvent", (("trackId", "SYNTHETIC-CUFE"),)),
         ("GetStatus", (("trackId", 'SYNTHETIC<&"TRACK-ID'),)),
         ("GetXmlByDocumentKey", (("trackId", 'SYNTHETIC<&"KEY'),)),

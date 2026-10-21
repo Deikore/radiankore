@@ -9,7 +9,13 @@ from enum import StrEnum
 from lxml import etree
 
 from radiankore._soap.namespaces import ARRAY
-from radiankore._soap.parsing import element_text, is_nil, read_http_status, soap_result
+from radiankore._soap.parsing import (
+    element_text,
+    is_nil,
+    read_date,
+    read_http_status,
+    soap_result,
+)
 from radiankore.catalogs import (
     CreditNoteReason,
     DebitNoteReason,
@@ -164,15 +170,7 @@ def _identification_type(node: etree._Element) -> IdentificationType | None:
 
 def _date(node: etree._Element, namespace: str, name: str) -> date | None:
     """Read YYYY-MM-DD calendar dates, preserving missing values as None."""
-    value = _text(node, namespace, name)
-    if value is None:
-        return None
-    try:
-        if re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value) is None:
-            raise ValueError("Expected a YYYY-MM-DD calendar date.")
-        return date.fromisoformat(value)
-    except ValueError as exc:
-        raise DianResponseError(f"Invalid {name} in document information.") from exc
+    return read_date(node, namespace, name, context="document information")
 
 
 def _party(node: etree._Element) -> DocumentParty:

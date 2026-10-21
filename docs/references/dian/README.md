@@ -56,7 +56,7 @@ no están registradas. El ZIP no se conserva y no se dispone de su hash.
 
 Los WSDL completos de producción y habilitación están en [wsdl/](wsdl/README.md).
 Su índice registra URLs, fecha de incorporación, hashes y el contrato de
-las seis operaciones implementadas: GetStatus, GetStatusEvent, GetAcquirer,
+las ocho operaciones implementadas: GetNumberingRange, GetExchangeEmails, GetStatus, GetStatusEvent, GetAcquirer,
 GetDocumentInfo, GetReferenceNotes y GetXmlByDocumentKey. Los esquemas de ambos
 ambientes coinciden y no requieren descargas adicionales. La librería comparte
 sobre, firma y transporte con parsers por operación.

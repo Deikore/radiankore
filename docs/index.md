@@ -21,12 +21,15 @@ environments
 
 GetStatus devuelve el resultado de validación del documento; GetStatusEvent consulta
 los eventos asociados a una factura. Las demás operaciones permiten consultar
-adquirientes, información del documento, notas referenciadas y el XML original.
+rangos de numeración, adquirientes, el directorio de correos, información del documento, notas
+referenciadas y el XML original.
 
 ```{toctree}
 :maxdepth: 2
 :caption: Operaciones
 
+operations/numbering-range
+operations/exchange-emails
 operations/status
 operations/events
 operations/acquirer

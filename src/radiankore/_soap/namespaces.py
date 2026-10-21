@@ -23,3 +23,10 @@ ACQUIRER = "http://schemas.datacontract.org/2004/07/Gosocket.Dian.Services.Utils
 ACTION_PREFIX = f"{WCF}/IWcfDianCustomerServices"
 
 EVENT_RESPONSE = "http://schemas.datacontract.org/2004/07/EventResponse"
+
+EXCHANGE_EMAIL_RESPONSE = (
+    "http://schemas.datacontract.org/2004/07/ExchangeEmailResponse"
+)
+
+NUMBER_RANGE_LIST = "http://schemas.datacontract.org/2004/07/NumberRangeResponseList"
+NUMBER_RANGE = "http://schemas.datacontract.org/2004/07/NumberRangeResponse"

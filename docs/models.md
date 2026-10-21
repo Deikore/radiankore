@@ -80,3 +80,18 @@ validación integral contra XSD ni valida las reglas de emisión RADIAN.
 Los mensajes pueden existir con `is_valid=True`. Un payload ausente o nulo deja
 `events=()` y conserva el estado; XML o Base64 inválidos nunca se ocultan como una
 lista vacía. El XML guardado permite consultar datos UBL aún no modelados.
+
+## Directorio de correos
+
+`ExchangeEmailsResult` conserva `success`, `status_code` y `message` de SOAP,
+la URL temporal en `download_url` y los registros en `csv`, una tupla de diccionarios leídos con `csv.DictReader`.
+Ambos campos de contenido se excluyen de `repr`. Consulta el
+[contrato de GetExchangeEmails](operations/exchange-emails.md).
+
+## Rangos de numeración
+
+`NumberingRangeResult` conserva los códigos de negocio como texto y todos los
+rangos en una tupla, incluyendo orden, duplicados y entradas nulas.
+`NumberingRange` contiene la resolución, prefijo, límites enteros, fechas nativas
+y clave técnica excluida de `repr`. Consulta el
+[contrato de GetNumberingRange](operations/numbering-range.md).

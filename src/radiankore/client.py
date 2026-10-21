@@ -1,5 +1,6 @@
 """Synchronous DIAN client for invoice events, documents and acquirer information."""
 
+from dataclasses import replace
 from math import isfinite
 from os import PathLike
 
@@ -8,7 +9,12 @@ from radiankore._soap.acquirer_response import parse_acquirer_response
 from radiankore._soap.document_info_response import parse_document_info_response
 from radiankore._soap.document_status_response import parse_document_status_response
 from radiankore._soap.envelope import build_signed_request
+from radiankore._soap.exchange_emails_response import (
+    parse_exchange_emails_csv,
+    parse_exchange_emails_response,
+)
 from radiankore._soap.namespaces import ACTION_PREFIX
+from radiankore._soap.numbering_range_response import parse_numbering_range_response
 from radiankore._soap.reference_notes_response import parse_reference_notes_response
 from radiankore._soap.response import parse_invoice_events_response
 from radiankore._soap.xml_document_response import parse_xml_document_response
@@ -20,7 +26,9 @@ from radiankore.models.responses import (
     AcquirerResult,
     DocumentInfoResult,
     DocumentStatusResult,
+    ExchangeEmailsResult,
     InvoiceEventsResult,
+    NumberingRangeResult,
     ReferenceNotesResult,
     XmlDocumentResult,
 )
@@ -65,6 +73,52 @@ class DianClient:
     def environment(self) -> Environment:
         """Return the selected deployment environment."""
         return self._environment
+
+    def get_numbering_range(
+        self, *, account_code: str, account_code_t: str, software_code: str
+    ) -> NumberingRangeResult | None:
+        """Query ranges using taxpayer NIT, software-owner NIT and software ID.
+
+        NITs require ASCII digits without separators or a check digit; no digit
+        is calculated or removed. All arguments require nonempty strings. Outer
+        whitespace is stripped; leading zeros and software ID format are retained.
+        The selected environment is always used, although DIAN documents service
+        availability only in production. Business statuses remain uninterpreted.
+        """
+        parameters: list[tuple[str, str]] = []
+        for name, wire_name, value in (
+            ("account_code", "accountCode", account_code),
+            ("account_code_t", "accountCodeT", account_code_t),
+            ("software_code", "softwareCode", software_code),
+        ):
+            if not isinstance(value, str):
+                raise TypeError(f"{name} must be a string.")
+            value = value.strip()
+            if not value:
+                raise ValueError(f"{name} must not be empty.")
+            if name != "software_code" and not (value.isascii() and value.isdecimal()):
+                raise ValueError(f"{name} must contain only ASCII digits.")
+            parameters.append((wire_name, value))
+        return parse_numbering_range_response(
+            self._request("GetNumberingRange", tuple(parameters))
+        )
+
+    def get_exchange_emails(self) -> ExchangeEmailsResult | None:
+        """Query exchange-email metadata and return CSV records parsed in memory.
+
+        No parameters are required. Missing or nil results return None. A missing
+        URL leaves csv as None. A valid URL is downloaded regardless of
+        Success, before it expires, using the configured timeout. Download errors
+        propagate without a partial result, automatic retry or redirect.
+        The ZIP must contain exactly one UTF-8 CSV. Native csv.DictReader uses
+        its header as dictionary keys and preserves values as strings. No files
+        are written; malformed CSV raises DianResponseError.
+        """
+        result = parse_exchange_emails_response(self._request("GetExchangeEmails", ()))
+        if result is None or result.download_url is None:
+            return result
+        archive = self._transport.get(result.download_url)
+        return replace(result, csv=parse_exchange_emails_csv(archive))
 
     def get_status(self, track_id: str) -> DocumentStatusResult | None:
         """Query document validation status and independently decoded payloads.

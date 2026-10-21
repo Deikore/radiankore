@@ -3,7 +3,7 @@
 ## Estructura y alcance
 
 `radiankore` es una librería síncrona Python >=3.13.
-Consulta seis operaciones SOAP de DIAN, descritas en README. No genera facturas
+Consulta ocho operaciones SOAP de DIAN, descritas en README. No genera facturas
 ni envía eventos.
 
 En `src/radiankore/`, `client.py` coordina consultas, `certificate.py`

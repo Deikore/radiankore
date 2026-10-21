@@ -99,6 +99,20 @@ jobs:
           from radiankore.catalogs import CreditNoteReason, DebitNoteReason
           from radiankore.models.responses import AcquirerResult, EventParty, InvoiceEvent, InvoiceEventsResult
 
+          from radiankore.models.responses import ExchangeEmailsResult
+
+          from radiankore.models.responses import NumberingRange, NumberingRangeResult
+          from datetime import date
+
+          assert callable(DianClient.get_numbering_range)
+          numbering = NumberingRange(resolution_number="0001", resolution_date=date(2026, 1, 1), from_number=1, to_number=99, technical_key="synthetic-secret")
+          assert NumberingRangeResult(ranges=(numbering, None)).ranges == (numbering, None)
+          assert NumberingRangeResult(operation_code="301").operation_code == "301"
+          assert "synthetic-secret" not in repr(numbering)
+          assert callable(DianClient.get_exchange_emails)
+          emails = ExchangeEmailsResult(success=False, status_code="00", download_url="https://example.invalid/directory.zip", csv=({"email": "synthetic@example.invalid"},))
+          assert emails.success is False and emails.csv == ({"email": "synthetic@example.invalid"},)
+          assert "download_url=" not in repr(emails) and "csv=" not in repr(emails)
           assert callable(DianClient)
           from decimal import Decimal
           from radiankore.models.responses import DocumentInfoResult, DocumentTotals
@@ -122,8 +136,10 @@ jobs:
           assert DocumentStatusResult().messages == ()
           assert callable(DianClient.get_reference_notes)
           assert ReferenceNotesResult().is_valid is None
-          note = ReferenceNote(code="91", references=(NoteDocumentReference(id="001"),), line_responses=(NoteLineResponse(line_id="1", responses=(NoteResponse(code="2"),)),))
+          note = ReferenceNote(code=DocumentType.CREDIT_NOTE, references=(NoteDocumentReference(id="001"),), line_responses=(NoteLineResponse(line_id="1", responses=(NoteResponse(code="2"),)),))
           assert ReferenceNotesResult(notes=(note,)).notes[0].references[0].id == "001"
+          assert note.code is DocumentType.CREDIT_NOTE
+          assert ReferenceNote(code=DocumentType.DEBIT_NOTE).code is DocumentType.DEBIT_NOTE
           assert note.line_responses[0].responses[0].code == "2"
           notes = ReferenceNotesResult(xml_base64_bytes=b"first", xml_bytes=b"second")
           assert notes.xml_base64_bytes != notes.xml_bytes

@@ -1,5 +1,48 @@
 # Historial de cambios
 
+## 0.4.0 — 2026-10-21
+
+- `ReferenceNote.code` pasa de `str | None` a `DocumentType | None`, restringido
+  a `CREDIT_NOTE` y `DEBIT_NOTE`. Para migrar, pasa estos miembros al construir
+  notas y compara con `is`; usa `.value` para el código y `.label` para su etiqueta.
+  Códigos desconocidos o de otros documentos generan `DianResponseError` al parsear.
+  Los motivos de línea en `NoteResponse.code` conservan su contrato de texto.
+
+- Nuevo `DianClient.get_numbering_range()` con `NumberingRangeResult` y
+  `NumberingRange`: consulta de rangos autorizados, fechas nativas, límites
+  `xs:long` y claves técnicas excluidas de `repr`, conservando estados de negocio.
+
+- Nuevo `DianClient.get_exchange_emails()` y modelo `ExchangeEmailsResult`: consulta
+  sin parámetros y descarga inmediata del ZIP del directorio de correos, con
+  metadatos SOAP, cierre automático y extracción del único CSV en memoria en
+  el campo `csv`, como tupla de diccionarios mediante `csv.DictReader` nativo,
+  conservando encabezados, orden y valores de texto.
+
+### Migración desde 0.3.0
+
+`ReferenceNote.code` requiere un miembro de `DocumentType` en lugar de una cadena:
+
+```python
+from radiankore.catalogs import DocumentType
+from radiankore.models.responses import ReferenceNote
+
+note = ReferenceNote(code=DocumentType.CREDIT_NOTE)
+if note.code is DocumentType.CREDIT_NOTE:
+    print(note.code.value, note.code.label)
+```
+
+Solo se admiten `CREDIT_NOTE`, `DEBIT_NOTE` o `None`. Cadenas y otros tipos generan
+`TypeError`; otros miembros de `DocumentType`, `ValueError`. Al leer SOAP, códigos
+desconocidos o distintos de `91` y `92` generan `DianResponseError`. Los motivos
+por línea (`NoteResponse.code`) siguen siendo texto y las descripciones del XML
+se conservan sin sustituirse por etiquetas del catálogo.
+
+Las consultas nuevas no requieren migraciones. `get_exchange_emails()` entrega
+`csv` como tupla de diccionarios, sin archivos temporales, con lectura UTF-8 y
+encabezados del CSV. `get_numbering_range()` conserva códigos de negocio como
+texto; respeta el ambiente elegido, aunque DIAN solo declara disponibilidad
+operativa en producción. Consulta las guías de cada operación para sus contratos.
+
 ## 0.3.0 — 2026-10-21
 
 - Nuevo catálogo `DocumentType` para `DocumentInfo.document_type_id` y

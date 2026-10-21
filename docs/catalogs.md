@@ -56,7 +56,8 @@ de identificación.
 ## Tipos de documento
 
 `DocumentType` se aplica a `DocumentInfo.document_type_id` y
-`DocumentReference.document_type_id` en `GetDocumentInfo`:
+`DocumentReference.document_type_id` en `GetDocumentInfo`. También se aplica a
+`ReferenceNote.code` en `GetReferenceNotes`, que solo admite crédito y débito:
 
 | Miembro | Código | Significado |
 | --- | --- | --- |
@@ -85,6 +86,10 @@ El parser normaliza únicamente `1`–`4` a `01`–`04`. Los modelos exigen miem
 del enum o `None`. `DocumentType.from_code()` resuelve solo códigos canónicos:
 devuelve `None` para `"1"`, `" 01 "`, valores desconocidos y ausentes. El catálogo
 no valida reglas de emisión ni se aplica a `DocumentCode` o a los estados.
+En `ReferenceNote.code`, usa `DocumentType.CREDIT_NOTE` o `DocumentType.DEBIT_NOTE`
+y compara con `is`; códigos de otros documentos generan `DianResponseError` al
+parsear, o `ValueError` al construir el modelo. Los códigos de motivos por línea
+(`NoteResponse.code`) siguen siendo texto.
 
 ## Motivos de notas
 

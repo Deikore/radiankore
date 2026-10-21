@@ -6,6 +6,7 @@ mismo cliente:
 
 ```python
 from radiankore import DianClient
+from radiankore.catalogs import DocumentType
 from radiankore.models.responses import ReferenceNotesResult
 
 client = DianClient(
@@ -19,6 +20,8 @@ if notes is not None:
     print(notes.document_key, notes.file_name)
     for note in notes.notes:
         print(note.code, note.description, note.date, note.time)
+        if note.code is DocumentType.CREDIT_NOTE:
+            print("Nota crédito")
         for reference in note.references:
             print(reference.id, reference.uuid)
         for line in note.line_responses:
@@ -69,9 +72,18 @@ Los modelos públicos adicionales se importan desde `radiankore.models.responses
 - `NoteResponse`: `reference_id`, `code`, `description`, `date` y `time` de una
   respuesta por línea. Cada línea conserva todas sus respuestas.
 
-`code` y `reference_id` son `str | None`; se conservan ceros iniciales y códigos
-no catalogados. Por ejemplo, `91` identifica la nota de crédito en la muestra y
-`2` es un motivo dentro de una línea: son datos distintos y no utilizan `EventType`.
+`ReferenceNote.code` tiene tipo `DocumentType | None`. Solo admite
+`DocumentType.CREDIT_NOTE` (`91`) y `DocumentType.DEBIT_NOTE` (`92`). Campos
+ausentes, nulos o vacíos producen `None`; el parser recorta espacios exteriores.
+Códigos desconocidos, no canónicos como `091`, o de otros documentos generan
+`DianResponseError` con `ValueError` como causa. `.value` devuelve el código de
+texto y `.label` su etiqueta. Al construir una nota directamente, pasa el enum:
+cadenas u otros tipos generan `TypeError`, y miembros de `DocumentType` distintos
+de crédito/débito generan `ValueError`.
+
+`reference_id` y `NoteResponse.code` siguen siendo `str | None`. Los códigos de
+las respuestas por línea representan motivos independientes, como `2`, y admiten
+valores no catalogados. No utilizan `DocumentType` ni `EventType`.
 `description` une textos no vacíos con saltos de línea; si faltan, vale `""`.
 Los participantes usan `EventParty`, con identificación, dígito y tipo de documento.
 No se reutiliza `DocumentNote`, que pertenece al contrato de `GetDocumentInfo`.

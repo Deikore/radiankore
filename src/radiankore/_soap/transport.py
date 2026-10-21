@@ -1,4 +1,4 @@
-"""HTTPX transport for already signed SOAP messages."""
+"""HTTPX transport for signed SOAP messages and exchange-email downloads."""
 
 from contextlib import suppress
 
@@ -52,3 +52,23 @@ class SoapTransport:
             raise DianTransportError(
                 "Unable to communicate with the DIAN service."
             ) from exc
+
+    def get(self, url: str) -> bytes:
+        """Download exact bytes with no SOAP credentials, redirects or retries."""
+        try:
+            with (
+                create_http_client(self._timeout) as client,
+                client.stream(
+                    "GET", url, timeout=self._timeout, follow_redirects=False
+                ) as response,
+            ):
+                try:
+                    response.raise_for_status()
+                except httpx.HTTPStatusError as exc:
+                    raise DianTransportError(
+                        f"DIAN download returned HTTP {response.status_code}.",
+                        status_code=response.status_code,
+                    ) from exc
+                return response.read()
+        except httpx.RequestError as exc:
+            raise DianTransportError("Unable to download the DIAN archive.") from exc

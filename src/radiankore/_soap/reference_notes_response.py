@@ -12,6 +12,7 @@ from radiankore._soap.parsing import (
     soap_result,
 )
 from radiankore._soap.ubl import effective_datetime, party, texts
+from radiankore.catalogs import DocumentType
 from radiankore.exceptions import DianResponseError
 from radiankore.models.responses import (
     NoteDocumentReference,
@@ -71,6 +72,18 @@ def _line(node: etree._Element) -> NoteLineResponse:
     )
 
 
+def _note_code(value: str | None) -> DocumentType | None:
+    if value is None:
+        return None
+    try:
+        code = DocumentType(value)
+        if code not in {DocumentType.CREDIT_NOTE, DocumentType.DEBIT_NOTE}:
+            raise ValueError("Expected a credit or debit note document type.")
+        return code
+    except ValueError as exc:
+        raise DianResponseError("Invalid document type in a reference note.") from exc
+
+
 def _note(node: etree._Element) -> ReferenceNote:
     response = _response(_required_one(node, "Response"))
     references = node.findall(f"{{{CAC}}}DocumentReference")
@@ -78,7 +91,7 @@ def _note(node: etree._Element) -> ReferenceNote:
         raise DianResponseError("Missing DocumentReference in a reference note.")
     return ReferenceNote(
         reference_id=response.reference_id,
-        code=response.code,
+        code=_note_code(response.code),
         description=response.description,
         date=response.date,
         time=response.time,

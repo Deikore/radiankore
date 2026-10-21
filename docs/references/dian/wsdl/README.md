@@ -140,7 +140,10 @@ sin ordenar ni deduplicar. Los campos aún no modelados permanecen accesibles en
 los bytes originales; no se realiza validación integral XSD ni de firma recibida.
 
 El modelo usa ReferenceNote, NoteDocumentReference, NoteLineResponse y NoteResponse.
-Los códigos de notas y motivos se conservan como texto, distintos de EventType.
+`ReferenceNote.code` se convierte a `DocumentType.CREDIT_NOTE` o
+`DocumentType.DEBIT_NOTE`, o `None` si falta. Otros códigos generan
+`DianResponseError`. Es una política de la librería sobre el código principal;
+los motivos de línea (`NoteResponse.code`) siguen siendo texto, sin usar EventType.
 Fechas efectivas YYYY-MM-DD se convierten a date y horas a time en UTC-05:00,
 ajustando el día cuando sea necesario. Payload ausente/nulo/vacío produce notes=();
 uno no vacío malformado, con DTD o raíz incorrecta genera DianResponseError.
@@ -212,3 +215,55 @@ Los lectores comunes se comparten con GetReferenceNotes sin reutilizar sus model
 ni cambiar los requisitos públicos de GetStatusEvent. No se realiza validación de
 reglas internas, XSD o firma del payload. Las pruebas usan únicamente datos sintéticos;
 la aceptación real del certificado requiere una consulta autorizada contra DIAN.
+
+## GetExchangeEmails
+
+Los contratos coinciden en ambos ambientes: SOAP 1.2, document/literal y la misma
+política de seguridad del cliente. La solicitud `GetExchangeEmails` tiene una
+secuencia vacía, sin parámetros. Acción:
+`http://wcf.dian.colombia/IWcfDianCustomerServices/GetExchangeEmails`.
+
+El resultado `GetExchangeEmailsResponse/GetExchangeEmailsResult` es opcional y
+nillable. Su tipo `ExchangeEmailResponse` usa el namespace
+`http://schemas.datacontract.org/2004/07/ExchangeEmailResponse`.
+
+- `CsvBase64Bytes`, `Message`, `StatusCode`: `xs:string`, opcionales y nillables.
+- `Success`: `xs:boolean`, opcional y no nillable.
+
+El WSDL no especifica significado de códigos ni formato del contenido codificado.
+El [comunicado DIAN del 1 de noviembre de 2024](https://www.dian.gov.co/Prensa/Paginas/NG-Optimizacion-del-metodo-GetExchangeEmails-del-Webservice.aspx)
+anuncia que desde el 8 de noviembre se entrega una URL en Base64, válida por
+10 segundos, para descargar un ZIP con el CSV. Se implementa ese comportamiento,
+sin fallback al CSV histórico ni nombres fijos de columnas o archivos internos.
+Se extrae en memoria el único miembro CSV y se lee como UTF-8 con `csv.DictReader`.
+Los encabezados se usan como claves y los valores se conservan como texto.
+La codificación UTF-8 es una política de la librería pendiente de confirmar con
+una muestra real; no se escriben archivos al disco.
+
+## GetNumberingRange
+
+Los contratos de ambos ambientes coinciden: SOAP 1.2, document/literal, con la
+misma firma y política de seguridad. Acción:
+`http://wcf.dian.colombia/IWcfDianCustomerServices/GetNumberingRange`.
+La solicitud contiene `accountCode`, `accountCodeT` y `softwareCode`, en ese orden,
+como `xs:string`, opcionales y nillables. La API exige los tres para consultar.
+
+`GetNumberingRangeResponse/GetNumberingRangeResult` es opcional y nillable. Su
+tipo `NumberRangeResponseList`, namespace
+`http://schemas.datacontract.org/2004/07/NumberRangeResponseList`, contiene
+`OperationCode`, `OperationDescription` y `ResponseList`, opcionales y nillables.
+Los códigos son cadenas de negocio, sin equivalencia con HTTPStatus.
+
+`ResponseList` contiene `NumberRangeResponse` repetible y nillable, namespace
+`http://schemas.datacontract.org/2004/07/NumberRangeResponse`. Sus ocho elementos
+son opcionales: `ResolutionNumber`, `ResolutionDate`, `Prefix`, `ValidDateFrom`,
+`ValidDateTo` y `TechnicalKey` son cadenas nillables; `FromNumber` y `ToNumber`
+son `xs:long` no nillables. No se implementan los campos históricos adicionales
+que aparecen en la tabla resumida del anexo.
+
+El [anexo FE 1.9, sección 7.15, páginas 356–360](https://www.dian.gov.co/impuestos/factura-electronica/Documents/Anexo-Tecnico-Factura-Electronica-de-Venta-vr-1-9.pdf)
+explica los NIT sin dígito de verificación y el identificador del software; su
+ejemplo SOAP usa fechas `YYYY-MM-DD`, leídas como fechas nativas. Documenta
+`100` para éxito, `301`, `302`, `303`, `401` y `500` para resultados de negocio.
+Declara disponibilidad únicamente en producción. La librería respeta el ambiente
+seleccionado, sin fallback, y conserva estados desconocidos, orden y nulos.

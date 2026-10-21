@@ -2,6 +2,8 @@
 
 import base64
 import binascii
+import re
+from datetime import date
 from http import HTTPStatus
 
 from lxml import etree
@@ -98,3 +100,34 @@ def decode_base64_text(value: str, *, field_name: str) -> bytes:
         return base64.b64decode(compact, validate=True)
     except (binascii.Error, ValueError) as exc:
         raise DianResponseError(f"Invalid Base64 in {field_name}.") from exc
+
+
+def read_boolean(
+    parent: etree._Element, namespace: str, name: str, *, operation: str
+) -> bool | None:
+    """Read an optional, non-nillable XML Schema boolean."""
+    node = parent.find(f"{{{namespace}}}{name}")
+    if node is None:
+        return None
+    if is_nil(node):
+        raise DianResponseError(f"{name} must not be nil in {operation}.")
+    value = (node.text or "").strip()
+    if value not in {"true", "false", "1", "0"}:
+        cause = ValueError("Invalid xs:boolean lexical value.")
+        raise DianResponseError(f"Invalid {name} in {operation}.") from cause
+    return value in {"true", "1"}
+
+
+def read_date(
+    parent: etree._Element, namespace: str, name: str, *, context: str
+) -> date | None:
+    """Read an optional YYYY-MM-DD calendar date without timezone inference."""
+    value = element_text(parent, f"{{{namespace}}}{name}")
+    if value is None:
+        return None
+    try:
+        if re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value) is None:
+            raise ValueError("Expected a YYYY-MM-DD calendar date.")
+        return date.fromisoformat(value)
+    except ValueError as exc:
+        raise DianResponseError(f"Invalid {name} in {context}.") from exc

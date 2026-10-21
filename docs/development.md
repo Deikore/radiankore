@@ -54,7 +54,7 @@ SOAP y el transporte se comparten con las consultas de eventos y documentos.
 de `GetReferenceNotes`; `tests/test_reference_notes_payload.py` cubre las notas UBL,
 referencias, motivos y fechas. `tests/test_xml_document.py` cubre la descarga,
 decodificación exacta y fechas de validación. Las pruebas de firma y transporte
-cubren las seis operaciones.
+cubren las ocho operaciones.
 `tests/test_document_status.py` cubre estados, mensajes y payloads de `GetStatus`.
 
 Para ejecutar un archivo o seleccionar una prueba por nombre:

@@ -3,6 +3,7 @@
 import datetime as dt
 from dataclasses import dataclass, field
 
+from radiankore.catalogs import DocumentType
 from radiankore.models.responses.invoice_events import EventParty
 
 
@@ -38,7 +39,7 @@ class ReferenceNote:
     """One DocumentResponse, distinct from RADIAN events and DocumentInfo notes."""
 
     reference_id: str | None = None
-    code: str | None = None
+    code: DocumentType | None = None
     description: str = ""
     date: dt.date | None = None
     time: dt.time | None = None
@@ -46,6 +47,15 @@ class ReferenceNote:
     issuer: EventParty | None = None
     recipient: EventParty | None = None
     line_responses: tuple[NoteLineResponse, ...] = ()
+
+    def __post_init__(self) -> None:
+        """Accept only credit/debit DocumentType members or None."""
+        if self.code is None:
+            return
+        if not isinstance(self.code, DocumentType):
+            raise TypeError("code must be a DocumentType or None.")
+        if self.code not in {DocumentType.CREDIT_NOTE, DocumentType.DEBIT_NOTE}:
+            raise ValueError("code must be CREDIT_NOTE or DEBIT_NOTE.")
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

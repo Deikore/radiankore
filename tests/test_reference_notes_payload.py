@@ -11,7 +11,7 @@ from lxml import etree
 from radiankore import DianResponseError
 from radiankore._soap.namespaces import AR, CAC, CBC, RESPONSE, SOAP, WCF, XSI
 from radiankore._soap.reference_notes_response import parse_reference_notes_response
-from radiankore.catalogs import IdentificationType
+from radiankore.catalogs import DocumentType, IdentificationType
 from radiankore.models.responses import (
     NoteDocumentReference,
     NoteLineResponse,
@@ -43,7 +43,8 @@ def test_multiple_notes_references_and_line_reasons(
     assert result is not None and len(result.notes) == 2
     note, second = result.notes
     assert (note.reference_id, second.reference_id) == ("10", "2")
-    assert note.code == "91" and second.code == "FUTURE-NOTE"
+    assert note.code is DocumentType.CREDIT_NOTE
+    assert second.code is DocumentType.DEBIT_NOTE
     assert note.description == "Nota de crédito electrónica\nSecond description"
     assert note.date == date(2026, 10, 19)
     assert note.time == time(10, 17, 18, tzinfo=COLOMBIA)
@@ -335,3 +336,65 @@ def test_note_models_are_immutable(
     attribute = fields(model)[0].name
     with pytest.raises(FrozenInstanceError):
         setattr(model, attribute, "changed")
+
+
+@pytest.mark.parametrize("code", [DocumentType.CREDIT_NOTE, DocumentType.DEBIT_NOTE])
+def test_note_document_type_identity(
+    reference_notes_response: bytes,
+    reference_notes_application: bytes,
+    code: DocumentType,
+) -> None:
+    root = etree.fromstring(reference_notes_application)
+    node = root.find(
+        f"{{{CAC}}}DocumentResponse/{{{CAC}}}Response/{{{CBC}}}ResponseCode"
+    )
+    assert node is not None
+    node.text = f" {code.value} "
+    result = read_payload(reference_notes_response, etree.tostring(root))
+    assert result.notes[0].code is code
+    assert ReferenceNote(code=code).code is code
+    assert (
+        result.notes[0].description == "Nota de crédito electrónica\nSecond description"
+    )
+    assert result.notes[0].line_responses[0].responses[0].code == "2"
+    assert result.notes[0].line_responses[0].responses[1].code == "FUTURE-REASON"
+    assert result.xml_base64_bytes == etree.tostring(root)
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["FUTURE-NOTE", "091", "092", "1", "01", "02", "03", "04", "96", "2", "030"],
+)
+def test_unknown_or_non_note_document_type(
+    reference_notes_response: bytes,
+    reference_notes_application: bytes,
+    value: str,
+) -> None:
+    root = etree.fromstring(reference_notes_application)
+    node = root.find(
+        f"{{{CAC}}}DocumentResponse/{{{CAC}}}Response/{{{CBC}}}ResponseCode"
+    )
+    assert node is not None
+    node.text = value
+    with pytest.raises(DianResponseError) as error:
+        read_payload(reference_notes_response, etree.tostring(root))
+    assert isinstance(error.value.__cause__, ValueError)
+
+
+@pytest.mark.parametrize("value", ["91", "92", "", 91, True, IdentificationType.NIT])
+def test_reference_note_requires_document_enum(value: object) -> None:
+    with pytest.raises(TypeError):
+        ReferenceNote(code=value)  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        item
+        for item in DocumentType
+        if item not in {DocumentType.CREDIT_NOTE, DocumentType.DEBIT_NOTE}
+    ],
+)
+def test_reference_note_rejects_other_document_types(value: DocumentType) -> None:
+    with pytest.raises(ValueError):
+        ReferenceNote(code=value)

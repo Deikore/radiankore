@@ -32,7 +32,7 @@
     </cac:LineResponse>
   </cac:DocumentResponse>
   <cac:DocumentResponse>
-    <cac:Response><cbc:ReferenceID>2</cbc:ReferenceID><cbc:ResponseCode>FUTURE-NOTE</cbc:ResponseCode></cac:Response>
+    <cac:Response><cbc:ReferenceID>2</cbc:ReferenceID><cbc:ResponseCode>92</cbc:ResponseCode></cac:Response>
     <cac:DocumentReference><cbc:ID>NC-002</cbc:ID><cbc:UUID>NOTE-UUID-2</cbc:UUID></cac:DocumentReference>
   </cac:DocumentResponse>
 </ApplicationResponse>

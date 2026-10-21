@@ -3,22 +3,12 @@
 from lxml import etree
 
 from radiankore._soap.namespaces import ARRAY, RESPONSE
-from radiankore._soap.parsing import decode_base64_text, is_nil
-from radiankore.exceptions import DianResponseError
+from radiankore._soap.parsing import decode_base64_text, is_nil, read_boolean
 
 
 def read_is_valid(result: etree._Element, *, operation: str) -> bool | None:
     """Read an optional, non-nillable DianResponse validity flag."""
-    node = result.find(f"{{{RESPONSE}}}IsValid")
-    if node is None:
-        return None
-    if is_nil(node):
-        raise DianResponseError(f"IsValid must not be nil in {operation}.")
-    value = (node.text or "").strip()
-    if value not in {"true", "false", "1", "0"}:
-        cause = ValueError("Invalid xs:boolean lexical value.")
-        raise DianResponseError(f"Invalid IsValid in {operation}.") from cause
-    return value in {"true", "1"}
+    return read_boolean(result, RESPONSE, "IsValid", operation=operation)
 
 
 def read_messages(result: etree._Element) -> tuple[str | None, ...]:

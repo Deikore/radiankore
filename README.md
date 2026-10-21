@@ -24,6 +24,8 @@ Si necesitas compilar las dependencias de firma, consulta la
 
 | Método | Operación DIAN | Resultado |
 | --- | --- | --- |
+| `get_numbering_range(account_code=..., account_code_t=..., software_code=...)` | `GetNumberingRange` | Rangos de numeración autorizados y clave técnica |
+| `get_exchange_emails()` | `GetExchangeEmails` | Registros del CSV del directorio de correos |
 | `get_status(track_id)` | `GetStatus` | Estado de validación y payloads decodificados |
 | `get_invoice_events(cufe)` | `GetStatusEvent` | Eventos asociados a una factura |
 | `get_acquirer(identification_type=..., identification_number=...)` | `GetAcquirer` | Nombre y correo del adquiriente |
@@ -60,6 +62,11 @@ reutilizar el cliente sin volver a cargar el certificado.
 from pathlib import Path
 
 from radiankore.catalogs import IdentificationType
+
+emails = client.get_exchange_emails()
+if emails is not None and emails.csv is not None:
+    for row in emails.csv:
+        print(row)
 
 status = client.get_status("CUFE-O-TRACK-ID")
 if status is not None:
