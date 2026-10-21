@@ -46,7 +46,7 @@ fuente; CI también ejecuta la suite completa contra el wheel instalado.
 ## Crear la release
 
 Crea una etiqueta `v<VERSION>` que coincida exactamente con `project.version`
-(por ejemplo, `v0.2.0` para `0.2.0`) y publica una release de GitHub desde esa
+(por ejemplo, `v0.3.0` para `0.3.0`) y publica una release de GitHub desde esa
 etiqueta. El workflow:
 
 1. Verifica la correspondencia de etiqueta y versión.

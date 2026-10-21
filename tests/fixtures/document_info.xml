@@ -40,7 +40,7 @@
           </o:Nota>
           <o:Nota i:nil="true"/>
         </d:DocumentTags>
-        <d:DocumentTypeId>FUTURE-DOC-TYPE</d:DocumentTypeId>
+        <d:DocumentTypeId>01</d:DocumentTypeId>
         <d:DocumentTypeName>Invoice</d:DocumentTypeName>
         <d:Emisor><p:Nombre>Document issuer</p:Nombre><p:NumeroDoc>000123</p:NumeroDoc><p:Procedencia>Document origin</p:Procedencia><p:TipoDoc>31</p:TipoDoc></d:Emisor>
         <d:Estado>
@@ -66,7 +66,7 @@
         <d:Receptor><p:Nombre>Document recipient</p:Nombre><p:NumeroDoc>000456</p:NumeroDoc><p:Procedencia>Recipient origin</p:Procedencia><p:TipoDoc>13</p:TipoDoc></d:Receptor>
         <d:Referencias>
           <f:ReferenciaDocumento>
-            <f:Descripcion>Document reference</f:Descripcion><f:DocumentTypeId>REF-TYPE</f:DocumentTypeId><f:DocumentTypeName>Reference type</f:DocumentTypeName>
+            <f:Descripcion>Document reference</f:Descripcion><f:DocumentTypeId>91</f:DocumentTypeId><f:DocumentTypeName>Reference type</f:DocumentTypeName>
             <f:Emisor><p:Nombre>Reference issuer</p:Nombre><p:NumeroDoc>000REF</p:NumeroDoc><p:Procedencia>Reference origin</p:Procedencia><p:TipoDoc>31</p:TipoDoc></f:Emisor>
             <f:Fecha>2026-01-10</f:Fecha>
             <f:Receptor><p:Nombre>Reference recipient</p:Nombre><p:NumeroDoc>000REF-R</p:NumeroDoc><p:Procedencia>Reference recipient origin</p:Procedencia><p:TipoDoc>13</p:TipoDoc></f:Receptor>
@@ -81,10 +81,8 @@
           <v:ValidacionDoc i:nil="true"/>
         </d:ValidacionesDoc>
       </d:Documento>
-      <d:Documento i:nil="true"/>
-      <d:Documento><d:UUID>SECOND-DOCUMENT</d:UUID></d:Documento>
     </r:DocumentInfo>
-    <r:StatusCode>FUTURE-STATUS</r:StatusCode>
+    <r:StatusCode>200</r:StatusCode>
     <r:StatusDescription> Synthetic status </r:StatusDescription>
   </wcf:GetDocumentInfoResult>
 </wcf:GetDocumentInfoResponse>

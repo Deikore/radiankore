@@ -8,9 +8,10 @@
 - `DianSignatureError`: clave no RSA o fallo al firmar el sobre.
 - `DianTransportError`: fallo de red o HTTP sin SOAP Fault; expone `status_code`.
 - `DianSoapFaultError`: fallo SOAP, incluso con HTTP 500; expone `code` y `reason`.
-- `DianResponseError`: SOAP, Base64 o UBL malformados, o códigos de identificación
-  o evento desconocidos, códigos HTTP inválidos en `GetXmlByDocumentKey`, o fechas
-  y otros valores tipados inválidos de las respuestas.
+- `DianResponseError`: SOAP, Base64 o UBL malformados,
+  códigos de tipo de documento, motivo de nota, identificación o evento desconocidos,
+  códigos HTTP inválidos en `GetDocumentInfo` o
+  `GetXmlByDocumentKey`, o fechas y otros valores tipados inválidos de las respuestas.
 
 Las cuatro excepciones de operación heredan de `DianError` y se exportan desde
 `radiankore`. Las causas de errores técnicos se conservan cuando corresponde.

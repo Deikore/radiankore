@@ -17,8 +17,7 @@ pip install radiankore
 uv add radiankore
 ```
 
-Disponible tras la primera publicación en PyPI. Si necesitas compilar las
-dependencias de firma, consulta la
+Si necesitas compilar las dependencias de firma, consulta la
 [guía de instalación](https://radiankore.readthedocs.io/).
 
 ## Métodos disponibles

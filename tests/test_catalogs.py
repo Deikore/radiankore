@@ -5,8 +5,51 @@ from dataclasses import asdict
 
 import pytest
 
-from radiankore.catalogs import EventType, IdentificationType
-from radiankore.models.responses import EventParty, InvoiceEvent
+from radiankore.catalogs import DocumentType, EventType, IdentificationType
+from radiankore.models.responses import (
+    DocumentInfo,
+    DocumentReference,
+    EventParty,
+    InvoiceEvent,
+)
+
+
+def test_document_catalog_contains_official_codes() -> None:
+    assert {member.value for member in DocumentType} == {
+        "01",
+        "02",
+        "03",
+        "04",
+        "91",
+        "92",
+        "96",
+    }
+    assert DocumentType.SALES_INVOICE.label == "Factura electrónica de Venta"
+    assert DocumentType.CREDIT_NOTE.label == "Nota Crédito"
+    assert DocumentType.APPLICATION_RESPONSE.label == "Eventos (ApplicationResponse)"
+
+
+@pytest.mark.parametrize("kind", list(DocumentType))
+def test_document_catalog_public_contract(kind: DocumentType) -> None:
+    assert kind.label.strip()
+    assert DocumentType(kind.value) is kind
+    assert DocumentType.from_code(kind.value) is kind
+    assert str(kind) == kind.value
+    document = DocumentInfo(document_type_id=kind)
+    reference = DocumentReference(document_type_id=kind)
+    assert document.document_type_id is reference.document_type_id is kind
+    assert json.loads(json.dumps(asdict(document)))["document_type_id"] == kind.value
+    with pytest.raises(AttributeError):
+        attribute = "label"
+        setattr(kind, attribute, "Changed")
+
+
+@pytest.mark.parametrize("value", [None, "", "1", " 01 ", "001", "99", "FUTURE"])
+def test_document_catalog_lookup_is_exact(value: str | None) -> None:
+    assert DocumentType.from_code(value) is None
+    if value is not None:
+        with pytest.raises(ValueError):
+            DocumentType(value)
 
 
 def test_identification_catalog_contains_documented_codes() -> None:

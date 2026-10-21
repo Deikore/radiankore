@@ -95,7 +95,8 @@ jobs:
 
           from radiankore import DianClient, DigitalCertificate, DigitalCertificateError
           from radiankore import Environment
-          from radiankore.catalogs import EventType, IdentificationType
+          from radiankore.catalogs import DocumentType, EventType, IdentificationType
+          from radiankore.catalogs import CreditNoteReason, DebitNoteReason
           from radiankore.models.responses import AcquirerResult, EventParty, InvoiceEvent, InvoiceEventsResult
 
           assert callable(DianClient)
@@ -129,6 +130,16 @@ jobs:
           assert "first" not in repr(notes)
           assert callable(DianClient.get_document_info)
           assert DocumentInfoResult().documents == ()
+          from radiankore.models.responses import DocumentInfo, DocumentReference
+
+          doc = DocumentInfo(document_type_id=DocumentType.SALES_INVOICE)
+          assert DocumentInfoResult(documents=(doc,)).documents == (doc,)
+          assert DocumentReference(document_type_id=DocumentType.CREDIT_NOTE).document_type_id is DocumentType.CREDIT_NOTE
+          assert DocumentType.SALES_INVOICE.label == "Factura electrónica de Venta"
+          credit = DocumentInfo(document_type_id=DocumentType.CREDIT_NOTE, document_code=CreditNoteReason.INVOICE_CANCELLATION)
+          debit = DocumentInfo(document_type_id=DocumentType.DEBIT_NOTE, document_code=DebitNoteReason.RECEIVABLE_EXPENSES)
+          assert credit.document_code is CreditNoteReason.INVOICE_CANCELLATION
+          assert debit.document_code is DebitNoteReason.RECEIVABLE_EXPENSES
           assert DocumentTotals(total=Decimal("1.01")).total == Decimal("1.01")
           assert callable(DianClient.get_acquirer)
           assert AcquirerResult().name is None

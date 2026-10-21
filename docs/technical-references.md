@@ -8,6 +8,7 @@ están en el
 - [Contrato y correspondencias SOAP](https://github.com/Deikore/radiankore/blob/HEAD/docs/references/dian/wsdl/README.md).
 - [Anexo RADIAN oficial](https://www.dian.gov.co/normatividad/Normatividad/Anexo%2085%20-%20Resoluci%C3%B3n%20000085%20de%202022.pdf).
 - [Caja de herramientas RADIAN](https://www.dian.gov.co/impuestos/factura-electronica/Documents/Caja-de-herramientas-RADIAN.zip).
+- [Tipos de documento FE 1.9, edición 2026: fuentes y hashes](https://github.com/Deikore/radiankore/blob/HEAD/docs/references/dian/invoicing/1.9/README.md).
 
 Los materiales originales no se modifican para adaptar el comportamiento del SDK.
 Los parsers no realizan validación integral contra XSD ni verifican las firmas de

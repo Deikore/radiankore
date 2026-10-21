@@ -1,7 +1,6 @@
 """Read GetXmlByDocumentKey without interpreting the downloaded document."""
 
 from datetime import date, datetime
-from http import HTTPStatus
 
 from lxml import etree
 
@@ -10,24 +9,11 @@ from radiankore._soap.parsing import (
     decode_base64_text,
     element_text,
     is_nil,
+    read_http_status,
     soap_result,
 )
 from radiankore.exceptions import DianResponseError
 from radiankore.models.responses import XmlDocumentResult
-
-
-def _status_code(result: etree._Element) -> HTTPStatus | None:
-    value = element_text(result, f"{{{EVENT_RESPONSE}}}Code")
-    if value is None:
-        return None
-    try:
-        if len(value) != 3 or not value.isascii() or not value.isdecimal():
-            raise ValueError("Code must contain three ASCII digits.")
-        return HTTPStatus(int(value))
-    except ValueError as exc:
-        raise DianResponseError(
-            "Invalid HTTP status Code in document response."
-        ) from exc
 
 
 def _validation_date(result: etree._Element) -> date | datetime | None:
@@ -57,7 +43,7 @@ def parse_xml_document_response(data: bytes) -> XmlDocumentResult | None:
         else None
     )
     return XmlDocumentResult(
-        status_code=_status_code(result),
+        status_code=read_http_status(result, EVENT_RESPONSE, "Code"),
         message=element_text(result, f"{{{EVENT_RESPONSE}}}Message"),
         validation_date=_validation_date(result),
         document_xml=document,

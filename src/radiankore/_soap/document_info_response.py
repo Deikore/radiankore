@@ -9,8 +9,14 @@ from enum import StrEnum
 from lxml import etree
 
 from radiankore._soap.namespaces import ARRAY
-from radiankore._soap.parsing import element_text, is_nil, soap_result
-from radiankore.catalogs import EventType, IdentificationType
+from radiankore._soap.parsing import element_text, is_nil, read_http_status, soap_result
+from radiankore.catalogs import (
+    CreditNoteReason,
+    DebitNoteReason,
+    DocumentType,
+    EventType,
+    IdentificationType,
+)
 from radiankore.exceptions import DianResponseError
 from radiankore.models.responses.document_info import (
     DocumentCorrection,
@@ -128,6 +134,21 @@ def _enum[T: StrEnum](
         ) from exc
 
 
+def _document_type(node: etree._Element, namespace: str) -> DocumentType | None:
+    """Resolve canonical document types and the unpadded aliases 1 through 4."""
+    value = _text(node, namespace, "DocumentTypeId")
+    if value is None:
+        return None
+    if value in {"1", "2", "3", "4"}:
+        value = f"0{value}"
+    try:
+        return DocumentType(value)
+    except ValueError as exc:
+        raise DianResponseError(
+            "Unknown DocumentTypeId in document information."
+        ) from exc
+
+
 def _identification_type(node: etree._Element) -> IdentificationType | None:
     """Resolve numeric codes and the Nit spelling observed in GetDocumentInfo."""
     value = _text(node, _PARTY, "TipoDoc")
@@ -238,7 +259,7 @@ def _correction(node: etree._Element) -> DocumentCorrection:
 def _reference(node: etree._Element) -> DocumentReference:
     return DocumentReference(
         description=_text(node, _REFERENCE, "Descripcion"),
-        document_type_id=_text(node, _REFERENCE, "DocumentTypeId"),
+        document_type_id=_document_type(node, _REFERENCE),
         document_type_name=_text(node, _REFERENCE, "DocumentTypeName"),
         issuer=_object(node, _REFERENCE, "Emisor", _party),
         recipient=_object(node, _REFERENCE, "Receptor", _party),
@@ -281,11 +302,29 @@ def _note(node: etree._Element) -> DocumentNote:
     )
 
 
+def _document_code(
+    node: etree._Element, document_type: DocumentType | None
+) -> CreditNoteReason | DebitNoteReason | str | None:
+    """Resolve note reasons by type while preserving other document codes as text."""
+    value = _text(node, _DOCUMENT, "DocumentCode")
+    if value is None:
+        return None
+    try:
+        if document_type is DocumentType.CREDIT_NOTE:
+            return CreditNoteReason(value)
+        if document_type is DocumentType.DEBIT_NOTE:
+            return DebitNoteReason(value)
+        return value
+    except ValueError as exc:
+        raise DianResponseError("Unknown DocumentCode reason for note type.") from exc
+
+
 def _document(node: etree._Element) -> DocumentInfo:
+    document_type = _document_type(node, _DOCUMENT)
     return DocumentInfo(
-        document_code=_text(node, _DOCUMENT, "DocumentCode"),
+        document_code=_document_code(node, document_type),
         description=_text(node, _DOCUMENT, "DocumentDescription"),
-        document_type_id=_text(node, _DOCUMENT, "DocumentTypeId"),
+        document_type_id=document_type,
         document_type_name=_text(node, _DOCUMENT, "DocumentTypeName"),
         uuid=_text(node, _DOCUMENT, "UUID"),
         issuer=_object(node, _DOCUMENT, "Emisor", _party),
@@ -309,13 +348,13 @@ def _document(node: etree._Element) -> DocumentInfo:
 
 
 def parse_document_info_response(data: bytes) -> DocumentInfoResult | None:
-    """Return typed documents and status, leaving compressed text uninterpreted."""
+    """Return typed documents in XML order, leaving compressed text uninterpreted."""
     result = soap_result(data, "GetDocumentInfo")
     if result is None:
         return None
     compressed = _child(result, _RESULT, "CompressedDocumentInfo")
     return DocumentInfoResult(
-        status_code=_text(result, _RESULT, "StatusCode"),
+        status_code=read_http_status(result, _RESULT, "StatusCode"),
         status_description=_text(result, _RESULT, "StatusDescription"),
         documents=_items(
             result, _RESULT, "DocumentInfo", _DOCUMENT, "Documento", _document

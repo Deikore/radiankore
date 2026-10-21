@@ -18,6 +18,11 @@ radian/
 
 ## Anexo técnico RADIAN
 
+Los tipos de documento de FE 1.9 se conservan por separado en
+[invoicing/1.9](invoicing/1.9/README.md), con tabla oficial de la edición 2026,
+genericode original, procedencia y hashes. `DocumentType` toma los siete códigos
+de la tabla 13.1.3; el parser de `GetDocumentInfo` admite además los alias `1`–`4`.
+
 - Archivo local: [radian/1.1/anexo-tecnico.pdf](radian/1.1/anexo-tecnico.pdf).
 - Fuente oficial: [Anexo 85 — Resolución 000085 de 2022](https://www.dian.gov.co/normatividad/Normatividad/Anexo%2085%20-%20Resoluci%C3%B3n%20000085%20de%202022.pdf).
 - Versión indicada en el documento: 1.1.
@@ -63,6 +68,8 @@ fuentes; no carga los documentos durante la ejecución:
 
 | Catálogo público | Fuente | Versión y cobertura |
 | --- | --- | --- |
+| `DocumentType` | [Tabla FE 1.9 13.1.3 y genericode](invoicing/1.9/README.md) | Caja de herramientas FE 1.9, edición 2026; siete códigos: `01`, `02`, `03`, `04`, `91`, `92`, `96` |
+| `CreditNoteReason`, `DebitNoteReason` | [Tablas FE 1.9 13.2.4 y 13.2.5](invoicing/1.9/README.md) | Edición 2026; motivos de crédito `1`–`6` y débito `1`–`4`; aplicación a `DocumentCode` basada en observación del mantenedor |
 | `IdentificationType` | [TipoIdFiscal-2.1.gc](radian/toolbox/Listas%20de%20valores/TipoIdFiscal-2.1.gc) y anexo RADIAN §14.2.13 | Lista versión 1, modificada el 03-04-2022; 11 códigos: `11`, `12`, `13`, `21`, `22`, `31`, `41`, `42`, `47`, `50`, `91` |
 | `IdentificationType` | [Guía DIAN para completar información de adquirientes](https://www.dian.gov.co/impuestos/factura-electronica/Documents/Guia-Herramienta-para-el-Consumo-de-Web-Services.pdf), tabla de `identificationType` | Añade `48`: PPT (Permiso Protección Temporal). Referencia web consultada el 2026-10-20; sin copia local ni hash |
 | `EventType` | [Eventos-2.1.gc](radian/toolbox/Listas%20de%20valores/Eventos-2.1.gc) | Lista versión 1, modificada el 03-04-2022; códigos `035`–`051` |

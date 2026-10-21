@@ -4,6 +4,7 @@ from copy import deepcopy
 from dataclasses import FrozenInstanceError
 from datetime import date
 from decimal import Decimal
+from http import HTTPStatus
 from pathlib import Path
 from typing import Any
 
@@ -11,15 +12,16 @@ import httpx
 import pytest
 from lxml import etree
 
-from radiankore import DianClient, DianResponseError, Environment
+from radiankore import DianClient, DianResponseError, DianTransportError, Environment
 from radiankore._soap.document_info_response import parse_document_info_response
 from radiankore._soap.namespaces import SOAP, WCF, WSA, XSI
-from radiankore.catalogs import EventType, IdentificationType
+from radiankore.catalogs import DocumentType, EventType, IdentificationType
 from radiankore.models.responses import (
     DocumentEvent,
     DocumentInfo,
     DocumentInfoResult,
     DocumentParty,
+    DocumentReference,
     DocumentState,
     DocumentTotals,
 )
@@ -61,19 +63,18 @@ def find(root: etree._Element, name: str) -> etree._Element:
 def test_complete_document_graph(document_info_response: bytes) -> None:
     result = parse_document_info_response(document_info_response)
     assert result is not None
-    assert result.status_code == "FUTURE-STATUS"
+    assert result.status_code is HTTPStatus.OK
     assert result.status_description == "Synthetic status"
     assert result.compressed_document_info == (
         "\n OPAQUE-PAYLOAD <not-xml> & not-assumed-base64 \n"
     )
     assert "OPAQUE" not in repr(result)
-    assert len(result.documents) == 3
-    document, nil, minimal = result.documents
-    assert nil is None and minimal == DocumentInfo(uuid="SECOND-DOCUMENT")
+    assert not hasattr(result, "document_info")
+    document = result.documents[0]
     assert document is not None
     assert document.document_code == "FUTURE-DOC-CODE"
     assert document.description == "Synthetic document"
-    assert document.document_type_id == "FUTURE-DOC-TYPE"
+    assert document.document_type_id is DocumentType.SALES_INVOICE
     assert document.document_type_name == "Invoice"
     assert document.uuid == "DOCUMENT-UUID"
     assert document.issuer == DocumentParty(
@@ -121,7 +122,7 @@ def test_complete_document_graph(document_info_response: bytes) -> None:
     reference = document.references[0]
     assert reference is not None and document.references[1] is None
     assert reference.description == "Document reference"
-    assert reference.document_type_id == "REF-TYPE"
+    assert reference.document_type_id is DocumentType.CREDIT_NOTE
     assert reference.document_type_name == "Reference type"
     assert reference.date == date(2026, 1, 10) and reference.uuid == "REFERENCE-UUID"
     assert reference.issuer is not None and reference.issuer.tax_number == "000REF"
@@ -161,6 +162,237 @@ def test_complete_document_graph(document_info_response: bytes) -> None:
     with pytest.raises(FrozenInstanceError):
         attribute = "status_code"
         setattr(result, attribute, "changed")
+
+
+@pytest.mark.parametrize("mode", ["missing", "nil", "empty", "foreign"])
+def test_single_document_optional_values(
+    document_info_response: bytes, mode: str
+) -> None:
+    root = etree.fromstring(document_info_response)
+    node = find(root, "Documento")
+    parent = node.getparent()
+    assert parent is not None
+    if mode == "missing":
+        parent.remove(node)
+    elif mode == "foreign":
+        node.tag = "{urn:foreign}Documento"
+    else:
+        node.clear()
+        if mode == "nil":
+            node.set(f"{{{XSI}}}nil", "true")
+    result = parse_document_info_response(etree.tostring(root))
+    assert result is not None
+    expected = (
+        (DocumentInfo(),) if mode == "empty" else (None,) if mode == "nil" else ()
+    )
+    assert result.documents == expected
+    assert result.status_code is HTTPStatus.OK
+    assert result.compressed_document_info is not None
+
+
+@pytest.mark.parametrize(
+    "uuids", [("Z", "A", "A"), ("Z", None, "A"), (None, None), (None,), ()]
+)
+def test_multiple_documents_preserve_order_duplicates_and_nil_entries(
+    document_info_response: bytes, uuids: tuple[str | None, ...]
+) -> None:
+    root = etree.fromstring(document_info_response)
+    container = find(root, "DocumentInfo")
+    template = deepcopy(find(root, "Documento"))
+    container.clear()
+    for uuid in uuids:
+        node = deepcopy(template)
+        if uuid is None:
+            node.clear()
+            node.set(f"{{{XSI}}}nil", "true")
+        else:
+            identifier = node.find(
+                "{http://schemas.datacontract.org/2004/07/Documento}UUID"
+            )
+            assert identifier is not None
+            identifier.text = uuid
+        container.append(node)
+    result = parse_document_info_response(etree.tostring(root))
+    assert result is not None
+    assert (
+        tuple(doc.uuid if doc is not None else None for doc in result.documents)
+        == uuids
+    )
+    assert result.status_code is HTTPStatus.OK
+    assert result.compressed_document_info is not None
+    assert all(
+        doc is None or doc.document_type_id is DocumentType.SALES_INVOICE
+        for doc in result.documents
+    )
+
+
+@pytest.mark.parametrize("namespace", ["Documento", "ReferenciaDocumento"])
+@pytest.mark.parametrize("kind", list(DocumentType))
+def test_document_types_in_documents_and_references(
+    document_info_response: bytes, namespace: str, kind: DocumentType
+) -> None:
+    root = etree.fromstring(document_info_response)
+    node = find(root, namespace)
+    tag = f"{{http://schemas.datacontract.org/2004/07/{namespace}}}DocumentTypeId"
+    child = node.find(tag)
+    if child is None:
+        child = etree.SubElement(node, tag)
+    child.text = f"  {kind.value} \n"
+    if namespace == "Documento" and kind in {
+        DocumentType.CREDIT_NOTE,
+        DocumentType.DEBIT_NOTE,
+    }:
+        find(root, "DocumentCode").text = "1"
+    result = parse_document_info_response(etree.tostring(root))
+    assert result is not None and result.documents[0] is not None
+    parsed = result.documents[0]
+    if namespace == "ReferenciaDocumento":
+        event = parsed.events[0]
+        assert event is not None and event.references[0] is not None
+        assert event.references[0].document_type_id is kind
+    else:
+        assert parsed.document_type_id is kind
+
+
+@pytest.mark.parametrize("namespace", ["Documento", "ReferenciaDocumento"])
+@pytest.mark.parametrize("value", ["1", "2", "3", "4"])
+def test_unpadded_document_types_are_normalized_only_in_parser(
+    document_info_response: bytes, namespace: str, value: str
+) -> None:
+    root = etree.fromstring(document_info_response)
+    node = find(root, namespace)
+    tag = f"{{http://schemas.datacontract.org/2004/07/{namespace}}}DocumentTypeId"
+    child = node.find(tag)
+    if child is None:
+        child = etree.SubElement(node, tag)
+    child.text = value
+    result = parse_document_info_response(etree.tostring(root))
+    assert result is not None and result.documents[0] is not None
+    parsed: DocumentInfo | DocumentReference = result.documents[0]
+    if namespace == "ReferenciaDocumento":
+        event = result.documents[0].events[0]
+        assert event is not None and event.references[0] is not None
+        parsed = event.references[0]
+    assert parsed.document_type_id is DocumentType(f"0{value}")
+    assert parsed.document_type_id.value == f"0{value}"
+    assert DocumentType.from_code(value) is None
+
+
+@pytest.mark.parametrize("namespace", ["Documento", "ReferenciaDocumento"])
+@pytest.mark.parametrize("value", ["99", "001", "+1", "1.0", "\u0661", "FUTURE"])
+def test_unknown_document_types_preserve_error_cause(
+    document_info_response: bytes, namespace: str, value: str
+) -> None:
+    root = etree.fromstring(document_info_response)
+    node = find(root, namespace)
+    tag = f"{{http://schemas.datacontract.org/2004/07/{namespace}}}DocumentTypeId"
+    child = node.find(tag)
+    if child is None:
+        child = etree.SubElement(node, tag)
+    child.text = value
+    with pytest.raises(DianResponseError, match="DocumentTypeId") as error:
+        parse_document_info_response(etree.tostring(root))
+    assert isinstance(error.value.__cause__, ValueError)
+
+
+@pytest.mark.parametrize("model", [DocumentInfo, DocumentReference])
+@pytest.mark.parametrize("value", ["01", "1", 1, True, EventType.DIAN_VALIDATED])
+def test_document_models_require_document_type(
+    model: type[DocumentInfo] | type[DocumentReference], value: object
+) -> None:
+    with pytest.raises(TypeError, match="document_type_id"):
+        model(document_type_id=value)  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize("namespace", ["Documento", "ReferenciaDocumento"])
+@pytest.mark.parametrize("mode", ["missing", "nil", "empty", "foreign"])
+def test_document_types_are_optional(
+    document_info_response: bytes, namespace: str, mode: str
+) -> None:
+    root = etree.fromstring(document_info_response)
+    parent = find(root, namespace)
+    tag = f"{{http://schemas.datacontract.org/2004/07/{namespace}}}DocumentTypeId"
+    node = (
+        etree.SubElement(parent, tag)
+        if namespace == "ReferenciaDocumento"
+        else find(root, "DocumentTypeId")
+    )
+    if mode == "missing":
+        parent.remove(node)
+    elif mode == "foreign":
+        node.tag = "{urn:foreign}DocumentTypeId"
+    else:
+        node.clear()
+        if mode == "nil":
+            node.set(f"{{{XSI}}}nil", "true")
+    result = parse_document_info_response(etree.tostring(root))
+    assert result is not None and result.documents[0] is not None
+    if namespace == "Documento":
+        assert result.documents[0].document_type_id is None
+    else:
+        event = result.documents[0].events[0]
+        assert event is not None and event.references[0] is not None
+        assert event.references[0].document_type_id is None
+
+
+@pytest.mark.parametrize("status", list(HTTPStatus))
+def test_document_status_maps_to_http_status(
+    document_info_response: bytes, status: HTTPStatus
+) -> None:
+    root = etree.fromstring(document_info_response)
+    find(root, "StatusCode").text = f" \n{status.value}\t "
+    result = parse_document_info_response(etree.tostring(root))
+    assert result is not None and result.status_code is status
+    assert DocumentInfoResult(status_code=status).status_code is status
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["999", "000", "99", "FUTURE-STATUS", "+404", "0404", "4_04", "٤٠٤", "404.0"],
+)
+def test_invalid_document_status_keeps_cause(
+    document_info_response: bytes, value: str
+) -> None:
+    root = etree.fromstring(document_info_response)
+    find(root, "StatusCode").text = value
+    with pytest.raises(DianResponseError, match="StatusCode") as error:
+        parse_document_info_response(etree.tostring(root))
+    assert isinstance(error.value.__cause__, ValueError)
+
+
+@pytest.mark.parametrize("value", [200, "200", True, 200.0])
+def test_document_result_requires_http_status(value: object) -> None:
+    with pytest.raises(TypeError, match="HTTPStatus"):
+        DocumentInfoResult(status_code=value)  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize("http_status", [200, 404])
+def test_document_not_found_is_independent_of_transport_status(
+    encrypted_pfx_path: Path,
+    document_info_response: bytes,
+    monkeypatch: pytest.MonkeyPatch,
+    http_status: int,
+) -> None:
+    root = etree.fromstring(document_info_response)
+    find(root, "StatusCode").text = "404"
+    http = httpx.Client(
+        transport=httpx.MockTransport(
+            lambda request: httpx.Response(http_status, content=etree.tostring(root))
+        )
+    )
+    monkeypatch.setattr(
+        "radiankore._soap.transport.create_http_client", lambda timeout: http
+    )
+    client = DianClient(encrypted_pfx_path, password="test-password")
+    if http_status == 200:
+        result = client.get_document_info("DOCUMENT-UUID")
+        assert result is not None and result.status_code is HTTPStatus.NOT_FOUND
+    else:
+        with pytest.raises(DianTransportError) as error:
+            client.get_document_info("DOCUMENT-UUID")
+        assert error.value.status_code == 404
+        assert isinstance(error.value.__cause__, httpx.HTTPStatusError)
+    assert http.is_closed
 
 
 @pytest.mark.parametrize("mode", ["missing", "nil", "empty"])
@@ -366,7 +598,7 @@ def test_client_document_query(
     )
     assert not clients
     result = client.get_document_info('  arbitrary<&"uuid  ')
-    assert result is not None and len(result.documents) == 3
+    assert result is not None and result.documents[0] is not None
     request = requests[0]
     assert str(request.url) == (environment or Environment.PRODUCTION).endpoint
     root = etree.fromstring(request.content)

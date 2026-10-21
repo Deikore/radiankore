@@ -156,7 +156,7 @@ def test_queries_share_certificate_and_use_independent_operation_actions(
     assert result is not None and result.email == "buyer@example.invalid"
     assert client.certificate is certificate
     document_result = client.get_document_info("UUID")
-    assert document_result is not None and len(document_result.documents) == 3
+    assert document_result is not None and len(document_result.documents) == 1
     notes_result = client.get_reference_notes("identifier")
     assert notes_result is not None and notes_result.xml_bytes == b"\x00\xffNOTES"
     assert client.certificate is certificate

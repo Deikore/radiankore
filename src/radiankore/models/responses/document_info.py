@@ -7,8 +7,15 @@ Collections preserve XML order and nullable items where the schema permits them.
 import datetime as dt
 from dataclasses import dataclass, field
 from decimal import Decimal
+from http import HTTPStatus
 
-from radiankore.catalogs import EventType, IdentificationType
+from radiankore.catalogs import (
+    CreditNoteReason,
+    DebitNoteReason,
+    DocumentType,
+    EventType,
+    IdentificationType,
+)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -89,12 +96,19 @@ class DocumentReference:
     """A referenced document with optional parties, type and native date."""
 
     description: str | None = None
-    document_type_id: str | None = None
+    document_type_id: DocumentType | None = None
     document_type_name: str | None = None
     issuer: DocumentParty | None = None
     recipient: DocumentParty | None = None
     date: dt.date | None = None
     uuid: str | None = None
+
+    def __post_init__(self) -> None:
+        """Require a DocumentType member or None without coercing strings."""
+        if self.document_type_id is not None and not isinstance(
+            self.document_type_id, DocumentType
+        ):
+            raise TypeError("document_type_id must be a DocumentType or None.")
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -133,11 +147,11 @@ class DocumentNote:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class DocumentInfo:
-    """One Documento, including nested notes, events, states and references."""
+    """One Documento with reason enums for notes and raw codes for other types."""
 
-    document_code: str | None = None
+    document_code: CreditNoteReason | DebitNoteReason | str | None = None
     description: str | None = None
-    document_type_id: str | None = None
+    document_type_id: DocumentType | None = None
     document_type_name: str | None = None
     uuid: str | None = None
     issuer: DocumentParty | None = None
@@ -151,6 +165,27 @@ class DocumentInfo:
     notes: tuple[DocumentNote | None, ...] = ()
     validations: tuple[DocumentValidation | None, ...] = ()
 
+    def __post_init__(self) -> None:
+        """Require the document type and its matching note reason without coercion."""
+        if self.document_type_id is not None and not isinstance(
+            self.document_type_id, DocumentType
+        ):
+            raise TypeError("document_type_id must be a DocumentType or None.")
+        if self.document_code is None:
+            return
+        if self.document_type_id is DocumentType.CREDIT_NOTE:
+            if not isinstance(self.document_code, CreditNoteReason):
+                raise TypeError("document_code must be a CreditNoteReason or None.")
+        elif self.document_type_id is DocumentType.DEBIT_NOTE:
+            if not isinstance(self.document_code, DebitNoteReason):
+                raise TypeError("document_code must be a DebitNoteReason or None.")
+        elif not isinstance(self.document_code, str) or isinstance(
+            self.document_code, (CreditNoteReason, DebitNoteReason)
+        ):
+            raise TypeError(
+                "document_code must be text or None for this document type."
+            )
+
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class DocumentInfoResult:
@@ -158,9 +193,17 @@ class DocumentInfoResult:
 
     compressed_document_info preserves whitespace and empty strings, is omitted
     from repr and is never used as an implicit replacement for documents.
+    status_code maps SOAP StatusCode to HTTPStatus, independently of transport.
     """
 
-    status_code: str | None = None
+    status_code: HTTPStatus | None = None
     status_description: str | None = None
     documents: tuple[DocumentInfo | None, ...] = ()
     compressed_document_info: str | None = field(default=None, repr=False)
+
+    def __post_init__(self) -> None:
+        """Require an HTTPStatus member or None without coercing other values."""
+        if self.status_code is not None and not isinstance(
+            self.status_code, HTTPStatus
+        ):
+            raise TypeError("status_code must be an HTTPStatus or None.")

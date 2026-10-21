@@ -47,5 +47,12 @@ from radiankore.models.responses import (
 from radiankore.catalogs import EventType, IdentificationType
 ```
 
+`DocumentInfoResult.documents` conserva todos los documentos en una tupla,
+incluidos orden, repeticiones y entradas nulas.
+`DocumentInfo.document_type_id` y `DocumentReference.document_type_id` usan
+`DocumentType`, importado desde `radiankore.catalogs`.
+`DocumentInfo.document_code` usa `CreditNoteReason` para notas crédito,
+`DebitNoteReason` para débito y texto para otros documentos, además de `None`.
+
 Los enums, sus etiquetas y las reglas para códigos desconocidos se describen en
 [catálogos](catalogs.md). `_soap` y los nombres privados son detalles internos.

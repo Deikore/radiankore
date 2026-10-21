@@ -2,6 +2,7 @@
 
 import base64
 import binascii
+from http import HTTPStatus
 
 from lxml import etree
 
@@ -57,6 +58,23 @@ def element_text(parent: etree._Element, path: str) -> str | None:
 def is_nil(node: etree._Element) -> bool:
     """Return whether an element explicitly declares an XML Schema nil value."""
     return node.get(f"{{{XSI}}}nil") in {"true", "1"}
+
+
+def read_http_status(
+    parent: etree._Element, namespace: str, name: str
+) -> HTTPStatus | None:
+    """Map optional SOAP text to HTTPStatus independently of HTTP transport."""
+    value = element_text(parent, f"{{{namespace}}}{name}")
+    if value is None:
+        return None
+    try:
+        if len(value) != 3 or not value.isascii() or not value.isdecimal():
+            raise ValueError("HTTP status must contain three ASCII digits.")
+        return HTTPStatus(int(value))
+    except ValueError as exc:
+        raise DianResponseError(
+            f"Invalid HTTP status {name} in DIAN response."
+        ) from exc
 
 
 def soap_result(data: bytes, operation: str) -> etree._Element | None:

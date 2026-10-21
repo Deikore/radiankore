@@ -132,7 +132,9 @@ class DianClient:
 
         The identifier must be a nonempty string after stripping outer whitespace.
         No UUID or hexadecimal format is imposed. Missing or nil operation results
-        return None; business statuses are returned without interpretation.
+        return None. SOAP StatusCode maps to HTTPStatus; unknown or invalid codes
+        raise DianResponseError independently of HTTP transport failures.
+        All Documento entries are preserved in XML order, including nil entries.
         """
         if not isinstance(uuid, str):
             raise TypeError("uuid must be a string.")
