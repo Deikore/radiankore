@@ -2,6 +2,10 @@
 __pycache__/
 *.py[cod]
 .venv/
+/venv/
+/env/
+.tox/
+.nox/
 .uv-cache/
 *.egg-info/
 build/
@@ -9,6 +13,8 @@ dist/
 
 # Quality reports and caches
 .pytest_cache/
+.hypothesis/
+.cache/
 .mypy_cache/
 .ruff_cache/
 .coverage
@@ -24,6 +30,10 @@ htmlcov/
 *.pfx
 *.pem
 *.key
+/.pypirc
+/.netrc
+/.git-credentials
+/.ssh/
 
 # Editor and environment metadata
 .idea/
@@ -32,6 +42,7 @@ htmlcov/
 .agents/
 .codex/
 .aws/
+/skills/
 
 # Generated documentation
 docs/_build/

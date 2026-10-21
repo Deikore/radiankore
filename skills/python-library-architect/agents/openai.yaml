@@ -1,4 +1,0 @@
-interface:
-  display_name: "Python Library Architect"
-  short_description: "Arquitectura y revisión de librerías Python"
-  default_prompt: "Usa $python-library-architect para revisar esta librería y recomendar cambios de arquitectura compatibles con sus requisitos."
