@@ -1,0 +1,2 @@
+# Preserve original DIAN reference files, including their line endings and hashes.
+docs/references/** -text

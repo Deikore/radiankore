@@ -1,0 +1,4 @@
+# Build-only documentation dependencies; runtime dependencies stay unchanged.
+Sphinx==8.2.3
+myst-parser==4.0.1
+furo==2025.7.19

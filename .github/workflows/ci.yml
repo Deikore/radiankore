@@ -1,0 +1,158 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Lint, format, and types
+    runs-on: ubuntu-latest
+    env:
+      UV_NO_BINARY_PACKAGE: "lxml xmlsec"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install XML signing build dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config libxml2-dev libxslt1-dev libxmlsec1-dev libxmlsec1-openssl
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.9.29"
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
+      - run: uv sync --locked --python 3.13
+      - run: uv run --no-sync ruff check .
+      - run: uv run --no-sync ruff format --check .
+      - run: uv run --no-sync mypy
+
+  tests:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    env:
+      UV_NO_BINARY_PACKAGE: "lxml xmlsec"
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.13", "3.14", "3.15"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install XML signing build dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config libxml2-dev libxslt1-dev libxmlsec1-dev libxmlsec1-openssl
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.9.29"
+          enable-cache: true
+          cache-dependency-glob: |
+            pyproject.toml
+            uv.lock
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
+      - run: uv sync --locked --python "${{ matrix.python-version }}"
+      - run: uv run --no-sync --python "${{ matrix.python-version }}" pytest --cov --cov-report=term-missing --cov-report=xml
+
+  docs:
+    name: Build documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.9.29"
+      - run: uv python install 3.13
+      - run: uv run --no-project --with-requirements docs/requirements.txt sphinx-build -W --keep-going -b html docs docs/_build/html
+
+  build:
+    name: Build and inspect distributions
+    runs-on: ubuntu-latest
+    env:
+      UV_NO_BINARY_PACKAGE: "lxml xmlsec"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install XML signing build dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config libxml2-dev libxslt1-dev libxmlsec1-dev libxmlsec1-openssl
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.9.29"
+      - run: uv python install 3.13
+      - run: uv build --python 3.13
+      - run: uvx --python 3.13 twine check dist/*
+      - name: Install wheel in an isolated environment
+        run: |
+          uv venv --python 3.13 /tmp/radiankore-wheel
+          UV_PROJECT_ENVIRONMENT=/tmp/radiankore-wheel uv sync --locked --no-install-project --python 3.13
+          uv pip install --python /tmp/radiankore-wheel/bin/python --no-deps dist/*.whl
+          cd /tmp
+          /tmp/radiankore-wheel/bin/python -I - <<'PY'
+          from importlib.resources import files
+
+          from radiankore import DianClient, DigitalCertificate, DigitalCertificateError
+          from radiankore import Environment
+          from radiankore.catalogs import EventType, IdentificationType
+          from radiankore.models.responses import AcquirerResult, EventParty, InvoiceEvent, InvoiceEventsResult
+
+          assert callable(DianClient)
+          from decimal import Decimal
+          from radiankore.models.responses import DocumentInfoResult, DocumentTotals
+
+          from radiankore.models.responses import ReferenceNotesResult
+          from radiankore.models.responses import NoteDocumentReference, NoteLineResponse, NoteResponse, ReferenceNote
+
+          from datetime import date
+          from radiankore.models.responses import XmlDocumentResult
+
+          assert callable(DianClient.get_xml_by_document_key)
+          xml_result = XmlDocumentResult(document_xml=b"<document/>", validation_date=date(2026, 10, 20))
+          assert xml_result.document_xml == b"<document/>"
+          assert "<document" not in repr(xml_result)
+          from radiankore.models.responses import DocumentStatusResult
+
+          assert callable(DianClient.get_status)
+          status = DocumentStatusResult(is_valid=False, xml_base64_bytes=b"validation", xml_bytes=b"other")
+          assert status.is_valid is False and status.xml_base64_bytes == b"validation"
+          assert "xml_base64_bytes=" not in repr(status)
+          assert DocumentStatusResult().messages == ()
+          assert callable(DianClient.get_reference_notes)
+          assert ReferenceNotesResult().is_valid is None
+          note = ReferenceNote(code="91", references=(NoteDocumentReference(id="001"),), line_responses=(NoteLineResponse(line_id="1", responses=(NoteResponse(code="2"),)),))
+          assert ReferenceNotesResult(notes=(note,)).notes[0].references[0].id == "001"
+          assert note.line_responses[0].responses[0].code == "2"
+          notes = ReferenceNotesResult(xml_base64_bytes=b"first", xml_bytes=b"second")
+          assert notes.xml_base64_bytes != notes.xml_bytes
+          assert "first" not in repr(notes)
+          assert callable(DianClient.get_document_info)
+          assert DocumentInfoResult().documents == ()
+          assert DocumentTotals(total=Decimal("1.01")).total == Decimal("1.01")
+          assert callable(DianClient.get_acquirer)
+          assert AcquirerResult().name is None
+          assert IdentificationType("48") is IdentificationType.PPT
+          assert callable(DigitalCertificate.from_pfx)
+          assert issubclass(DigitalCertificateError, ValueError)
+          assert Environment.PRODUCTION.value == "production"
+          assert InvoiceEventsResult(is_valid=False, status_code="90").events == ()
+          assert IdentificationType("31") is IdentificationType.NIT
+          party = EventParty(identification_type=IdentificationType.NIT)
+          assert party.identification_type is IdentificationType.NIT
+          event = InvoiceEvent(id="EVENT-1", code=EventType.EXPRESS_ACCEPTANCE)
+          event_type = event.code
+          assert event_type is EventType.EXPRESS_ACCEPTANCE
+          assert event_type.label == "Aceptación expresa"
+          assert EventType.from_code("FUTURE") is None
+          assert files("radiankore").joinpath("py.typed").is_file(), "Missing py.typed in installed wheel"
+          PY
+          /tmp/radiankore-wheel/bin/python -I -m pytest "$GITHUB_WORKSPACE/tests"
+      - name: Upload validated distributions
+        uses: actions/upload-artifact@v4
+        with:
+          name: radiankore-dist
+          path: |
+            dist/*.whl
+            dist/*.tar.gz
+          if-no-files-found: error

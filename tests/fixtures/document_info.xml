@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wcf:GetDocumentInfoResponse
+  xmlns:wcf="http://wcf.dian.colombia"
+  xmlns:r="http://schemas.datacontract.org/2004/07/DocumentInfoResponse"
+  xmlns:d="http://schemas.datacontract.org/2004/07/Documento"
+  xmlns:p="http://schemas.datacontract.org/2004/07/Entidad"
+  xmlns:n="http://schemas.datacontract.org/2004/07/NumeroDocumento"
+  xmlns:h="http://schemas.datacontract.org/2004/07/LegitimoTenedor"
+  xmlns:t="http://schemas.datacontract.org/2004/07/TotalEImpuestos"
+  xmlns:v="http://schemas.datacontract.org/2004/07/ValidacionDoc"
+  xmlns:c="http://schemas.datacontract.org/2004/07/ConceptoCorreccion"
+  xmlns:f="http://schemas.datacontract.org/2004/07/ReferenciaDocumento"
+  xmlns:e="http://schemas.datacontract.org/2004/07/Evento"
+  xmlns:o="http://schemas.datacontract.org/2004/07/Nota"
+  xmlns:a="http://schemas.microsoft.com/2003/10/Serialization/Arrays"
+  xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+  <wcf:GetDocumentInfoResult>
+    <r:CompressedDocumentInfo><![CDATA[
+ OPAQUE-PAYLOAD <not-xml> & not-assumed-base64 
+]]></r:CompressedDocumentInfo>
+    <r:DocumentInfo>
+      <d:Documento>
+        <d:DocumentCode>FUTURE-DOC-CODE</d:DocumentCode>
+        <d:DocumentDescription> Synthetic document </d:DocumentDescription>
+        <d:DocumentTags>
+          <o:Nota>
+            <o:ConceptoCorreccion>
+              <c:Codigo>UNKNOWN-CORRECTION</c:Codigo>
+              <c:Descripcion>Correction description</c:Descripcion>
+              <c:Nombre>Correction name</c:Nombre>
+            </o:ConceptoCorreccion>
+            <o:Emisor><p:Nombre>Note issuer</p:Nombre><p:NumeroDoc>000NOTE</p:NumeroDoc><p:Procedencia>Note origin</p:Procedencia><p:TipoDoc>31</p:TipoDoc></o:Emisor>
+            <o:LegitimoTenedor><h:FechaInscripcionComoTituloValor>2026-02-06</h:FechaInscripcionComoTituloValor><h:Nombre>Note holder</h:Nombre></o:LegitimoTenedor>
+            <o:NombreTipoDocumento>Credit note</o:NombreTipoDocumento>
+            <o:NumeroDocumento><n:FechaEmision>2026-02-04</n:FechaEmision><n:FechaFirma>2026-02-05</n:FechaFirma><n:Folio>0002</n:Folio><n:Serie>NC</n:Serie></o:NumeroDocumento>
+            <o:Receptor><p:Nombre>Note recipient</p:Nombre><p:NumeroDoc>000NOTE-R</p:NumeroDoc><p:Procedencia>Note recipient origin</p:Procedencia><p:TipoDoc>13</p:TipoDoc></o:Receptor>
+            <o:TotalEImpuestos><t:Iva>1.9E1</t:Iva><t:Total>1E3</t:Total></o:TotalEImpuestos>
+            <o:UUID>NOTE-UUID</o:UUID>
+            <o:ValidacionesDoc><v:ValidacionDoc><v:IsNotification>1</v:IsNotification><v:IsValida>0</v:IsValida><v:MensajeError>Note message</v:MensajeError><v:Nombre>Note rule</v:Nombre><v:Status>FUTURE-NOTE-STATUS</v:Status></v:ValidacionDoc></o:ValidacionesDoc>
+          </o:Nota>
+          <o:Nota i:nil="true"/>
+        </d:DocumentTags>
+        <d:DocumentTypeId>FUTURE-DOC-TYPE</d:DocumentTypeId>
+        <d:DocumentTypeName>Invoice</d:DocumentTypeName>
+        <d:Emisor><p:Nombre>Document issuer</p:Nombre><p:NumeroDoc>000123</p:NumeroDoc><p:Procedencia>Document origin</p:Procedencia><p:TipoDoc>31</p:TipoDoc></d:Emisor>
+        <d:Estado>
+          <a:KeyValueOfintstring><a:Key>2</a:Key><a:Value>First state</a:Value></a:KeyValueOfintstring>
+          <a:KeyValueOfintstring><a:Key>2</a:Key><a:Value i:nil="true"/></a:KeyValueOfintstring>
+          <a:KeyValueOfintstring><a:Key>-1</a:Key><a:Value>Other state</a:Value></a:KeyValueOfintstring>
+        </d:Estado>
+        <d:Eventos>
+          <e:Evento>
+            <e:Codigo>033</e:Codigo><e:Descripcion>Event XML description</e:Descripcion>
+            <e:Emisor><p:Nombre>Event issuer</p:Nombre><p:NumeroDoc>000EVENT</p:NumeroDoc><p:Procedencia>Event origin</p:Procedencia><p:TipoDoc>31</p:TipoDoc></e:Emisor>
+            <e:NumeroDocumento><n:FechaEmision>2026-01-20</n:FechaEmision><n:FechaFirma>2026-01-21</n:FechaFirma><n:Folio>0003</n:Folio><n:Serie>EV</n:Serie></e:NumeroDocumento>
+            <e:Receptor><p:Nombre>Event recipient</p:Nombre><p:NumeroDoc>000EVENT-R</p:NumeroDoc><p:Procedencia>Event recipient origin</p:Procedencia><p:TipoDoc>48</p:TipoDoc></e:Receptor>
+            <e:ReferenciasDocumento><f:ReferenciaDocumento><f:Descripcion>Event reference</f:Descripcion><f:Fecha>2026-01-19</f:Fecha><f:UUID>EVENT-REF</f:UUID></f:ReferenciaDocumento><f:ReferenciaDocumento i:nil="true"/></e:ReferenciasDocumento>
+            <e:UUID>EVENT-UUID</e:UUID>
+            <e:ValidacionesDoc><v:ValidacionDoc><v:IsNotification>false</v:IsNotification><v:IsValida>true</v:IsValida><v:Nombre>Event rule</v:Nombre><v:Status>EVENT-STATUS</v:Status></v:ValidacionDoc></e:ValidacionesDoc>
+          </e:Evento>
+          <e:Evento i:nil="true"/>
+          <e:Evento><e:Codigo>030</e:Codigo><e:UUID>EARLIER-EVENT-CODE</e:UUID></e:Evento>
+        </d:Eventos>
+        <d:LegitimoTenedor><h:FechaInscripcionComoTituloValor>2026-01-15</h:FechaInscripcionComoTituloValor><h:Nombre>Document holder</h:Nombre></d:LegitimoTenedor>
+        <d:NumeroDocumento><n:FechaEmision>2026-01-15</n:FechaEmision><n:FechaFirma>2026-01-16</n:FechaFirma><n:Folio>0001</n:Folio><n:Serie>FV</n:Serie></d:NumeroDocumento>
+        <d:Receptor><p:Nombre>Document recipient</p:Nombre><p:NumeroDoc>000456</p:NumeroDoc><p:Procedencia>Recipient origin</p:Procedencia><p:TipoDoc>13</p:TipoDoc></d:Receptor>
+        <d:Referencias>
+          <f:ReferenciaDocumento>
+            <f:Descripcion>Document reference</f:Descripcion><f:DocumentTypeId>REF-TYPE</f:DocumentTypeId><f:DocumentTypeName>Reference type</f:DocumentTypeName>
+            <f:Emisor><p:Nombre>Reference issuer</p:Nombre><p:NumeroDoc>000REF</p:NumeroDoc><p:Procedencia>Reference origin</p:Procedencia><p:TipoDoc>31</p:TipoDoc></f:Emisor>
+            <f:Fecha>2026-01-10</f:Fecha>
+            <f:Receptor><p:Nombre>Reference recipient</p:Nombre><p:NumeroDoc>000REF-R</p:NumeroDoc><p:Procedencia>Reference recipient origin</p:Procedencia><p:TipoDoc>13</p:TipoDoc></f:Receptor>
+            <f:UUID>REFERENCE-UUID</f:UUID>
+          </f:ReferenciaDocumento>
+          <f:ReferenciaDocumento i:nil="1"/>
+        </d:Referencias>
+        <d:TotalEImpuestos><t:Iva>19.000000000000000001</t:Iva><t:Total>100.000000000000000001</t:Total></d:TotalEImpuestos>
+        <d:UUID>DOCUMENT-UUID</d:UUID>
+        <d:ValidacionesDoc>
+          <v:ValidacionDoc><v:IsNotification>false</v:IsNotification><v:IsValida>true</v:IsValida><v:MensajeError>Document message</v:MensajeError><v:Nombre>Document rule</v:Nombre><v:Status>FUTURE-VALIDATION-STATUS</v:Status></v:ValidacionDoc>
+          <v:ValidacionDoc i:nil="true"/>
+        </d:ValidacionesDoc>
+      </d:Documento>
+      <d:Documento i:nil="true"/>
+      <d:Documento><d:UUID>SECOND-DOCUMENT</d:UUID></d:Documento>
+    </r:DocumentInfo>
+    <r:StatusCode>FUTURE-STATUS</r:StatusCode>
+    <r:StatusDescription> Synthetic status </r:StatusDescription>
+  </wcf:GetDocumentInfoResult>
+</wcf:GetDocumentInfoResponse>

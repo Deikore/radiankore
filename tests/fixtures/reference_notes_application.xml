@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ApplicationResponse xmlns="urn:oasis:names:specification:ubl:schema:xsd:ApplicationResponse-2"
+ xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+ xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+  <cbc:ID>CONTAINER-ID</cbc:ID><cbc:UUID>CONTAINER-UUID</cbc:UUID>
+  <cbc:IssueDate>2020-01-01</cbc:IssueDate><cbc:IssueTime>01:00:00Z</cbc:IssueTime>
+  <cac:DocumentResponse>
+    <cac:Response>
+      <cbc:ReferenceID>10</cbc:ReferenceID><cbc:ResponseCode>91</cbc:ResponseCode>
+      <cbc:Description> Nota de crédito electrónica </cbc:Description>
+      <cbc:Description>Second description</cbc:Description><cbc:Description> </cbc:Description>
+      <cbc:EffectiveDate>2026-10-19</cbc:EffectiveDate><cbc:EffectiveTime>10:17:18-05:00</cbc:EffectiveTime>
+    </cac:Response>
+    <cac:DocumentReference><cbc:ID>NC-001</cbc:ID><cbc:UUID>NOTE-UUID-1</cbc:UUID></cac:DocumentReference>
+    <cac:DocumentReference><cbc:ID>00002</cbc:ID></cac:DocumentReference>
+    <cac:IssuerParty><cac:PartyTaxScheme>
+      <cbc:RegistrationName>Synthetic issuer</cbc:RegistrationName>
+      <cbc:CompanyID schemeID="4" schemeName="31">000123</cbc:CompanyID>
+    </cac:PartyTaxScheme></cac:IssuerParty>
+    <cac:RecipientParty><cac:PartyTaxScheme>
+      <cbc:RegistrationName>Synthetic recipient</cbc:RegistrationName>
+      <cbc:CompanyID schemeID="7" schemeName="13">000456</cbc:CompanyID>
+    </cac:PartyTaxScheme></cac:RecipientParty>
+    <cac:LineResponse>
+      <cac:LineReference><cbc:LineID>001</cbc:LineID></cac:LineReference>
+      <cac:Response><cbc:ResponseCode>2</cbc:ResponseCode><cbc:Description>Anulación de factura electrónica</cbc:Description></cac:Response>
+      <cac:Response><cbc:ReferenceID>LINE-REF</cbc:ReferenceID><cbc:ResponseCode>FUTURE-REASON</cbc:ResponseCode><cbc:Description>Other reason</cbc:Description><cbc:EffectiveDate>2026-10-20</cbc:EffectiveDate><cbc:EffectiveTime>02:30:00Z</cbc:EffectiveTime></cac:Response>
+    </cac:LineResponse>
+    <cac:LineResponse>
+      <cac:LineReference><cbc:LineID>002</cbc:LineID></cac:LineReference>
+      <cac:Response/>
+    </cac:LineResponse>
+  </cac:DocumentResponse>
+  <cac:DocumentResponse>
+    <cac:Response><cbc:ReferenceID>2</cbc:ReferenceID><cbc:ResponseCode>FUTURE-NOTE</cbc:ResponseCode></cac:Response>
+    <cac:DocumentReference><cbc:ID>NC-002</cbc:ID><cbc:UUID>NOTE-UUID-2</cbc:UUID></cac:DocumentReference>
+  </cac:DocumentResponse>
+</ApplicationResponse>

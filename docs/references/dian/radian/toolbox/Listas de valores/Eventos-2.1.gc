@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- DIAN Genericode listas de valores: Ultima modificación 03-04-2022 - wcbr-->
+<gc:CodeList xmlns:gc="http://docs.oasis-open.org/codelist/ns/genericode/1.0/">
+	<Identification>
+		<ShortName>Eventos</ShortName>
+		<LongName xml:lang="es">Eventos del RADIAN</LongName>
+		<Version>1</Version>
+		<CanonicalUri>urn:dian:names:especificacion:ubl:listacodigos:gc:Eventos</CanonicalUri>
+		<CanonicalVersionUri>urn:dian:names:especificacion:ubl:listacodigos:gc:Eventos-2.1</CanonicalVersionUri>
+		<LocationUri>http://dian.gov.co/ubl/os-ubl-2.0/cl/gc/default/Eventos-2.1.gc</LocationUri>
+		<Agency>
+			<LongName xml:lang="es">DIAN (Dirección de Impuestos y Aduanas Nacionales)</LongName>
+			<Identifier>195</Identifier>
+		</Agency>
+	</Identification>
+	<ColumnSet>
+		<Column Id="code" Use="required">
+			<ShortName>Code</ShortName>
+			<LongName xml:lang="es">Codigo Comun</LongName>
+			<Data Type="normalizedString"/>
+		</Column>
+		<Column Id="name" Use="required">
+			<ShortName>Name</ShortName>
+			<LongName xml:lang="es">Nombre</LongName>
+			<Data Type="string"/>
+		</Column>
+		<Column Id="name" Use="required">
+			<ShortName>Description</ShortName>
+			<LongName xml:lang="es">Descripción</LongName>
+			<Data Type="string"/>
+		</Column>		
+		<Key Id="codeKey">
+			<ShortName>CodeKey</ShortName>
+			<ColumnRef Ref="code"/>
+		</Key>
+	</ColumnSet>
+	<SimpleCodeList>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>035</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Aval </SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>Avalista</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>036</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Inscripción de la factura electrónica de venta como título valor - RADIAN</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>Emisor</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>037</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Endoso en propiedad</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>Emisor/legítimo tenedor</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>038</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Endoso en garantía</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>Emisor/legítimo tenedor</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>039</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Endoso en procuración</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>Emisor/legítimo tenedor</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>040</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Cancelación de endoso</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>Emisor/legítimo tenedor</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>041</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Limitaciones a la circulación de la factura electrónica de venta como título</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>Autoridad judicial o administrativa</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>042</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Terminación de las limitaciones a la circulación de la factura electrónica de venta como título</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>Autoridad judicial o administrativa</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>043</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Mandato</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>Emisor/Tenedor Legítimo o adquirente</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>044</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Terminación del mandato</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>Emisor/Tenedor Legítimo o adquirente</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>045</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Pago de la factura electrónica de venta como título valor</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>Emisor/Tenedor Legítimo o adquirente</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>046</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Informe para el pago</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>Legitimo tenedor</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>047</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Endoso con efectos de cesión ordinaria</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>Emisor/Legítimo tenedor</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>048</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Protesto</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>Emisor/Legítimo tenedor</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>049</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Transferencia de los derechos económicos</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>Enajenante/Cedente o endosante</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>050</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Notificación al deudor sobre la transferencia de los derechos económicos</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>Enajenante/Cedente o endosante</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>051</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Pago de la transferencia de los derechos económicos</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>Adquiriente/deudor/aceptante</SimpleValue>
+			</Value>
+		</Row>
+	</SimpleCodeList>
+</gc:CodeList>

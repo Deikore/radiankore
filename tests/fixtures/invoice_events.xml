@@ -1,0 +1,286 @@
+<?xml version='1.0' encoding='utf-8'?>
+<ApplicationResponse xmlns="urn:oasis:names:specification:ubl:schema:xsd:ApplicationResponse-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+  <cbc:ID>RESPONSE-0001</cbc:ID>
+  <cbc:UUID>SYNTHETIC-RESPONSE-UUID</cbc:UUID>
+  <cbc:IssueDate>2020-02-03</cbc:IssueDate>
+  <cbc:IssueTime>08:15:00+00:00</cbc:IssueTime>
+  <cac:DocumentResponse>
+    <cac:Response>
+      <cbc:ReferenceID>1</cbc:ReferenceID>
+      <cbc:ResponseCode>030</cbc:ResponseCode>
+      <cbc:Description>Synthetic event</cbc:Description>
+      <cbc:Description>Additional description</cbc:Description>
+      <cbc:EffectiveDate>2026-01-15</cbc:EffectiveDate>
+      <cbc:EffectiveTime>10:30:00-05:00</cbc:EffectiveTime>
+    </cac:Response>
+    <cac:DocumentReference>
+      <cbc:ID>EVENT-0001</cbc:ID>
+      <cbc:UUID>SYNTHETIC-EVENT-UUID-1</cbc:UUID>
+    </cac:DocumentReference>
+    <cac:IssuerParty>
+      <cac:PartyTaxScheme>
+        <cbc:RegistrationName>Synthetic IssuerParty</cbc:RegistrationName>
+        <cbc:CompanyID schemeID="0" schemeName="31">000123456</cbc:CompanyID>
+      </cac:PartyTaxScheme>
+    </cac:IssuerParty>
+    <cac:RecipientParty>
+      <cac:PartyTaxScheme>
+        <cbc:RegistrationName>Synthetic RecipientParty</cbc:RegistrationName>
+        <cbc:CompanyID schemeID="7" schemeName="13">000987654</cbc:CompanyID>
+      </cac:PartyTaxScheme>
+    </cac:RecipientParty>
+    <cac:LineResponse>
+      <cac:Response>
+        <cbc:ResponseCode>NOT-AN-EVENT</cbc:ResponseCode>
+      </cac:Response>
+    </cac:LineResponse>
+  </cac:DocumentResponse>
+  <cac:DocumentResponse>
+    <cac:Response>
+      <cbc:ReferenceID>2</cbc:ReferenceID>
+      <cbc:ResponseCode>032</cbc:ResponseCode>
+      <cbc:Description>Synthetic event</cbc:Description>
+      <cbc:Description>Additional description</cbc:Description>
+      <cbc:EffectiveDate>2026-01-15</cbc:EffectiveDate>
+      <cbc:EffectiveTime>10:30:00-05:00</cbc:EffectiveTime>
+    </cac:Response>
+    <cac:DocumentReference>
+      <cbc:ID>EVENT-0002</cbc:ID>
+      <cbc:UUID>SYNTHETIC-EVENT-UUID-2</cbc:UUID>
+    </cac:DocumentReference>
+    <cac:IssuerParty>
+      <cac:PartyTaxScheme>
+        <cbc:RegistrationName>Synthetic IssuerParty</cbc:RegistrationName>
+        <cbc:CompanyID schemeID="0" schemeName="31">000123456</cbc:CompanyID>
+      </cac:PartyTaxScheme>
+    </cac:IssuerParty>
+    <cac:RecipientParty>
+      <cac:PartyTaxScheme>
+        <cbc:RegistrationName>Synthetic RecipientParty</cbc:RegistrationName>
+        <cbc:CompanyID schemeID="7" schemeName="13">000987654</cbc:CompanyID>
+      </cac:PartyTaxScheme>
+    </cac:RecipientParty>
+    <cac:LineResponse>
+      <cac:Response>
+        <cbc:ResponseCode>NOT-AN-EVENT</cbc:ResponseCode>
+      </cac:Response>
+    </cac:LineResponse>
+  </cac:DocumentResponse>
+  <cac:DocumentResponse>
+    <cac:Response>
+      <cbc:ReferenceID>3</cbc:ReferenceID>
+      <cbc:ResponseCode>033</cbc:ResponseCode>
+      <cbc:Description>Synthetic event</cbc:Description>
+      <cbc:Description>Additional description</cbc:Description>
+      <cbc:EffectiveDate>2026-01-15</cbc:EffectiveDate>
+      <cbc:EffectiveTime>10:30:00-05:00</cbc:EffectiveTime>
+    </cac:Response>
+    <cac:DocumentReference>
+      <cbc:ID>EVENT-0003</cbc:ID>
+      <cbc:UUID>SYNTHETIC-EVENT-UUID-3</cbc:UUID>
+    </cac:DocumentReference>
+    <cac:IssuerParty>
+      <cac:PartyTaxScheme>
+        <cbc:RegistrationName>Synthetic IssuerParty</cbc:RegistrationName>
+        <cbc:CompanyID schemeID="0" schemeName="31">000123456</cbc:CompanyID>
+      </cac:PartyTaxScheme>
+    </cac:IssuerParty>
+    <cac:RecipientParty>
+      <cac:PartyTaxScheme>
+        <cbc:RegistrationName>Synthetic RecipientParty</cbc:RegistrationName>
+        <cbc:CompanyID schemeID="7" schemeName="13">000987654</cbc:CompanyID>
+      </cac:PartyTaxScheme>
+    </cac:RecipientParty>
+    <cac:LineResponse>
+      <cac:Response>
+        <cbc:ResponseCode>NOT-AN-EVENT</cbc:ResponseCode>
+      </cac:Response>
+    </cac:LineResponse>
+  </cac:DocumentResponse>
+  <cac:DocumentResponse>
+    <cac:Response>
+      <cbc:ReferenceID>4</cbc:ReferenceID>
+      <cbc:ResponseCode>036</cbc:ResponseCode>
+      <cbc:Description>Synthetic event</cbc:Description>
+      <cbc:Description>Additional description</cbc:Description>
+      <cbc:EffectiveDate>2026-01-15</cbc:EffectiveDate>
+      <cbc:EffectiveTime>10:30:00-05:00</cbc:EffectiveTime>
+    </cac:Response>
+    <cac:DocumentReference>
+      <cbc:ID>EVENT-0004</cbc:ID>
+      <cbc:UUID>SYNTHETIC-EVENT-UUID-4</cbc:UUID>
+    </cac:DocumentReference>
+    <cac:IssuerParty>
+      <cac:PartyTaxScheme>
+        <cbc:RegistrationName>Synthetic IssuerParty</cbc:RegistrationName>
+        <cbc:CompanyID schemeID="0" schemeName="31">000123456</cbc:CompanyID>
+      </cac:PartyTaxScheme>
+    </cac:IssuerParty>
+    <cac:RecipientParty>
+      <cac:PartyTaxScheme>
+        <cbc:RegistrationName>Synthetic RecipientParty</cbc:RegistrationName>
+        <cbc:CompanyID schemeID="7" schemeName="13">000987654</cbc:CompanyID>
+      </cac:PartyTaxScheme>
+    </cac:RecipientParty>
+    <cac:LineResponse>
+      <cac:Response>
+        <cbc:ResponseCode>NOT-AN-EVENT</cbc:ResponseCode>
+      </cac:Response>
+    </cac:LineResponse>
+  </cac:DocumentResponse>
+  <cac:DocumentResponse>
+    <cac:Response>
+      <cbc:ReferenceID>5</cbc:ReferenceID>
+      <cbc:ResponseCode>037</cbc:ResponseCode>
+      <cbc:Description>Synthetic event</cbc:Description>
+      <cbc:Description>Additional description</cbc:Description>
+      <cbc:EffectiveDate>2026-01-15</cbc:EffectiveDate>
+      <cbc:EffectiveTime>10:30:00-05:00</cbc:EffectiveTime>
+    </cac:Response>
+    <cac:DocumentReference>
+      <cbc:ID>EVENT-0005</cbc:ID>
+      <cbc:UUID>SYNTHETIC-EVENT-UUID-5</cbc:UUID>
+    </cac:DocumentReference>
+    <cac:IssuerParty>
+      <cac:PartyTaxScheme>
+        <cbc:RegistrationName>Synthetic IssuerParty</cbc:RegistrationName>
+        <cbc:CompanyID schemeID="0" schemeName="31">000123456</cbc:CompanyID>
+      </cac:PartyTaxScheme>
+    </cac:IssuerParty>
+    <cac:RecipientParty>
+      <cac:PartyTaxScheme>
+        <cbc:RegistrationName>Synthetic RecipientParty</cbc:RegistrationName>
+        <cbc:CompanyID schemeID="7" schemeName="13">000987654</cbc:CompanyID>
+      </cac:PartyTaxScheme>
+    </cac:RecipientParty>
+    <cac:LineResponse>
+      <cac:Response>
+        <cbc:ResponseCode>NOT-AN-EVENT</cbc:ResponseCode>
+      </cac:Response>
+    </cac:LineResponse>
+  </cac:DocumentResponse>
+  <cac:DocumentResponse>
+    <cac:Response>
+      <cbc:ReferenceID>6</cbc:ReferenceID>
+      <cbc:ResponseCode>036</cbc:ResponseCode>
+      <cbc:Description>Synthetic event</cbc:Description>
+      <cbc:Description>Additional description</cbc:Description>
+      <cbc:EffectiveDate>2026-01-15</cbc:EffectiveDate>
+      <cbc:EffectiveTime>10:30:00-05:00</cbc:EffectiveTime>
+    </cac:Response>
+    <cac:DocumentReference>
+      <cbc:ID>EVENT-0006</cbc:ID>
+      <cbc:UUID>SYNTHETIC-EVENT-UUID-6</cbc:UUID>
+    </cac:DocumentReference>
+    <cac:IssuerParty>
+      <cac:PartyTaxScheme>
+        <cbc:RegistrationName>Synthetic IssuerParty</cbc:RegistrationName>
+        <cbc:CompanyID schemeID="0" schemeName="31">000123456</cbc:CompanyID>
+      </cac:PartyTaxScheme>
+    </cac:IssuerParty>
+    <cac:RecipientParty>
+      <cac:PartyTaxScheme>
+        <cbc:RegistrationName>Synthetic RecipientParty</cbc:RegistrationName>
+        <cbc:CompanyID schemeID="7" schemeName="13">000987654</cbc:CompanyID>
+      </cac:PartyTaxScheme>
+    </cac:RecipientParty>
+    <cac:LineResponse>
+      <cac:Response>
+        <cbc:ResponseCode>NOT-AN-EVENT</cbc:ResponseCode>
+      </cac:Response>
+    </cac:LineResponse>
+  </cac:DocumentResponse>
+  <cac:DocumentResponse>
+    <cac:Response>
+      <cbc:ReferenceID>7</cbc:ReferenceID>
+      <cbc:ResponseCode>037</cbc:ResponseCode>
+      <cbc:Description>Synthetic event</cbc:Description>
+      <cbc:Description>Additional description</cbc:Description>
+      <cbc:EffectiveDate>2026-01-15</cbc:EffectiveDate>
+      <cbc:EffectiveTime>10:30:00-05:00</cbc:EffectiveTime>
+    </cac:Response>
+    <cac:DocumentReference>
+      <cbc:ID>EVENT-0007</cbc:ID>
+      <cbc:UUID>SYNTHETIC-EVENT-UUID-7</cbc:UUID>
+    </cac:DocumentReference>
+    <cac:IssuerParty>
+      <cac:PartyTaxScheme>
+        <cbc:RegistrationName>Synthetic IssuerParty</cbc:RegistrationName>
+        <cbc:CompanyID schemeID="0" schemeName="31">000123456</cbc:CompanyID>
+      </cac:PartyTaxScheme>
+    </cac:IssuerParty>
+    <cac:RecipientParty>
+      <cac:PartyTaxScheme>
+        <cbc:RegistrationName>Synthetic RecipientParty</cbc:RegistrationName>
+        <cbc:CompanyID schemeID="7" schemeName="13">000987654</cbc:CompanyID>
+      </cac:PartyTaxScheme>
+    </cac:RecipientParty>
+    <cac:LineResponse>
+      <cac:Response>
+        <cbc:ResponseCode>NOT-AN-EVENT</cbc:ResponseCode>
+      </cac:Response>
+    </cac:LineResponse>
+  </cac:DocumentResponse>
+  <cac:DocumentResponse>
+    <cac:Response>
+      <cbc:ReferenceID>8</cbc:ReferenceID>
+      <cbc:ResponseCode>036</cbc:ResponseCode>
+      <cbc:Description>Synthetic event</cbc:Description>
+      <cbc:Description>Additional description</cbc:Description>
+      <cbc:EffectiveDate>2026-01-15</cbc:EffectiveDate>
+      <cbc:EffectiveTime>10:30:00-05:00</cbc:EffectiveTime>
+    </cac:Response>
+    <cac:DocumentReference>
+      <cbc:ID>EVENT-0008</cbc:ID>
+      <cbc:UUID>SYNTHETIC-EVENT-UUID-8</cbc:UUID>
+    </cac:DocumentReference>
+    <cac:IssuerParty>
+      <cac:PartyTaxScheme>
+        <cbc:RegistrationName>Synthetic IssuerParty</cbc:RegistrationName>
+        <cbc:CompanyID schemeID="0" schemeName="31">000123456</cbc:CompanyID>
+      </cac:PartyTaxScheme>
+    </cac:IssuerParty>
+    <cac:RecipientParty>
+      <cac:PartyTaxScheme>
+        <cbc:RegistrationName>Synthetic RecipientParty</cbc:RegistrationName>
+        <cbc:CompanyID schemeID="7" schemeName="13">000987654</cbc:CompanyID>
+      </cac:PartyTaxScheme>
+    </cac:RecipientParty>
+    <cac:LineResponse>
+      <cac:Response>
+        <cbc:ResponseCode>NOT-AN-EVENT</cbc:ResponseCode>
+      </cac:Response>
+    </cac:LineResponse>
+  </cac:DocumentResponse>
+  <cac:DocumentResponse>
+    <cac:Response>
+      <cbc:ReferenceID>9</cbc:ReferenceID>
+      <cbc:ResponseCode>037</cbc:ResponseCode>
+      <cbc:Description>Synthetic event</cbc:Description>
+      <cbc:Description>Additional description</cbc:Description>
+      <cbc:EffectiveDate>2026-01-15</cbc:EffectiveDate>
+      <cbc:EffectiveTime>10:30:00-05:00</cbc:EffectiveTime>
+    </cac:Response>
+    <cac:DocumentReference>
+      <cbc:ID>EVENT-0009</cbc:ID>
+      <cbc:UUID>SYNTHETIC-EVENT-UUID-9</cbc:UUID>
+    </cac:DocumentReference>
+    <cac:IssuerParty>
+      <cac:PartyTaxScheme>
+        <cbc:RegistrationName>Synthetic IssuerParty</cbc:RegistrationName>
+        <cbc:CompanyID schemeID="0" schemeName="31">000123456</cbc:CompanyID>
+      </cac:PartyTaxScheme>
+    </cac:IssuerParty>
+    <cac:RecipientParty>
+      <cac:PartyTaxScheme>
+        <cbc:RegistrationName>Synthetic RecipientParty</cbc:RegistrationName>
+        <cbc:CompanyID schemeID="7" schemeName="13">000987654</cbc:CompanyID>
+      </cac:PartyTaxScheme>
+    </cac:RecipientParty>
+    <cac:LineResponse>
+      <cac:Response>
+        <cbc:ResponseCode>NOT-AN-EVENT</cbc:ResponseCode>
+      </cac:Response>
+    </cac:LineResponse>
+  </cac:DocumentResponse>
+</ApplicationResponse>

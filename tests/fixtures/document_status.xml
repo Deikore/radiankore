@@ -1,0 +1,22 @@
+<wcf:GetStatusResponse
+    xmlns:wcf="http://wcf.dian.colombia"
+    xmlns:d="http://schemas.datacontract.org/2004/07/DianResponse"
+    xmlns:a="http://schemas.microsoft.com/2003/10/Serialization/Arrays"
+    xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+  <wcf:GetStatusResult>
+    <d:ErrorMessage>
+      <a:string> Synthetic notification </a:string>
+      <a:string i:nil="true"/>
+      <a:string/>
+      <a:string>Synthetic notification</a:string>
+    </d:ErrorMessage>
+    <d:IsValid>true</d:IsValid>
+    <d:StatusCode>FUTURE-STATUS</d:StatusCode>
+    <d:StatusDescription> Synthetic status </d:StatusDescription>
+    <d:StatusMessage>Synthetic message</d:StatusMessage>
+    <d:XmlBase64Bytes>PHZhbGlkYXRpb24vPg==</d:XmlBase64Bytes>
+    <d:XmlBytes>AP9TVEFUVVM=</d:XmlBytes>
+    <d:XmlDocumentKey>000-DOCUMENT-KEY</d:XmlDocumentKey>
+    <d:XmlFileName>synthetic-status.xml</d:XmlFileName>
+  </wcf:GetStatusResult>
+</wcf:GetStatusResponse>

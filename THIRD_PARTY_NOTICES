@@ -1,0 +1,7 @@
+Technical reference material
+
+The files under docs/references/dian are third-party reference material from
+DIAN and the organizations credited in the original documents and schemas.
+The project's MIT license does not relicense those files. Their original
+notices and applicable terms remain in effect. They are excluded from both
+the wheel and source distributions published to PyPI.

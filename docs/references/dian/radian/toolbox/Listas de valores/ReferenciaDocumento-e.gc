@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gc:CodeList xmlns:gc="http://docs.oasis-open.org/codelist/ns/genericode/1.0/">
+   <Identification>
+      <ShortName>ReferenciaDocumento-e</ShortName>
+      <LongName xml:lang="es">Referencias a documentos electrónicos tipo Invoice</LongName>
+      <Version>1</Version>
+      <CanonicalUri>urn:dian:names:especificacion:ubl:listacodigos:gc:ReferenciaDocumento-e</CanonicalUri>
+      <CanonicalVersionUri>urn:dian:names:especificacion:ubl:listacodigos:gc:ReferenciaDocumento-e</CanonicalVersionUri>
+      <LocationUri>http://dian.gov.co/ubl/os-ubl-2.0/cl/gc/default/ReferenciaDocumento-e.gc</LocationUri>
+      <Agency>
+         <LongName xml:lang="es">DIAN (Dirección de Impuestos y Aduanas Nacionales)</LongName>
+         <Identifier>195</Identifier>
+      </Agency>
+   </Identification>
+   <ColumnSet>
+      <Column Id="code" Use="required">
+         <ShortName>Code</ShortName>
+         <Data Type="normalizedString"/>
+      </Column>
+      <Column Id="name" Use="required">
+         <ShortName>Nombre</ShortName>
+         <Data Type="normalizedString"/>
+      </Column>
+	   <Column Id="description" Use="required">
+         <ShortName>Descripcion</ShortName>
+         <Data Type="normalizedString"/>
+      </Column>
+      <Key Id="codeKey">
+         <ShortName>CodeKey</ShortName>
+         <ColumnRef Ref="code"/>
+      </Key>
+   </ColumnSet>
+   <SimpleCodeList>
+      <Row>
+         <Value ColumnRef="code">
+            <SimpleValue>1</SimpleValue>
+         </Value>
+         <Value ColumnRef="name">
+            <SimpleValue>Un documento electrónico</SimpleValue>
+         </Value>
+		 <Value ColumnRef="description">
+            <SimpleValue>Corresponde a la referencia de un documento electrónico tipo invoice "01" donde se referencia el número de factura, el CUFE y el tipo de documento</SimpleValue>
+         </Value>
+      </Row>
+      <Row>
+         <Value ColumnRef="code">
+            <SimpleValue>2</SimpleValue>
+         </Value>
+         <Value ColumnRef="name">
+            <SimpleValue>Máximo 20 documentos electrónicos</SimpleValue>
+         </Value>
+		 <Value ColumnRef="description">
+		    <SimpleValue>Corresponde a la referencia de varios documentos electrónicos (Máximo 20) tipo invoice "01" donde se referencia el número de factura, el CUFE y el tipo de documento</SimpleValue>
+         </Value>
+      </Row>
+	   <Row>
+         <Value ColumnRef="code">
+            <SimpleValue>3</SimpleValue>
+         </Value>
+         <Value ColumnRef="name">
+            <SimpleValue>Todas los documentos electrónico Invoice "Tipo 01" emitidas por el Mandante</SimpleValue>
+         </Value>
+		 <Value ColumnRef="description">
+		    <SimpleValue>Corresponde a la referencia de todos los documentos electrónicos Invoice "Tipo 01" emitidas por el Mandante</SimpleValue>
+         </Value>
+      </Row>
+      </SimpleCodeList>
+</gc:CodeList>

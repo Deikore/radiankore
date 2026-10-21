@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gc:CodeList xmlns:gc="http://docs.oasis-open.org/codelist/ns/genericode/1.0/">
+   <Identification>
+      <ShortName>mandatarioTipo_radian</ShortName>
+      <LongName xml:lang="es">Tipos de Mandantario_Radian</LongName>
+      <Version>1</Version>
+      <CanonicalUri>urn:dian:names:especificacion:ubl:listacodigos:gc:mandatarioTipo_radian</CanonicalUri>
+      <CanonicalVersionUri>urn:dian:names:especificacion:ubl:listacodigos:gc:mandatarioTipo_radian</CanonicalVersionUri>
+      <LocationUri>http://dian.gov.co/ubl/os-ubl-2.0/cl/gc/default/mandatarioTipo_radian.gc</LocationUri>
+      <Agency>
+         <LongName xml:lang="es">DIAN (Dirección de Impuestos y Aduanas Nacionales)</LongName>
+         <Identifier>195</Identifier>
+      </Agency>
+   </Identification>
+   <ColumnSet>
+      <Column Id="code" Use="required">
+         <ShortName>Code</ShortName>
+         <Data Type="normalizedString"/>
+      </Column>
+      <Column Id="name" Use="required">
+         <ShortName>Nombre</ShortName>
+         <Data Type="normalizedString"/>
+      </Column>
+      <Key Id="codeKey">
+         <ShortName>CodeKey</ShortName>
+         <ColumnRef Ref="code"/>
+      </Key>
+   </ColumnSet>
+   <SimpleCodeList>
+      <Row>
+         <Value ColumnRef="code">
+            <SimpleValue>M-SN-e</SimpleValue>
+         </Value>
+         <Value ColumnRef="name">
+            <SimpleValue>Mandatario Sistema de Negociación Electrónica</SimpleValue>
+         </Value>
+      </Row>
+      <Row>
+         <Value ColumnRef="code">
+            <SimpleValue>M-Factor</SimpleValue>
+         </Value>
+         <Value ColumnRef="name">
+            <SimpleValue>Mandatario Factor</SimpleValue>
+         </Value>
+      </Row>
+	  <Row>
+         <Value ColumnRef="code">
+            <SimpleValue>M-PT</SimpleValue>
+         </Value>
+         <Value ColumnRef="name">
+            <SimpleValue>Mandatario Proveedor Tecnológico</SimpleValue>
+         </Value>
+      </Row>
+	  <Row>
+         <Value ColumnRef="code">
+            <SimpleValue>M-FE</SimpleValue>
+         </Value>
+         <Value ColumnRef="name">
+            <SimpleValue>Mandatario Facturador Electrónico</SimpleValue>
+         </Value>
+      </Row>
+      </SimpleCodeList>
+</gc:CodeList>

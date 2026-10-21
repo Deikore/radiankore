@@ -1,0 +1,57 @@
+# radiankore
+
+Librería Python de Deikore SAS para consultas directas a DIAN mediante SOAP y
+certificados PFX/P12. La API es síncrona, admite Python >=3.13 y se distribuye bajo MIT.
+No genera facturas ni envía eventos.
+
+## Primeros pasos
+
+Instala el paquete, crea un `DianClient` y selecciona producción o habilitación.
+El certificado se carga una vez y cada consulta gestiona sus conexiones.
+
+```{toctree}
+:maxdepth: 2
+:caption: Primeros pasos
+
+installation
+environments
+```
+
+## Consultas disponibles
+
+GetStatus devuelve el resultado de validación del documento; GetStatusEvent consulta
+los eventos asociados a una factura. Las demás operaciones permiten consultar
+adquirientes, información del documento, notas referenciadas y el XML original.
+
+```{toctree}
+:maxdepth: 2
+:caption: Operaciones
+
+operations/status
+operations/events
+operations/acquirer
+operations/document-info
+operations/reference-notes
+operations/xml-document
+```
+
+```{toctree}
+:maxdepth: 2
+:caption: Referencia
+
+api
+models
+catalogs
+errors
+technical-references
+```
+
+```{toctree}
+:maxdepth: 2
+:caption: Contribuir
+
+development
+publishing
+readthedocs
+changelog
+```

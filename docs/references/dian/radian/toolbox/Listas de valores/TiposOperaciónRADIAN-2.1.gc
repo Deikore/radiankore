@@ -1,0 +1,435 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- DIAN Genericode listas de valores: Ultima modificación 03-04-2022 - wcbr-->
+<gc:CodeList xmlns:gc="http://docs.oasis-open.org/codelist/ns/genericode/1.0/">
+	<Identification>
+		<ShortName>TipoOperaciónRADIAN</ShortName>
+		<LongName xml:lang="es">Tipos de operación RADIAN</LongName>
+		<Version>1</Version>
+		<CanonicalUri>urn:dian:names:especificacion:ubl:listacodigos:gc:TipoOperaciónRADIAN</CanonicalUri>
+		<CanonicalVersionUri>urn:dian:names:especificacion:ubl:listacodigos:gc:TipoOperaciónRADIAN-2.1</CanonicalVersionUri>
+		<LocationUri>http://dian.gov.co/ubl/os-ubl-2.0/cl/gc/default/TipoOperaciónRADIAN-2.1.gc</LocationUri>
+		<Agency>
+			<LongName xml:lang="es">DIAN (Dirección de Impuestos y Aduanas Nacionales)</LongName>
+			<Identifier>195</Identifier>
+		</Agency>
+	</Identification>
+	<ColumnSet>
+		<Column Id="code" Use="required">
+			<ShortName>Code</ShortName>
+			<LongName xml:lang="es">Codigo Comun</LongName>
+			<Data Type="normalizedString"/>
+		</Column>
+		<Column Id="name" Use="required">
+			<ShortName>Name</ShortName>
+			<LongName xml:lang="es">Nombre</LongName>
+			<Data Type="string"/>
+		</Column>
+		<Column Id="name" Use="required">
+			<ShortName>Description</ShortName>
+			<LongName xml:lang="es">Descripción</LongName>
+			<Data Type="string"/>
+		</Column>		
+		<Key Id="codeKey">
+			<ShortName>CodeKey</ShortName>
+			<ColumnRef Ref="code"/>
+		</Key>
+	</ColumnSet>
+	<SimpleCodeList>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>035</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Aval</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>035</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>361</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Primera inscripción de la factura electrónica de venta como título valor para Negociación General</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>036</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>362</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Primera inscripción de la factura electrónica de venta como título valor para Negociación Directa Previa</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>036</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>363</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Inscripción posterior de la factura electrónica de venta como título valor para Negociación General</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>036</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>364</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Inscripción posterior de la factura electrónica de venta como título valor para Negociación Directa Previa</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>036</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>371</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Endoso con responsabilidad del endosante</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>037</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>372</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Endoso sin responsabilidad del endosante</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>037</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>038</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Endoso en Garantía</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>038</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>039</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Endoso en Procuración </SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>039</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>401</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Cancelación del Endoso en Garantia</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>040</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>402</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Cancelación del Endoso en Procuracion</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>040</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>403</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Tacha de Endosos por Endoso en Retorno</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>040</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>411</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Auto que decreta medida cautelar por embargo</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>041</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>412</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Auto que decreta medida cautelar por mandamiento de pago</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>041</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>421</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Terminación de limitación por sentencia</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>042</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>422</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Terminación de limitación por terminación anticipada</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>042</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>431</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Solicitud de inscripción de un Mandato Por documento General por Tiempo limitado</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>043</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>432</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Solicitud de inscripción de un Mandato Por documento General por Tiempo Ilimitado</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>043</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>433</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Solicitud de inscripción de un Mandato Por documento limitado por tiempo limitado</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>043</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>434</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Solicitud de inscripción de un Mandato Por documento limitado por tiempo Ilimitado</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>043</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>441</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Terminacion del Mandato por Revocacion del Mandante</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>044</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>442</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Terminacion del Mandato por Renuncia del mandatario</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>044</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>443</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Terminacion del Mandato por Rechazo del mandante</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>044</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>451</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Notificación de pago parcial</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>045</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>452</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Pago de la factura electrónica de venta como título valor</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>045</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>046</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Informe para el pago</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>046</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>047</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Endoso con efectos de cesión ordinaria</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>047</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>481</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Protesto por falta de aceptación</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>048</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>482</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Protesto por falta de pago</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>048</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>491</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Transferencia parcial de los derechos económicos con responsabilidad</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>049</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>492</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Transferencia total de los derechos económicos con responsabilidad</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>049</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>493</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Transferencia parcial de los derechos económicos sin responsabilidad</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>049</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>494</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Transferencia total de los derechos económicos sin responsabilidad</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>049</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>050</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Notificación al deudor sobre la transferencia de los derechos económicos</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>050</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>511</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Pago parcial de la transferencia de los derechos económicos</SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>051</SimpleValue>
+			</Value>
+		</Row>
+		<Row>
+			<Value ColumnRef="code">
+				<SimpleValue>512</SimpleValue>
+			</Value>
+			<Value ColumnRef="name">
+				<SimpleValue>Pago total de la transferencia de los derechos económicos </SimpleValue>
+			</Value>
+			<Value ColumnRef="Description">
+				<SimpleValue>051</SimpleValue>
+			</Value>
+		</Row>
+	</SimpleCodeList>
+</gc:CodeList>

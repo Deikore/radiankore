@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gc:CodeList xmlns:gc="http://docs.oasis-open.org/codelist/ns/genericode/1.0/">
+   <Identification>
+      <ShortName>TipoMandatos</ShortName>
+      <LongName xml:lang="es">Tipos de Mandantos_RADIAN</LongName>
+      <Version>1</Version>
+      <CanonicalUri>urn:dian:names:especificacion:ubl:listacodigos:gc:TipoMandatos</CanonicalUri>
+      <CanonicalVersionUri>urn:dian:names:especificacion:ubl:listacodigos:gc:TipoMandatos</CanonicalVersionUri>
+      <LocationUri>http://dian.gov.co/ubl/os-ubl-2.0/cl/gc/default/TipoMandatos.gc</LocationUri>
+      <Agency>
+         <LongName xml:lang="es">DIAN (Dirección de Impuestos y Aduanas Nacionales)</LongName>
+         <Identifier>195</Identifier>
+      </Agency>
+   </Identification>
+   <ColumnSet>
+      <Column Id="code" Use="required">
+         <ShortName>Code</ShortName>
+         <Data Type="normalizedString"/>
+      </Column>
+      <Column Id="name" Use="required">
+         <ShortName>Nombre</ShortName>
+         <Data Type="normalizedString"/>
+      </Column>
+	   <Column Id="description" Use="required">
+         <ShortName>Descripcion</ShortName>
+         <Data Type="normalizedString"/>
+      </Column>
+      <Key Id="codeKey">
+         <ShortName>CodeKey</ShortName>
+         <ColumnRef Ref="code"/>
+      </Key>
+   </ColumnSet>
+   <SimpleCodeList>
+	  <Row>
+         <Value ColumnRef="code">
+            <SimpleValue>1</SimpleValue>
+         </Value>
+         <Value ColumnRef="name">
+            <SimpleValue>Solicitud de inscripción de un Mandato por poder especial</SimpleValue>
+         </Value>
+		 <Value ColumnRef="description">
+            <SimpleValue>El mandatario esta facultado de manera especial por el mandante</SimpleValue>
+         </Value>
+      </Row>
+	  <Row>
+         <Value ColumnRef="code">
+            <SimpleValue>2</SimpleValue>
+         </Value>
+         <Value ColumnRef="name">
+            <SimpleValue>Solicitud de inscripción de un Mandato por poder general</SimpleValue>
+         </Value>
+		 <Value ColumnRef="description">
+            <SimpleValue>El mandatario esta facultado de manera general por el mandante</SimpleValue>
+         </Value>
+      </Row>
+      </SimpleCodeList>
+</gc:CodeList>

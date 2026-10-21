@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<ApplicationResponse xmlns="urn:oasis:names:specification:ubl:schema:xsd:ApplicationResponse-2"
+                     xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+                     xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"
+                     xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+                     xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2"
+                     xmlns:sts="dian:gov:co:facturaelectronica:Structures-2-1"
+                     xmlns:xades="http://uri.etsi.org/01903/v1.3.2#"
+                     xmlns:xades141="http://uri.etsi.org/01903/v1.4.1#"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xsi:schemaLocation="urn:oasis:names:specification:ubl:schema:xsd:ApplicationResponse-2 http://docs.oasis-open.org/ubl/os-UBL-2.1/xsd/maindoc/UBL-ApplicationResponse-2.1.xsd">
+	<ext:UBLExtensions>
+		<ext:UBLExtension>
+			<ext:ExtensionContent>
+				<sts:DianExtensions>
+					<sts:InvoiceSource>
+						<cbc:IdentificationCode listAgencyID="6"
+						                        listAgencyName="United Nations Economic Commission for Europe"
+						                        listSchemeURI="urn:oasis:names:specification:ubl:codelist:gc:CountryIdentificationCode-2.1">CO</cbc:IdentificationCode>
+					</sts:InvoiceSource>
+					<sts:SoftwareProvider>
+						<sts:ProviderID schemeAgencyID="195"
+						                schemeAgencyName="CO, DIAN (Dirección de Impuestos y Aduanas Nacionales)"
+						                schemeID="6"
+						                schemeName="31">2019053020</sts:ProviderID>
+						<sts:SoftwareID schemeAgencyID="195"
+						                schemeAgencyName="CO, DIAN (Dirección de Impuestos y Aduanas Nacionales)">b9eaebeb-8d12-4de7-b3b9-8a1415ed31f3</sts:SoftwareID>
+					</sts:SoftwareProvider>
+					<sts:SoftwareSecurityCode schemeAgencyID="195"
+					                          schemeAgencyName="CO, DIAN (Dirección de Impuestos y Aduanas Nacionales)">17e2131bce293bc7b85402d9e601aaf550783af40f40fef81b6d200c77a0d24b9f33a6ccadefc0c0907b68a9db87e67f</sts:SoftwareSecurityCode>
+					<sts:AuthorizationProvider>
+						<sts:AuthorizationProviderID schemeAgencyID="195"
+						                             schemeAgencyName="CO, DIAN (Dirección de Impuestos y Aduanas Nacionales)"
+						                             schemeID="4"
+						                             schemeName="31">800197268</sts:AuthorizationProviderID>
+					</sts:AuthorizationProvider>
+					<sts:QRCode>https://catalogo-vpfe.dian.gov.co/document/searchqr?documentkey=26d77a5afab5fcb20aed725c4551e532d66ce64158de3b9163042f8470c6e20b2dc508be68afe73ba448abc574470405</sts:QRCode>
+				</sts:DianExtensions>
+			</ext:ExtensionContent>
+		</ext:UBLExtension>
+		<ext:UBLExtension>
+			<ext:ExtensionContent>
+				<CustomTagGeneral>
+					<InformacionNegociacion>
+						<Name>ValorTotalEndoso</Name>
+						<Value>400000.00</Value>
+						<Name>PrecioPagarseFEV</Name>
+						<Value>342475.00</Value>
+						<Name>TasaDescuento</Name>
+						<Value>5</Value>
+						<Name>MedioPago</Name>
+						<Value>10</Value>
+					</InformacionNegociacion>
+				</CustomTagGeneral>
+			</ext:ExtensionContent>
+		</ext:UBLExtension>
+	</ext:UBLExtensions>
+	<cbc:UBLVersionID>UBL 2.1</cbc:UBLVersionID>
+	<cbc:CustomizationID>047</cbc:CustomizationID>
+	<cbc:ProfileID>DIAN 2.1: ApplicationResponse de la Factura Electrónica de Venta</cbc:ProfileID>
+	<cbc:ProfileExecutionID>2</cbc:ProfileExecutionID>
+	<cbc:ID>ENPROP7001</cbc:ID>
+	<cbc:UUID schemeID="2"
+	          schemeName="CUDE-SHA384">d2c2440a4dd0f56ba7998c757c95fe434cab943fe7e8d4c9f5a9d859a3f96c2aec5e552271abebca419ef5aafabeaf3d</cbc:UUID>
+	<cbc:IssueDate>2021-04-04</cbc:IssueDate>
+	<cbc:IssueTime>18:13:37-05:00</cbc:IssueTime>
+	<cac:SenderParty>
+		<cac:PartyTaxScheme>
+			<cbc:RegistrationName>FACTURA ELECTRONICA PRUEBA MIGRACION 01</cbc:RegistrationName>
+			<cbc:CompanyID schemeAgencyID="195"
+			               schemeAgencyName="CO, DIAN (Dirección de Impuestos y Aduanas Nacionales)"
+			               schemeID="1"
+			               schemeName="31"
+			               schemeVersionID="1">2019051401</cbc:CompanyID>
+			<cac:TaxScheme>
+				<cbc:ID>01</cbc:ID>
+				<cbc:Name>IVA</cbc:Name>
+			</cac:TaxScheme>
+		</cac:PartyTaxScheme>
+		<cac:PartyLegalEntity>
+			<cbc:RegistrationName>FACTURA ELECTRONICA PRUEBA MIGRACION 01</cbc:RegistrationName>
+			<cbc:CompanyID schemeAgencyID="195"
+			               schemeAgencyName="CO, DIAN (Dirección de Impuestos y Aduanas Nacionales)"
+			               schemeID="1"
+			               schemeName="31"
+			               schemeVersionID="1">2019051401</cbc:CompanyID>
+			<cbc:CorporateStockAmount currencyID="COP">400000.00</cbc:CorporateStockAmount>
+		</cac:PartyLegalEntity>
+	</cac:SenderParty>
+	<cac:ReceiverParty>
+		<cac:PartyTaxScheme>
+			<cbc:RegistrationName>PARADIGMA S A S</cbc:RegistrationName>
+			<cbc:CompanyID schemeAgencyID="195"
+			               schemeAgencyName="CO, DIAN (Dirección de Impuestos y Aduanas Nacionales)"
+			               schemeID="4"
+			               schemeName="31"
+			               schemeVersionID="1">800101428</cbc:CompanyID>
+			<cac:TaxScheme>
+				<cbc:ID>01</cbc:ID>
+				<cbc:Name>IVA</cbc:Name>
+			</cac:TaxScheme>
+		</cac:PartyTaxScheme>
+		<cac:PartyLegalEntity>
+			<cbc:RegistrationName>PARADIGMA S A S</cbc:RegistrationName>
+			<cbc:CompanyID schemeAgencyID="195"
+			               schemeAgencyName="CO, DIAN (Dirección de Impuestos y Aduanas Nacionales)"
+			               schemeID="4"
+			               schemeName="31"
+			               schemeVersionID="1">800101428</cbc:CompanyID>
+			<cbc:CompanyLegalFormCode>1</cbc:CompanyLegalFormCode>
+			<cbc:CorporateStockAmount currencyID="COP">400000.00</cbc:CorporateStockAmount>
+		</cac:PartyLegalEntity>
+	</cac:ReceiverParty>
+	<cac:DocumentResponse>
+		<cac:Response>
+			<cbc:ResponseCode>047</cbc:ResponseCode>
+			<cbc:Description>Endoso con efectos de cesión ordinaria</cbc:Description>
+		</cac:Response>
+		<cac:DocumentReference>
+			<cbc:ID>SETG980000002</cbc:ID>
+			<cbc:UUID schemeName="CUFE-SHA384">26d77a5afab5fcb20aed725c4551e532d66ce64158de3b9163042f8470c6e20b2dc508be68afe73ba448abc574470405</cbc:UUID>
+			<cbc:DocumentTypeCode>01</cbc:DocumentTypeCode>
+			<cac:ValidityPeriod>
+				<cbc:EndDate>2021-06-03</cbc:EndDate>
+			</cac:ValidityPeriod>
+			<cac:IssuerParty>
+				<cac:PartyTaxScheme>
+					<cbc:RegistrationName>JAIME TORRES C Y CIA S A</cbc:RegistrationName>
+					<cbc:CompanyID schemeAgencyID="195"
+					               schemeAgencyName="CO, DIAN (Dirección de Impuestos y Aduanas Nacionales)"
+					               schemeID="8"
+					               schemeName="31"
+					               schemeVersionID="2">860502327</cbc:CompanyID>
+					<cac:TaxScheme/>
+				</cac:PartyTaxScheme>
+			</cac:IssuerParty>
+		</cac:DocumentReference>
+	</cac:DocumentResponse>
+</ApplicationResponse>
