@@ -45,10 +45,9 @@ fuente; CI también ejecuta la suite completa contra el wheel instalado.
 
 ## Crear la release
 
-Para la primera versión, usa `project.version = "0.1.0"` y la etiqueta `v0.1.0`.
-En siguientes versiones, crea una etiqueta `v<VERSION>` que coincida exactamente
-con `project.version` y
-publica una release de GitHub desde esa etiqueta. El workflow:
+Crea una etiqueta `v<VERSION>` que coincida exactamente con `project.version`
+(por ejemplo, `v0.2.0` para `0.2.0`) y publica una release de GitHub desde esa
+etiqueta. El workflow:
 
 1. Verifica la correspondencia de etiqueta y versión.
 2. Ejecuta calidad, la matriz Python 3.13–3.15, construcción, revisión con Twine y

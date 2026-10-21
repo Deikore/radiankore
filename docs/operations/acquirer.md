@@ -41,6 +41,10 @@ Un resultado ausente o declarado nulo devuelve `None`. Un resultado presente per
 vacío devuelve `AcquirerResult()` con sus cuatro campos en `None`. Esto no se
 interpreta automáticamente como «no encontrado».
 
+Si DIAN responde HTTP 404 a `GetAcquirer`, el método devuelve `None`. Los demás
+errores HTTP y de red conservan sus excepciones. Un SOAP Fault también se propaga,
+incluso cuando llega con HTTP 404.
+
 El WSDL no define el significado de los códigos de estado. Se devuelven tal como
 se reciben, sin inferir éxito ni convertir estados de negocio en excepciones.
 Los fallos SOAP, HTTP, de red o de estructura XML usan las excepciones públicas.

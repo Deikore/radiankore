@@ -8,8 +8,7 @@ pip install radiankore
 uv add radiankore
 ```
 
-La instalación desde PyPI estará disponible tras la primera publicación. Para
-contribuir desde una copia del repositorio, usa [uv](https://docs.astral.sh/uv/):
+Para contribuir desde una copia del repositorio, usa [uv](https://docs.astral.sh/uv/):
 
 ```bash
 uv sync --locked

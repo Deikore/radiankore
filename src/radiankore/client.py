@@ -15,6 +15,7 @@ from radiankore._soap.xml_document_response import parse_xml_document_response
 from radiankore.catalogs import IdentificationType
 from radiankore.certificate import DigitalCertificate
 from radiankore.environment import Environment
+from radiankore.exceptions import DianTransportError
 from radiankore.models.responses import (
     AcquirerResult,
     DocumentInfoResult,
@@ -98,7 +99,7 @@ class DianClient:
         identification_type: IdentificationType,
         identification_number: str,
     ) -> AcquirerResult | None:
-        """Query name, email and status; missing or nil results return None.
+        """Query name, email and status; missing, nil or HTTP 404 returns None.
 
         Both arguments are required. The number is stripped but otherwise
         preserved without changing leading zeros or adding a check digit.
@@ -112,15 +113,19 @@ class DianClient:
         identification_number = identification_number.strip()
         if not identification_number:
             raise ValueError("identification_number must not be empty.")
-        return parse_acquirer_response(
-            self._request(
+        try:
+            response = self._request(
                 "GetAcquirer",
                 (
                     ("identificationType", identification_type.value),
                     ("identificationNumber", identification_number),
                 ),
             )
-        )
+        except DianTransportError as exc:
+            if exc.status_code == 404:
+                return None
+            raise
+        return parse_acquirer_response(response)
 
     def get_document_info(self, uuid: str) -> DocumentInfoResult | None:
         """Query structured documents by identifier without interpreting compression.
@@ -160,7 +165,8 @@ class DianClient:
 
         A nonempty string is required and sent as trackId after stripping outer
         whitespace. Missing or nil results return None. Base64 is decoded without
-        reformatting the document or interpreting business status codes.
+        reformatting the document. SOAP Code maps to HTTPStatus; unknown or invalid
+        codes raise DianResponseError independently of HTTP transport failures.
         """
         if not isinstance(document_key, str):
             raise TypeError("document_key must be a string.")

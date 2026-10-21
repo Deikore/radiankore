@@ -8,7 +8,13 @@ import httpx
 import pytest
 from lxml import etree
 
-from radiankore import DianClient, DianResponseError, DianSoapFaultError, Environment
+from radiankore import (
+    DianClient,
+    DianResponseError,
+    DianSoapFaultError,
+    DianTransportError,
+    Environment,
+)
 from radiankore._soap.acquirer_response import parse_acquirer_response
 from radiankore._soap.namespaces import ACQUIRER, SOAP, WCF, WSA, XSI
 from radiankore.catalogs import EventType, IdentificationType
@@ -202,6 +208,88 @@ def test_client_returns_none_for_nil_result(
         )
         is None
     )
+    assert http.is_closed
+
+
+@pytest.mark.parametrize("status_code", [400, 401, 403, 404, 429, 500, 503])
+@pytest.mark.parametrize("body", [b"", b"<html>Not found</html>"])
+def test_acquirer_returns_none_only_for_http_not_found(
+    encrypted_pfx_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    status_code: int,
+    body: bytes,
+) -> None:
+    requests: list[httpx.Request] = []
+
+    def respond(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(status_code, content=body)
+
+    http = httpx.Client(transport=httpx.MockTransport(respond))
+    monkeypatch.setattr(
+        "radiankore._soap.transport.create_http_client", lambda timeout: http
+    )
+    client = DianClient(encrypted_pfx_path, password="test-password")
+    if status_code == 404:
+        assert (
+            client.get_acquirer(
+                identification_type=IdentificationType.CITIZENSHIP_CARD,
+                identification_number="000123456",
+            )
+            is None
+        )
+    else:
+        with pytest.raises(DianTransportError) as error:
+            client.get_acquirer(
+                identification_type=IdentificationType.NIT,
+                identification_number="001",
+            )
+        assert error.value.status_code == status_code
+        assert isinstance(error.value.__cause__, httpx.HTTPStatusError)
+    assert len(requests) == 1
+    assert http.is_closed
+
+
+def test_acquirer_preserves_soap_fault_with_http_not_found(
+    encrypted_pfx_path: Path,
+    soap_fault: bytes,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    http = httpx.Client(
+        transport=httpx.MockTransport(
+            lambda request: httpx.Response(404, content=soap_fault)
+        )
+    )
+    monkeypatch.setattr(
+        "radiankore._soap.transport.create_http_client", lambda timeout: http
+    )
+    client = DianClient(encrypted_pfx_path, password="test-password")
+    with pytest.raises(DianSoapFaultError) as error:
+        client.get_acquirer(
+            identification_type=IdentificationType.NIT, identification_number="001"
+        )
+    assert error.value.code == "s:Sender"
+    assert http.is_closed
+
+
+def test_acquirer_preserves_network_errors(
+    encrypted_pfx_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def timeout_response(request: httpx.Request) -> httpx.Response:
+        raise httpx.ReadTimeout("Synthetic timeout", request=request)
+
+    http = httpx.Client(transport=httpx.MockTransport(timeout_response))
+    monkeypatch.setattr(
+        "radiankore._soap.transport.create_http_client", lambda timeout: http
+    )
+    client = DianClient(encrypted_pfx_path, password="test-password")
+    with pytest.raises(DianTransportError) as error:
+        client.get_acquirer(
+            identification_type=IdentificationType.NIT, identification_number="001"
+        )
+    assert error.value.status_code is None
+    assert isinstance(error.value.__cause__, httpx.ReadTimeout)
     assert http.is_closed
 
 

@@ -4,6 +4,7 @@
 junto con el código, mensaje y fecha de validación de `EventResponse`:
 
 ```python
+from http import HTTPStatus
 from pathlib import Path
 
 from radiankore import DianClient
@@ -15,7 +16,11 @@ client = DianClient(
 )
 result: XmlDocumentResult | None = client.get_xml_by_document_key("CLAVE-DEL-DOCUMENTO")
 if result is not None:
-    print(result.status_code, result.message, result.validation_date)
+    if result.status_code is HTTPStatus.NOT_FOUND:
+        print("Documento no encontrado")
+    if result.status_code is not None:
+        print(result.status_code.value, result.status_code.phrase)
+    print(result.message, result.validation_date)
     if result.document_xml is not None:
         Path("documento.xml").write_bytes(result.document_xml)
 ```
@@ -31,15 +36,27 @@ definida en `models/responses/xml_document.py` y exportada desde
 
 | Campo | Elemento XML | Tipo |
 | --- | --- | --- |
-| `status_code` | `Code` | `str \| None` |
+| `status_code` | `Code` | `HTTPStatus \| None` |
 | `message` | `Message` | `str \| None` |
 | `validation_date` | `ValidationDate` | `date \| datetime \| None` |
 | `document_xml` | `XmlBytesBase64`, decodificado | `bytes \| None` |
 
 El resultado ausente o nulo devuelve `None`; uno presente y vacío devuelve
 `XmlDocumentResult()`. Código y mensaje ausentes, nulos o vacíos valen `None`;
-se recortan espacios exteriores. No se infiere el significado de códigos de negocio
-ni se convierten automáticamente en excepciones.
+se recortan espacios exteriores. `Code` debe contener tres dígitos ASCII y se
+convierte con `HTTPStatus(int(value))`, de la biblioteca estándar `http`:
+`"200"` corresponde a `HTTPStatus.OK` y `"404"` a `HTTPStatus.NOT_FOUND`.
+Códigos desconocidos o formatos inválidos generan `DianResponseError`, conservando
+`ValueError` como causa. La construcción directa de `XmlDocumentResult` exige
+`HTTPStatus` o `None`; cadenas, enteros y otros tipos generan `TypeError`.
+
+El código del SOAP es independiente del estado HTTP del transporte. Una petición
+HTTP 200 con `<Code>404</Code>` devuelve un resultado con `HTTPStatus.NOT_FOUND`;
+una petición HTTP 404 sigue generando `DianTransportError`. Un estado estándar
+como `HTTPStatus.NOT_FOUND` dentro del resultado no genera una excepción.
+
+Este campo antes era `str | None`: sustituye las comparaciones con cadenas por
+miembros de `HTTPStatus`, y usa `.value` si necesitas el entero correspondiente.
 
 `ValidationDate` acepta fechas ISO mediante `date.fromisoformat()` y timestamps
 ISO mediante `datetime.fromisoformat()`, conservando hora, fracciones y zona si

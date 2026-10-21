@@ -4,6 +4,7 @@ from base64 import b64encode
 from copy import deepcopy
 from dataclasses import FrozenInstanceError
 from datetime import UTC, date, datetime, timedelta, timezone
+from http import HTTPStatus
 from pathlib import Path
 from typing import Any
 
@@ -11,7 +12,7 @@ import httpx
 import pytest
 from lxml import etree
 
-from radiankore import DianClient, DianResponseError, Environment
+from radiankore import DianClient, DianResponseError, DianTransportError, Environment
 from radiankore._soap.namespaces import EVENT_RESPONSE, SOAP, WCF, WSA, XSI
 from radiankore._soap.xml_document_response import parse_xml_document_response
 from radiankore.models.responses import XmlDocumentResult
@@ -37,7 +38,7 @@ def test_full_result_preserves_document_bytes(
 ) -> None:
     result = parse_xml_document_response(xml_document_response)
     assert result == XmlDocumentResult(
-        status_code="FUTURE-STATUS",
+        status_code=HTTPStatus.OK,
         message="Synthetic document result",
         validation_date=datetime(
             2026, 10, 20, 15, 30, 45, tzinfo=timezone(timedelta(hours=-5))
@@ -50,6 +51,73 @@ def test_full_result_preserves_document_bytes(
     with pytest.raises(FrozenInstanceError):
         field = "document_xml"
         setattr(result, field, b"changed")
+
+
+@pytest.mark.parametrize("status", list(HTTPStatus))
+@pytest.mark.parametrize("padding", ["", " \n\t"])
+def test_soap_code_maps_to_http_status(
+    xml_document_response: bytes, status: HTTPStatus, padding: str
+) -> None:
+    root = etree.fromstring(xml_document_response)
+    node = result_node(root).find(f"{{{EVENT_RESPONSE}}}Code")
+    assert node is not None
+    node.text = f"{padding}{status.value}{padding}"
+    result = parse_xml_document_response(etree.tostring(root))
+    assert result is not None and result.status_code is status
+    assert XmlDocumentResult(status_code=status).status_code is status
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["999", "000", "99", "FUTURE-STATUS", "+404", "0404", "4_04", "٤٠٤", "404.0"],
+)
+def test_invalid_soap_code_keeps_cause(
+    xml_document_response: bytes, value: str
+) -> None:
+    root = etree.fromstring(xml_document_response)
+    node = result_node(root).find(f"{{{EVENT_RESPONSE}}}Code")
+    assert node is not None
+    node.text = value
+    with pytest.raises(DianResponseError, match="Code") as error:
+        parse_xml_document_response(etree.tostring(root))
+    assert isinstance(error.value.__cause__, ValueError)
+
+
+@pytest.mark.parametrize("value", [404, "404", True, 404.0])
+def test_model_requires_http_status(value: object) -> None:
+    with pytest.raises(TypeError, match="HTTPStatus"):
+        XmlDocumentResult(status_code=value)  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize("http_status", [200, 404])
+def test_soap_not_found_is_independent_of_transport_status(
+    encrypted_pfx_path: Path,
+    xml_document_response: bytes,
+    monkeypatch: pytest.MonkeyPatch,
+    http_status: int,
+) -> None:
+    root = etree.fromstring(xml_document_response)
+    node = result_node(root).find(f"{{{EVENT_RESPONSE}}}Code")
+    assert node is not None
+    node.text = "404"
+    http = httpx.Client(
+        transport=httpx.MockTransport(
+            lambda request: httpx.Response(http_status, content=etree.tostring(root))
+        )
+    )
+    monkeypatch.setattr(
+        "radiankore._soap.transport.create_http_client", lambda timeout: http
+    )
+    client = DianClient(encrypted_pfx_path, password="test-password")
+    if http_status == 200:
+        result = client.get_xml_by_document_key("DOCUMENT-KEY")
+        assert result is not None and result.status_code is HTTPStatus.NOT_FOUND
+    else:
+        with pytest.raises(DianTransportError) as error:
+            client.get_xml_by_document_key("DOCUMENT-KEY")
+        assert error.value.status_code == 404
+        assert isinstance(error.value.__cause__, httpx.HTTPStatusError)
+    assert http.is_closed
 
 
 @pytest.mark.parametrize("mode", ["missing", "nil", "empty"])

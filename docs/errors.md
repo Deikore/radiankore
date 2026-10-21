@@ -9,10 +9,13 @@
 - `DianTransportError`: fallo de red o HTTP sin SOAP Fault; expone `status_code`.
 - `DianSoapFaultError`: fallo SOAP, incluso con HTTP 500; expone `code` y `reason`.
 - `DianResponseError`: SOAP, Base64 o UBL malformados, o códigos de identificación
-  o evento desconocidos, o fechas y otros valores tipados inválidos de las respuestas.
+  o evento desconocidos, códigos HTTP inválidos en `GetXmlByDocumentKey`, o fechas
+  y otros valores tipados inválidos de las respuestas.
 
 Las cuatro excepciones de operación heredan de `DianError` y se exportan desde
 `radiankore`. Las causas de errores técnicos se conservan cuando corresponde.
+En `get_acquirer`, HTTP 404 sin SOAP Fault devuelve `None`; los demás métodos
+mantienen `DianTransportError` para ese estado HTTP.
 
 `DigitalCertificate.from_file()` y `from_pfx()` permiten cargar certificados directamente.
 La carga comprueba correspondencia entre clave y certificado, pero no valida
