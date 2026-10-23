@@ -18,3 +18,28 @@ Las referencias técnicas de terceros se conservan en GitHub y no se incluyen en
 sitio generado ni en wheel o sdist. Su licencia no cambia por la licencia MIT del
 código; consulta
 [THIRD_PARTY_NOTICES](https://github.com/Deikore/radiankore/blob/HEAD/THIRD_PARTY_NOTICES).
+
+## Localizar los eventos
+
+Hay dos anexos distintos llamados `anexo-tecnico.pdf`: Factura Electrónica 1.9
+(753 páginas) y RADIAN 1.1 (482 páginas). FE sustenta los eventos 030–034;
+RADIAN describe 035–051. El anexo RADIAN continúa después del evento 045:
+046 empieza en la página 231 y 051 en la 280.
+
+La [matriz completa de eventos y fuentes](event-reference-map.md) enlaza cada
+código 030–051 con su modelo, guía, sección, página, ejemplos y pruebas.
+Incluye también las respuestas 02/04, generadas por DIAN, y las operaciones
+403/443 que no tienen ejemplo propio en la caja.
+
+## Interpretaciones y comprobaciones
+
+Las guías por familia separan reglas oficiales, decisiones locales y discrepancias.
+La validación XSD y de firmas en las pruebas no equivale a aceptación de negocio
+por DIAN. El Schematron distribuido usa XSLT 3 e incluye una lista ausente de
+la caja: no se afirma su ejecución integral. Se comprueban explícitamente los
+XPath aplicables y las limitaciones se detallan en la guía de emisión.
+
+Las referencias originales y sus hashes permanecen en el repositorio; no se
+copian al sitio ni a las distribuciones. Su incorporación y procedencia están en
+el índice enlazado arriba. Las fechas de incorporación no son fechas de vigencia
+normativa ni prueban que no existan revisiones posteriores de DIAN.

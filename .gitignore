@@ -41,6 +41,7 @@ htmlcov/
 .DS_Store
 .agents/
 .codex/
+.opencode/
 .aws/
 /skills/
 

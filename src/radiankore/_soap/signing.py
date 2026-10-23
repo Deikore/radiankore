@@ -68,17 +68,23 @@ def sign_envelope(
         )
         xmlsec.tree.add_ids(envelope, ["Id"])
         context = xmlsec.SignatureContext()
-        context.key = xmlsec.Key.from_memory(
-            certificate.private_key.private_bytes(
-                Encoding.PEM, PrivateFormat.PKCS8, NoEncryption()
-            ),
-            xmlsec.constants.KeyDataFormatPem,
-            None,
-        )
-        context.key.load_cert_from_memory(
-            certificate.certificate.public_bytes(Encoding.PEM),
-            xmlsec.constants.KeyDataFormatCertPem,
-        )
+        context.key = certificate_key(certificate)
         context.sign(signature)
     except xmlsec.Error as exc:
         raise DianSignatureError("Unable to sign the SOAP request.") from exc
+
+
+def certificate_key(certificate: DigitalCertificate) -> xmlsec.Key:
+    """Load the already decoded certificate material into a fresh signing key."""
+    key = xmlsec.Key.from_memory(
+        certificate.private_key.private_bytes(
+            Encoding.PEM, PrivateFormat.PKCS8, NoEncryption()
+        ),
+        xmlsec.constants.KeyDataFormatPem,
+        None,
+    )
+    key.load_cert_from_memory(
+        certificate.certificate.public_bytes(Encoding.PEM),
+        xmlsec.constants.KeyDataFormatCertPem,
+    )
+    return key

@@ -33,6 +33,7 @@ from radiankore.models.responses.reference_notes import (
     ReferenceNote,
     ReferenceNotesResult,
 )
+from radiankore.models.responses.send_event import SendEventResult
 from radiankore.models.responses.xml_document import XmlDocumentResult
 
 __all__ = [
@@ -61,5 +62,6 @@ __all__ = [
     "NumberingRangeResult",
     "ReferenceNote",
     "ReferenceNotesResult",
+    "SendEventResult",
     "XmlDocumentResult",
 ]
