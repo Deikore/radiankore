@@ -110,7 +110,7 @@ def test_pdf_bytes_metadata_and_issuer_are_preserved(
 
 @pytest.mark.parametrize(
     "amount,beneficiaries",
-    [("0.00", 0), ("30000.00", 0), ("100000.00", 2), ("1" * 25, 1)],
+    [("0.00", 0), ("30000.00", 0), ("100000.00", 2), ("1" * 18, 1)],
 )
 def test_guarantee_variants_have_no_empty_party_placeholders(
     radian_event_factory: Callable[[str], RadianEvent],
@@ -153,6 +153,30 @@ def test_guarantee_variants_have_no_empty_party_placeholders(
     assert (
         root.find("cac:DocumentResponse/cac:DocumentReference/cac:ValidityPeriod", NS)
         is None
+    )
+
+
+def test_guarantee_amount_preserves_25_digit_precision(
+    radian_event_factory: Callable[[str], RadianEvent],
+    radian_software: RadianSoftware,
+) -> None:
+    """Check serialization beyond older libxml2's XSD decimal precision limit."""
+    event = radian_event_factory("035")
+    assert isinstance(event, GuaranteeEvent)
+    amount = "1" * 25
+    event = replace(
+        event,
+        guarantors=(replace(event.guarantors[0], amount=Decimal(amount)),),
+    )
+    root = build_radian_application_response(
+        event, software=radian_software, environment=Environment.PRODUCTION
+    )
+    assert (
+        root.findtext(
+            "cac:SenderParty/cac:PartyLegalEntity/cbc:CorporateStockAmount",
+            namespaces=NS,
+        )
+        == amount
     )
 
 

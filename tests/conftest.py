@@ -6,6 +6,7 @@ from datetime import UTC, date, datetime, time, timedelta
 from pathlib import Path
 
 import httpx
+import lxml.etree as etree  # Initialize libxml2 before xmlsec's native callbacks.
 import pytest
 import xmlsec
 from _pytest.terminal import TerminalReporter
@@ -18,7 +19,6 @@ from cryptography.hazmat.primitives.serialization import (
     pkcs12,
 )
 from cryptography.x509.oid import NameOID
-from lxml import etree
 
 from radiankore import DigitalCertificate
 from radiankore._soap import transport
@@ -116,7 +116,8 @@ def digital_certificate() -> DigitalCertificate:
         .subject_name(name)
         .issuer_name(name)
         .public_key(key.public_key())
-        .serial_number(x509.random_serial_number())
+        # Older libxml2 schema validators reject very large xs:integer values.
+        .serial_number(1234567890123456789)
         .not_valid_before(now - timedelta(days=1))
         .not_valid_after(now + timedelta(days=1))
         .sign(key, hashes.SHA256())
