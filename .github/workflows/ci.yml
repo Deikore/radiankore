@@ -56,7 +56,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
       - run: uv sync --locked --python "${{ matrix.python-version }}"
-      - run: uv run --no-sync --python "${{ matrix.python-version }}" pytest --cov --cov-report=term-missing --cov-report=xml
+      - run: uv run --no-sync --python "${{ matrix.python-version }}" pytest --require-references --cov --cov-report=term-missing --cov-report=xml
 
   docs:
     name: Build documentation
@@ -67,7 +67,7 @@ jobs:
         with:
           version: "0.9.29"
       - run: uv python install 3.13
-      - run: uv run --no-project --with-requirements docs/requirements.txt sphinx-build -W --keep-going -b html docs docs/_build/html
+      - run: uv run --no-project --with-requirements docs/requirements.txt sphinx-build -E -W --keep-going -b html docs docs/_build/html
 
   build:
     name: Build and inspect distributions
@@ -89,92 +89,9 @@ jobs:
           uv venv --python 3.13 /tmp/radiankore-wheel
           UV_PROJECT_ENVIRONMENT=/tmp/radiankore-wheel uv sync --locked --no-install-project --python 3.13
           uv pip install --python /tmp/radiankore-wheel/bin/python --no-deps dist/*.whl
-          cd /tmp
-          /tmp/radiankore-wheel/bin/python -I - <<'PY'
-          from importlib.resources import files
-
-          from radiankore import DianClient, DigitalCertificate, DigitalCertificateError
-          from radiankore import Environment
-          from radiankore.catalogs import DocumentType, EventType, IdentificationType
-          from radiankore.catalogs import CreditNoteReason, DebitNoteReason
-          from radiankore.models.responses import AcquirerResult, EventParty, InvoiceEvent, InvoiceEventsResult
-
-          from radiankore.models.responses import ExchangeEmailsResult
-
-          from radiankore.models.responses import NumberingRange, NumberingRangeResult
-          from datetime import date
-
-          assert callable(DianClient.get_numbering_range)
-          numbering = NumberingRange(resolution_number="0001", resolution_date=date(2026, 1, 1), from_number=1, to_number=99, technical_key="synthetic-secret")
-          assert NumberingRangeResult(ranges=(numbering, None)).ranges == (numbering, None)
-          assert NumberingRangeResult(operation_code="301").operation_code == "301"
-          assert "synthetic-secret" not in repr(numbering)
-          assert callable(DianClient.get_exchange_emails)
-          emails = ExchangeEmailsResult(success=False, status_code="00", download_url="https://example.invalid/directory.zip", csv=({"email": "synthetic@example.invalid"},))
-          assert emails.success is False and emails.csv == ({"email": "synthetic@example.invalid"},)
-          assert "download_url=" not in repr(emails) and "csv=" not in repr(emails)
-          assert callable(DianClient)
-          from decimal import Decimal
-          from radiankore.models.responses import DocumentInfoResult, DocumentTotals
-
-          from radiankore.models.responses import ReferenceNotesResult
-          from radiankore.models.responses import NoteDocumentReference, NoteLineResponse, NoteResponse, ReferenceNote
-
-          from datetime import date
-          from radiankore.models.responses import XmlDocumentResult
-
-          assert callable(DianClient.get_xml_by_document_key)
-          xml_result = XmlDocumentResult(document_xml=b"<document/>", validation_date=date(2026, 10, 20))
-          assert xml_result.document_xml == b"<document/>"
-          assert "<document" not in repr(xml_result)
-          from radiankore.models.responses import DocumentStatusResult
-
-          assert callable(DianClient.get_status)
-          status = DocumentStatusResult(is_valid=False, xml_base64_bytes=b"validation", xml_bytes=b"other")
-          assert status.is_valid is False and status.xml_base64_bytes == b"validation"
-          assert "xml_base64_bytes=" not in repr(status)
-          assert DocumentStatusResult().messages == ()
-          assert callable(DianClient.get_reference_notes)
-          assert ReferenceNotesResult().is_valid is None
-          note = ReferenceNote(code=DocumentType.CREDIT_NOTE, references=(NoteDocumentReference(id="001"),), line_responses=(NoteLineResponse(line_id="1", responses=(NoteResponse(code="2"),)),))
-          assert ReferenceNotesResult(notes=(note,)).notes[0].references[0].id == "001"
-          assert note.code is DocumentType.CREDIT_NOTE
-          assert ReferenceNote(code=DocumentType.DEBIT_NOTE).code is DocumentType.DEBIT_NOTE
-          assert note.line_responses[0].responses[0].code == "2"
-          notes = ReferenceNotesResult(xml_base64_bytes=b"first", xml_bytes=b"second")
-          assert notes.xml_base64_bytes != notes.xml_bytes
-          assert "first" not in repr(notes)
-          assert callable(DianClient.get_document_info)
-          assert DocumentInfoResult().documents == ()
-          from radiankore.models.responses import DocumentInfo, DocumentReference
-
-          doc = DocumentInfo(document_type_id=DocumentType.SALES_INVOICE)
-          assert DocumentInfoResult(documents=(doc,)).documents == (doc,)
-          assert DocumentReference(document_type_id=DocumentType.CREDIT_NOTE).document_type_id is DocumentType.CREDIT_NOTE
-          assert DocumentType.SALES_INVOICE.label == "Factura electrónica de Venta"
-          credit = DocumentInfo(document_type_id=DocumentType.CREDIT_NOTE, document_code=CreditNoteReason.INVOICE_CANCELLATION)
-          debit = DocumentInfo(document_type_id=DocumentType.DEBIT_NOTE, document_code=DebitNoteReason.RECEIVABLE_EXPENSES)
-          assert credit.document_code is CreditNoteReason.INVOICE_CANCELLATION
-          assert debit.document_code is DebitNoteReason.RECEIVABLE_EXPENSES
-          assert DocumentTotals(total=Decimal("1.01")).total == Decimal("1.01")
-          assert callable(DianClient.get_acquirer)
-          assert AcquirerResult().name is None
-          assert IdentificationType("48") is IdentificationType.PPT
-          assert callable(DigitalCertificate.from_pfx)
-          assert issubclass(DigitalCertificateError, ValueError)
-          assert Environment.PRODUCTION.value == "production"
-          assert InvoiceEventsResult(is_valid=False, status_code="90").events == ()
-          assert IdentificationType("31") is IdentificationType.NIT
-          party = EventParty(identification_type=IdentificationType.NIT)
-          assert party.identification_type is IdentificationType.NIT
-          event = InvoiceEvent(id="EVENT-1", code=EventType.EXPRESS_ACCEPTANCE)
-          event_type = event.code
-          assert event_type is EventType.EXPRESS_ACCEPTANCE
-          assert event_type.label == "Aceptación expresa"
-          assert EventType.from_code("FUTURE") is None
-          assert files("radiankore").joinpath("py.typed").is_file(), "Missing py.typed in installed wheel"
-          PY
-          /tmp/radiankore-wheel/bin/python -I -m pytest "$GITHUB_WORKSPACE/tests"
+      - name: Test installed wheel
+        working-directory: /tmp
+        run: /tmp/radiankore-wheel/bin/python -I -m pytest --allow-missing-references "$GITHUB_WORKSPACE/tests"
       - name: Upload validated distributions
         uses: actions/upload-artifact@v4
         with:

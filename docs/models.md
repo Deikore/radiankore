@@ -1,4 +1,4 @@
-# Modelos de respuesta
+# Modelos públicos
 
 Los modelos de eventos están en `src/radiankore/models/responses/invoice_events.py`
 y se importan desde `radiankore.models.responses`:
@@ -38,6 +38,23 @@ sin depender de la zona del equipo. El XML original se conserva sin modificacion
 `messages` conserva los textos de
 `ErrorMessage`, incluidas notificaciones de resultados válidos. `document_key`
 y `file_name` conservan los valores de `XmlDocumentKey` y `XmlFileName` de DIAN.
+
+## Índice de resultados por operación
+
+Todos se importan desde `radiankore.models.responses`. Los contratos completos
+se encuentran en las guías de cada operación, con opcionalidad y origen XML:
+
+| Consulta o envío | Modelos | Contrato |
+| --- | --- | --- |
+| Eventos | `InvoiceEventsResult`, `InvoiceEvent`, `EventParty` | [Eventos](operations/events.md) |
+| Numeración | `NumberingRangeResult`, `NumberingRange` | [Rangos](operations/numbering-range.md) |
+| Correos | `ExchangeEmailsResult` | [Directorio](operations/exchange-emails.md) |
+| Validación | `DocumentStatusResult` | [Estado](operations/status.md) |
+| Adquiriente | `AcquirerResult` | [Adquirientes](operations/acquirer.md) |
+| Información del documento | `DocumentInfoResult`, `DocumentInfo`, `DocumentNumber`, `DocumentParty`, `DocumentHolder`, `DocumentReference`, `DocumentNote`, `DocumentEvent`, `DocumentCorrection`, `DocumentState`, `DocumentTotals`, `DocumentValidation` | [Información](operations/document-info.md) |
+| Notas referenciadas | `ReferenceNotesResult`, `ReferenceNote`, `NoteDocumentReference`, `NoteLineResponse`, `NoteResponse` | [Notas](operations/reference-notes.md) |
+| XML original | `XmlDocumentResult` | [XML](operations/xml-document.md) |
+| Emisión de eventos | `SendEventResult` | [Envío](operations/radian-emission.md) |
 
 ## Obligatoriedad y correspondencia XML
 
@@ -95,3 +112,73 @@ rangos en una tupla, incluyendo orden, duplicados y entradas nulas.
 `NumberingRange` contiene la resolución, prefijo, límites enteros, fechas nativas
 y clave técnica excluida de `repr`. Consulta el
 [contrato de GetNumberingRange](operations/numbering-range.md).
+
+## Mandato y contratos compartidos
+
+El [mandato 043](operations/mandate.md) usa `MandateEvent` y sus componentes de
+participantes, facultades, vigencia y adjuntos. Se importa desde
+`radiankore.models.events` junto con `PreparedRadianEvent` y `RadianSoftware`.
+La guía documenta sus campos y variantes. `RadianSoftware.pin` y los bytes de
+los artefactos preparados se excluyen de `repr`.
+
+Las [entradas RADIAN por familia](operations/radian-emission.md#modelos-y-variantes)
+son quince modelos, incluidos factura y mandato, unidos por `RadianEvent`;
+sus componentes se enumeran abajo.
+Las respuestas de envío usan `SendEventResult`, con estado, mensajes y bytes
+originales, según [la guía de envío](operations/mandate.md).
+
+## Entradas de emisión 030–034
+
+Importa desde `radiankore.models.events`:
+
+| Modelo | Campos |
+| --- | --- |
+| `InvoiceResponseEvent` | `code`, `event_number`, `issue_date`, `issue_time`, `sender_party`, `document_reference`; opcionales `receiver_party`, `issuer_person`, `claim_reason`, `notes=()` |
+| `InvoiceEventParty` | `name`, `tax_number`, `identification_type`, `organization_type`; `verification_digit=None`, `tax_scheme=PartyTaxScheme.VAT` |
+| `InvoiceEventPerson` | `identification_number`, `identification_type`, `first_name`, `family_name`; `verification_digit=None`, `job_title=None`, `organization_department=None` |
+| `InvoiceEventDocumentReference` | `document_number`, `uuid`; `document_type=DocumentType.SALES_INVOICE` |
+
+Son dataclasses inmutables con slots y argumentos por nombre. Las entradas
+comprueban enums y combinaciones antes de firmar; no procesan XML ni HTTP.
+030/032 exigen persona receptora; 031 exige motivo; 034 exige notas y genera
+DIAN como destinatario. La organización nunca se infiere del tipo de documento.
+Las notas son tuplas, conservando orden y duplicados. Los binarios preparados
+se excluyen de `repr`. Se reutilizan `RadianSoftware` y `SendEventResult`.
+Los límites, declaraciones y correspondencias XML están en la
+[guía de emisión](operations/invoice-emission.md).
+
+
+## Componentes de emisión RADIAN
+
+Los modelos nuevos se importan desde `radiankore.models.events`. Son inmutables,
+con slots y argumentos por nombre, sin XML ni HTTP en sus validaciones.
+
+| Modelo | Campos principales |
+| --- | --- |
+| `RadianEventHeader` | `event_number`, `issue_date`, `issue_time`, `notes=()` |
+| `RadianParty` | `tax_number`, `identification_type`, `organization_type`, `name=None`, `verification_digit=None`, `tax_scheme=PartyTaxScheme.VAT` |
+| `RadianPerson` | Identificación, nombres/apellidos; DV, cargo, nacionalidad y departamento opcionales |
+| `RadianInvoiceReference` | `document_number`, `uuid`, `due_date=None`; tipo derivado `01` |
+| `RadianEventReference` | `document_number`, `uuid`; tipo derivado `96` |
+| `RadianParticipation` | `amount: Decimal`, `party=None`, `factor_type=None` |
+| `RegistrationPaymentState` | `invoice_value`, `paid_value`, `remaining_value` |
+| `NegotiationTerms` | `total_value`; `price=None`, `discount_rate=None`, `payment_means=None`, `currency=CurrencyCode.COP` |
+| `GuaranteeCommitment` | `party`, `amount`; cero significa cobertura total, campo de hasta 25 caracteres |
+| `GuaranteeBeneficiary` | `party`, `amount=None`; obligatorio para varios avalados |
+| `EconomicRightsTransferTerms` | `transferred_value`, `price`, `discount_factor`, `payment_means`, `currency=CurrencyCode.COP` |
+| `RadianPdfAttachment` | `filename`, `content_bytes`; bytes inmutables de PDF, ocultos en `repr` |
+| `ProtestNotary` | `first_name`, `family_name`, `job_title`; no inventa identificación |
+| `ProtestAct` | `notary_number`, `effective_date`, `notaries`, `attachment` |
+| `PreparedRadianEvent` | `code`, `event_number`, `cude`, `environment`, `xml_bytes`, `zip_bytes` |
+
+La posibilidad de omitir identidad/nombre se restringe al endoso en blanco;
+los demás perfiles exigen participantes completos. El vencimiento se exige
+por el modelo de evento donde corresponda. Las tuplas conservan orden y duplicados.
+`RadianEvent` es la unión de quince modelos específicos para los eventos 030–051.
+`InvoiceResponseEvent` recibe `code`; las demás familias lo derivan del modelo o
+de la operación, y el mandato usa el código fijo 043.
+`PreparedRadianEvent` valida códigos emitibles 030–051, conserva el ambiente y
+exige bytes inmutables y un CUDE hexadecimal de 96 caracteres.
+Los campos financieros conservan `Decimal`, y el artefacto excluye los binarios
+de `repr`. La [guía](operations/radian-emission.md) documenta los campos de cada
+familia y los errores de composición.

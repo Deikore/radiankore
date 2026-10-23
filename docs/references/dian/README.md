@@ -107,3 +107,65 @@ Mantén interpretaciones y diferencias observadas en notas separadas de los arch
 oficiales. Los ejemplos adaptados para pruebas deben ser ficticios y vivir en
 `tests/fixtures/`. Solo los recursos necesarios en ejecución deben incorporarse a
 `src/radiankore/resources/`, con una comprobación de su empaquetado.
+
+## Referencias de emisión 030–034
+
+El [inventario FE 1.9](invoicing/1.9/README.md#emisión-de-eventos-030034) incorpora
+el anexo completo, tablas de eventos y reclamos, genericode y cinco ejemplificaciones
+de la edición 2026. Las copias RADIAN existentes siguen intactas. La guía de emisión
+registra diferencias de perfil, descripción 032 y etiquetas de reclamo.
+
+`InvoiceClaimReason` usa la tabla FE 13.3.12 para los códigos `01`–`04`.
+`OrganizationType` usa `TipoOrganizacion-2.1.gc` y RADIAN §14.2.14;
+`PartyTaxScheme` usa los cuatro pares código/nombre de RADIAN §14.2.15:
+`01`/IVA, `04`/INC, `ZA`/IVA e INC y `ZZ`/No aplica. No se usa el catálogo general
+de impuestos de facturación para representar el régimen tributario de una parte.
+El catálogo de eventos existente se reutiliza; sus etiquetas de consulta no se
+cambian para adaptarlas a los literales de emisión.
+
+## Implementación de eventos RADIAN 036–040 y 044–047
+
+Los originales de RADIAN 1.1 y su caja se consultaron sin modificaciones.
+Las referencias de las nuevas familias son:
+
+| Familia | Requisitos / generación | Validación / extensiones |
+| --- | --- | --- |
+| Terminación 044 | 7.2.1.4.3 / 7.2.5.12 | 9.2.13 |
+| Inscripción 036 | 7.2.1.1 / 7.2.5.4 | 9.2.5 / 7.2.4.4 y 9.2.3.4 |
+| Pago 045 e informe 046 | 7.2.1.5–7.2.1.6 / 7.2.5.13–7.2.5.14 | 9.2.14–9.2.15 / 7.2.4.8–7.2.4.9 |
+| Endosos 037–039/047 y cancelación 040 | 7.2.1.2 / 7.2.5.5–7.2.5.8 y 7.2.5.15 | 9.2.6–9.2.9 y 9.2.16 / 7.2.4.5 y 9.2.3.5 |
+
+Los modelos usan 18 operaciones de tabla 14.1.2 y del genericode correspondiente.
+Se revisaron las 20 ejemplificaciones disponibles, incluidas las cuatro de
+inscripción con extensión `.xml`/`.XML`. Las operaciones 403 y 443 figuran en
+tabla y genericode, pero no tienen ejemplificación propia en la caja.
+
+CUDE general: §12.1.1. Endosos en blanco: §12.1.3, sin identidad del endosante y
+con `listID=2`. El vector publicado utiliza `030` como dato de demostración;
+los documentos reales usan el código de endoso correspondiente.
+
+Las diferencias se documentan fuera de los originales en las guías por familia:
+condición de limitación frente a parcial/total en 045, AAI07b y aritmética de tasas,
+`listID` omitido en muestra 047, campos de venta vacíos en 038/039 y códigos fiscales
+erróneos en muestras de inscripción. `CurrencyCode` toma `VES` de tabla 14.2.16,
+frente a `VES7` del genericode. Los medios de pago usan los 14 códigos explícitos
+de tabla 14.2.11, sin extenderlos automáticamente a los 77 del genericode general.
+
+
+## Cobertura completa de la emisión
+
+El [mapa navegable de eventos](../../event-reference-map.md) registra todos los
+códigos de participantes 030–051, secciones/páginas, modelos, guías y ejemplos.
+Los eventos 02/04 son emitidos por DIAN. Hay dos anexos con el mismo nombre:
+FE 1.9 (753 páginas, `invoicing/1.9/anexo-tecnico.pdf`) y RADIAN 1.1
+(482 páginas, `radian/1.1/anexo-tecnico.pdf`). RADIAN incluye 046–051 en
+§§7.2.5.14–19, pp. 231–289; no termina en el evento 045.
+
+A la incorporación anterior se añaden aval 035, limitación/terminación 041/042,
+protesto 048 y derechos económicos 049–051: 14 operaciones y 16 muestras.
+La API RADIAN común suma 32 operaciones y 36 XML de referencia para sus 16 clases,
+además de las fuentes particulares de 030–034 y del mandato 043.
+`AcceptanceFailureType` usa §14.2.20 y `Falta de aceptacion.gc`.
+Las nuevas guías explican adjuntos, referencias CUFE/CUDE, cero en aval, AAI05a,
+roles de 051 y la condición de aceptación de 481 frente a 482.
+Esta nota no modifica los originales ni sus inventarios SHA-256.

@@ -123,3 +123,62 @@ desconocidos para notas. El modelo exige un enum del catálogo correspondiente.
 Estos enums no se aplican a `DocumentCorrection.code` ni a las respuestas de
 `get_reference_notes`. Los códigos se superponen: usa `is` al comparar miembros
 para distinguir crédito de débito, además de comprobar el tipo del documento.
+
+## Emisión de factura 030–034 y participantes
+
+Los eventos usan el catálogo existente `EventType`, restringido en la entrada a
+030–034. `DocumentType` identifica la factura referenciada (01–04), y
+`IdentificationType` identifica participantes y personas. Se añaden:
+
+| Catálogo / miembro | Código | Etiqueta |
+| --- | --- | --- |
+| `InvoiceClaimReason.DOCUMENT_INCONSISTENCIES` | `01` | Documento con inconsistencias |
+| `InvoiceClaimReason.GOODS_NOT_DELIVERED` | `02` | Mercancía no entregada |
+| `InvoiceClaimReason.GOODS_PARTIALLY_DELIVERED` | `03` | Mercancía entregada parcialmente |
+| `InvoiceClaimReason.SERVICE_NOT_PROVIDED` | `04` | Servicio no prestado |
+| `OrganizationType.LEGAL_PERSON` | `1` | Persona Jurídica |
+| `OrganizationType.NATURAL_PERSON` | `2` | Persona Natural |
+| `PartyTaxScheme.VAT` | `01` | IVA |
+| `PartyTaxScheme.CONSUMPTION_TAX` | `04` | INC |
+| `PartyTaxScheme.VAT_AND_CONSUMPTION_TAX` | `ZA` | IVA e INC |
+| `PartyTaxScheme.NOT_APPLICABLE` | `ZZ` | No aplica |
+
+Todos se importan desde `radiankore.catalogs` y exponen `.value`, `.label` y
+`.from_code()`, con resolución exacta y `None` para códigos desconocidos/ausentes.
+Los motivos provienen de la tabla FE 1.9 13.3.12 (edición 2026); se conserva su
+espaciado interior original, incluido el doble espacio de la etiqueta `03`.
+Organización y régimen tributario siguen RADIAN 1.1 §§14.2.14–14.2.15.
+
+`InvoiceClaimReason` no se confunde con motivos de notas crédito/débito ni con
+«Falta de aceptación» de protestos: son catálogos distintos aunque compartan
+números. `PartyTaxScheme` describe al participante, no los impuestos por línea.
+Las etiquetas actuales de `EventType` para consultas permanecen intactas;
+el builder usa los literales XML exigidos por las reglas de emisión.
+
+
+## Operaciones y finanzas RADIAN
+
+Desde `radiankore.catalogs` se importan:
+
+- `RadianOperationType`: las 32 operaciones de los eventos 035–042 y 044–051;
+  `.event_type` deriva el `EventType` correspondiente. Los modelos restringen
+  cada operación a su familia. Los catálogos actuales de mandato no cambian.
+- `EndorsementForm`: `COMPLETE=1`, `BLANK=2`, tabla 14.2.3.
+- `PaymentRestriction`: `UNRESTRICTED=1`, `RESTRICTED=2`, tabla 14.2.9;
+  no representa pago parcial/total, definido por las operaciones 451/452 o 511/512.
+- `AcceptanceFailureType`: `PARTIAL=1`, `TOTAL=2`, tabla 14.2.20; exclusivo
+  de `CustomizationID/@schemeID` en protesto por falta de aceptación 481.
+- `FactorType`: `FACTORING=1`, `CONFIRMING=2`, tabla 14.2.2.
+- `PaymentMeans`: los 14 códigos de la tabla RADIAN 14.2.11; se usa esta tabla,
+  no los 77 códigos del genericode general. Por ejemplo, `CASH=10`,
+  `BANK_DEPOSIT=42`, `BANK_DEBIT_TRANSFER=47` y `ACH_DEBIT=3`.
+- `CurrencyCode`: 179 códigos del snapshot RADIAN, con COP predeterminado en
+  participaciones. Se usa `VES` de la tabla 14.2.16 frente al `VES7` erróneo del
+  genericode; `from_code("VES7")` devuelve `None`. No se mantienen alias silenciosos.
+
+Todos son `StrEnum` con `.value`, `.label` y `.from_code()` exacto, sin I/O al
+importar. Las etiquetas de operación siguen el genericode versionado; las reglas
+por evento y diferencias se explican en las [guías](operations/radian-emission.md).
+Los catálogos de identificación, organización, régimen tributario y eventos se
+reutilizan. No se confunden el tipo documental `96`, el código de evento y su
+operación, ni se reutiliza el catálogo de motivos de reclamo para otros campos.

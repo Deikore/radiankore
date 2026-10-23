@@ -32,3 +32,47 @@ sobre `wsa:To`. HTTP se envía al endpoint `.svc`; el destino firmado en `wsa:To
 incluye `?WSDL`. No se descarga WSDL.
 El GET de `GetExchangeEmails` usa la URL recibida, sin firma ni certificado SOAP.
 La firma del sobre no equivale a firmar un documento UBL ni la respuesta recibida.
+
+## Preparación y envío del mandato 043
+
+Para preparar el mandato, pasa `MandateEvent` y `RadianSoftware` a
+`prepare_radian_event()`. Los modelos
+validan operación, facultades, referencias, aceptación, fechas y soportes antes
+de firmar. Los errores de composición son `TypeError` o `ValueError`.
+`send_radian_event()` exige `PreparedRadianEvent` del mismo ambiente; no
+reconstruye el XML ni reintenta el envío. Los fallos de firma conservan
+`DianSignatureError`; los de red, SOAP y respuesta conservan sus excepciones
+públicas. Un rechazo de negocio devuelve `SendEventResult`, sin convertirlo en
+excepción. La [guía de mandato](operations/mandate.md) documenta las condiciones.
+
+## Preparación y envío de eventos 030–034
+
+Se conservan las excepciones de firma, transporte, SOAP y respuesta del mandato.
+Las entradas rechazan tipos incorrectos con `TypeError` y valores incompatibles
+con `ValueError`: código distinto de 030–034, CUFE inválido, motivo fuera de 031,
+persona fuera de 030/032 o notas ausentes en 034. No se valida el contenido jurídico
+de las declaraciones. La preparación exige fecha de emisión y de firma iguales
+en Colombia, XML firmado de hasta 500.000 bytes y un software válido.
+Enviar con otro ambiente o con una entrada que no sea `PreparedRadianEvent`
+genera error local antes de abrir conexiones. Un rechazo de negocio sigue siendo `SendEventResult`.
+
+
+## Preparación y envío RADIAN
+
+`prepare_radian_event()` acepta los quince modelos de su unión pública y
+`RadianSoftware`. Las composiciones incorrectas generan `TypeError` o `ValueError`
+antes del envío: operación ajena a la familia, declaración requerida ausente,
+comprador directo incompatible, importe no finito, saldo incoherente, vencimiento
+ausente o modalidad de endoso incompatible. No se impone una fórmula de descuento
+contradictoria ni se convierten notificaciones en rechazos locales. La suma de
+cedentes de 049 sí se exige por el rechazo AAI05a de su extensión, aunque AAF19
+la trate como notificación. 051 exige un pagador, importe positivo y saldo
+aritmético; 035 conserva cero como cobertura total. Adjuntos de 041/042/048
+requieren bytes PDF y el nombre literal de su perfil. El tamaño del XML firmado
+incluye base64 y no se corrige truncando el soporte.
+
+`send_radian_event()` exige `PreparedRadianEvent` del mismo ambiente para todas
+las familias 030–051. Se reutilizan excepciones de
+firma, transporte, SOAP y parsing. No hay reintentos. Un rechazo de DIAN se devuelve
+como `SendEventResult`; un resultado ausente/nil es `None`. La emisión real requiere
+antecedentes y participantes autorizados que no se consultan automáticamente.
