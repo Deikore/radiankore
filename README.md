@@ -32,8 +32,10 @@ Si necesitas compilar las dependencias de firma, consulta la
 | `get_document_info(uuid)` | `GetDocumentInfo` | Información, estados, eventos y notas del documento |
 | `get_reference_notes(track_id)` | `GetReferenceNotes` | Notas referenciadas y motivos por línea |
 | `get_xml_by_document_key(document_key)` | `GetXmlByDocumentKey` | XML original del documento como `bytes` |
+| `prepare_radian_event(event=..., software=...)` | Local | XML firmado, CUDE y ZIP de los eventos 030–051 |
+| `send_radian_event(prepared)` | `SendEventUpdateStatus` | Emisión del evento RADIAN preparado |
 
-No genera facturas ni envía eventos. Los resultados utilizan dataclasses
+Emite los eventos 030–051; no genera facturas. Los resultados utilizan dataclasses
 inmutables y campos opcionales cuando corresponda.
 
 ## Consultar eventos
@@ -52,9 +54,48 @@ for event in result.events:
     print(event.id, event.code, event.description, event.date, event.time)
 ```
 
+## Emitir eventos de factura
+
+Construye un `InvoiceResponseEvent` y reutiliza `RadianSoftware`. La
+[guía de emisión](https://radiankore.readthedocs.io/en/latest/operations/invoice-emission.html)
+incluye ejemplos de acuse 030, reclamo 031, recibo 032 y aceptaciones 033/034.
+
+```python
+prepared = client.prepare_radian_event(event=event, software=software)
+print(prepared.code, prepared.cude)
+result = client.send_radian_event(prepared)
+```
+
+La preparación es local. El consumidor aporta las declaraciones y el envío es
+explícito, con el mismo ambiente del artefacto preparado.
+
+## Emitir eventos RADIAN
+
+`prepare_radian_event(event=..., software=...)` y `send_radian_event(prepared)`
+cubren aval 035, inscripción 036, endosos 037–040/047, limitaciones 041/042,
+terminación de mandato 044, pagos 045/046, protesto 048 y derechos económicos
+049–051. La [guía con ejemplos por familia](https://radiankore.readthedocs.io/en/latest/operations/radian-emission.html)
+detalla modelos, variantes y validaciones. La misma pareja de métodos prepara y
+envía los eventos de factura 030–034 y el mandato 043.
+
+## Preparar y enviar un mandato
+
+Construye un `MandateEvent` y un `RadianSoftware` siguiendo el
+[ejemplo completo](https://radiankore.readthedocs.io/en/latest/operations/mandate.html).
+La preparación firma el XML y crea el ZIP en memoria sin contactar DIAN:
+
+```python
+prepared = client.prepare_radian_event(event=event, software=software)
+print(prepared.cude)
+# Envío explícito del mismo ZIP preparado:
+result = client.send_radian_event(prepared)
+if result is not None:
+    print(result.is_valid, result.status_code, result.messages)
+```
+
 Producción es el ambiente predeterminado; usa `Environment.HABILITATION` para
-habilitación. Cada consulta cierra sus conexiones automáticamente y puedes
-reutilizar el cliente sin volver a cargar el certificado.
+habilitación. Cada consulta o emisión cierra sus conexiones automáticamente y
+puedes reutilizar el cliente sin volver a cargar el certificado.
 
 ## Otras consultas
 

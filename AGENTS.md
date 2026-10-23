@@ -3,13 +3,16 @@
 ## Estructura y alcance
 
 `radiankore` es una librería síncrona Python >=3.13.
-Consulta ocho operaciones SOAP de DIAN, descritas en README. No genera facturas
-ni envía eventos.
+Consulta ocho operaciones SOAP de DIAN, descritas en README, y emite el evento
+de mandato (043), los eventos de factura 030–034 y los demás eventos RADIAN
+035–042/044–051 mediante `SendEventUpdateStatus`. No genera facturas.
 
-En `src/radiankore/`, `client.py` coordina consultas, `certificate.py`
+En `src/radiankore/`, `client.py` coordina consultas y emisión, `certificate.py`
 carga certificados y `environment.py` selecciona ambientes. `_soap/` contiene
-firma, transporte y parsers; `models/responses/`, dataclasses públicas; `catalogs/`,
-enums. Las pruebas están en `tests/` y workflows en `.github/workflows/`.
+firma, transporte y parsers; `_soap/events/` contiene el builder, firma UBL,
+empaquetado ZIP y parser de emisión, con builders separados por familia y componentes de dominio compartidos. `models/responses/` y
+`models/events/` albergan dataclasses públicas; `catalogs/` contiene enums.
+Las pruebas están en `tests/` y workflows en `.github/workflows/`.
 
 README contiene instalación, métodos y ejemplos breves; los contratos están en
 [docs](docs/index.md) y [referencias DIAN](docs/references/dian/README.md). Conserva los originales y sus inventarios;
@@ -38,7 +41,10 @@ Mantén dataclasses inmutables, con slots y argumentos por nombre, sin procesami
 XML ni HTTP dentro de los modelos.
 
 Reutiliza `_request` y los lectores compartidos. El certificado se carga una vez;
-cada consulta cierra sus conexiones. Producción es predeterminada.
+cada operación de red cierra sus conexiones. Producción es predeterminada.
+Los eventos 030–051 usan `prepare_radian_event` y `send_radian_event`, con un
+único `PreparedRadianEvent`. Se preparan sin I/O y se envían explícitamente con
+el ZIP original y el mismo ambiente; valida facultades, soportes, XSD y firmas serializadas en tests.
 No introduzcas reintentos, fallback entre ambientes ni reformateo después de firmar.
 
 Preserva los contratos por operación: eventos ordenados numéricamente por

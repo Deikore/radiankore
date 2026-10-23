@@ -2,7 +2,7 @@
 
 Librería Python de Deikore SAS para consultas directas a DIAN mediante SOAP y
 certificados PFX/P12. La API es síncrona, admite Python >=3.13 y se distribuye bajo MIT.
-No genera facturas ni envía eventos.
+Permite preparar y enviar eventos 030–051; no genera facturas.
 
 ## Primeros pasos
 
@@ -36,6 +36,9 @@ operations/acquirer
 operations/document-info
 operations/reference-notes
 operations/xml-document
+operations/mandate
+operations/invoice-emission
+operations/radian-emission
 ```
 
 ```{toctree}
@@ -47,6 +50,7 @@ models
 catalogs
 errors
 technical-references
+event-reference-map
 ```
 
 ```{toctree}

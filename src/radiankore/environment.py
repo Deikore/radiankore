@@ -19,3 +19,8 @@ class Environment(StrEnum):
     def addressing_to(self) -> str:
         """Return the WS-Addressing destination used by the verified SOAP profile."""
         return f"{self.endpoint}?WSDL"
+
+    @property
+    def profile_execution_id(self) -> str:
+        """Return the DIAN environment code used in UBL documents."""
+        return "1" if self is Environment.PRODUCTION else "2"

@@ -1,27 +1,45 @@
 """Synchronous DIAN client for invoice events, documents and acquirer information."""
 
+from base64 import b64encode
 from dataclasses import replace
+from datetime import UTC, datetime
 from math import isfinite
 from os import PathLike
+
+from lxml import etree
 
 from radiankore._soap import transport
 from radiankore._soap.acquirer_response import parse_acquirer_response
 from radiankore._soap.document_info_response import parse_document_info_response
 from radiankore._soap.document_status_response import parse_document_status_response
 from radiankore._soap.envelope import build_signed_request
+from radiankore._soap.events import (
+    build_radian_application_response,
+    pack_event,
+    parse_send_event_response,
+    sign_application_response,
+)
+from radiankore._soap.events.cude import colombian_issue_datetime
 from radiankore._soap.exchange_emails_response import (
     parse_exchange_emails_csv,
     parse_exchange_emails_response,
 )
-from radiankore._soap.namespaces import ACTION_PREFIX
+from radiankore._soap.namespaces import ACTION_PREFIX, CBC
 from radiankore._soap.numbering_range_response import parse_numbering_range_response
 from radiankore._soap.reference_notes_response import parse_reference_notes_response
 from radiankore._soap.response import parse_invoice_events_response
 from radiankore._soap.xml_document_response import parse_xml_document_response
-from radiankore.catalogs import IdentificationType
+from radiankore.catalogs import EventType, IdentificationType
 from radiankore.certificate import DigitalCertificate
 from radiankore.environment import Environment
 from radiankore.exceptions import DianTransportError
+from radiankore.models.events import (
+    InvoiceResponseEvent,
+    MandateEvent,
+    PreparedRadianEvent,
+    RadianEvent,
+    RadianSoftware,
+)
 from radiankore.models.responses import (
     AcquirerResult,
     DocumentInfoResult,
@@ -30,6 +48,7 @@ from radiankore.models.responses import (
     InvoiceEventsResult,
     NumberingRangeResult,
     ReferenceNotesResult,
+    SendEventResult,
     XmlDocumentResult,
 )
 
@@ -232,6 +251,91 @@ class DianClient:
         return parse_xml_document_response(
             self._request("GetXmlByDocumentKey", (("trackId", document_key),))
         )
+
+    def prepare_radian_event(
+        self,
+        *,
+        event: RadianEvent,
+        software: RadianSoftware,
+    ) -> PreparedRadianEvent:
+        """Validate, sign and ZIP any supported event locally, without I/O.
+
+        Invoice events 030-034 must be issued on the signing date in Colombia.
+        Other families retain their own profile-specific rules. Inspect or persist
+        the immutable artifact before explicitly calling send_radian_event.
+        """
+        if not isinstance(software, RadianSoftware):
+            raise TypeError("software must be a RadianSoftware.")
+        signing_time = None
+        if isinstance(event, InvoiceResponseEvent):
+            signing_time = datetime.now(UTC)
+            stamp = colombian_issue_datetime(event.issue_date, event.issue_time)
+            signing_stamp = colombian_issue_datetime(
+                signing_time.date(), signing_time.timetz()
+            )
+            if stamp.date() != signing_stamp.date():
+                raise ValueError(
+                    "Invoice event issue_date must match the signing date in Colombia."
+                )
+        root = build_radian_application_response(
+            event,
+            software=software,
+            environment=self._environment,
+        )
+        sign_application_response(
+            root,
+            certificate=self._certificate,
+            signer_role=software.signer_role,
+            signing_time=signing_time,
+        )
+        if isinstance(event, MandateEvent):
+            code = EventType.MANDATE
+            event_number = event.event_number
+        else:
+            code = event.code
+            event_number = (
+                event.event_number
+                if isinstance(event, InvoiceResponseEvent)
+                else event.header.event_number
+            )
+        cude, xml_bytes, zip_bytes = self._serialize_event(root)
+        return PreparedRadianEvent(
+            code=code,
+            event_number=event_number,
+            cude=cude,
+            environment=self._environment,
+            xml_bytes=xml_bytes,
+            zip_bytes=zip_bytes,
+        )
+
+    def send_radian_event(
+        self,
+        prepared: PreparedRadianEvent,
+    ) -> SendEventResult | None:
+        """Submit the exact prepared ZIP once, without retries or rebuilding.
+
+        The artifact must belong to this client's environment. Business rejection
+        remains response data; technical failures raise the existing exceptions.
+        """
+        if not isinstance(prepared, PreparedRadianEvent):
+            raise TypeError("prepared must be a PreparedRadianEvent.")
+        if prepared.environment is not self._environment:
+            raise ValueError("Prepared event environment does not match the client.")
+        return parse_send_event_response(
+            self._request(
+                "SendEventUpdateStatus",
+                (("contentFile", b64encode(prepared.zip_bytes).decode("ascii")),),
+            )
+        )
+
+    def _serialize_event(self, root: etree._Element) -> tuple[str, bytes, bytes]:
+        """Serialize the signed tree once, enforce ZA01 and package its exact bytes."""
+        xml_bytes = etree.tostring(root, encoding="UTF-8", xml_declaration=True)
+        if len(xml_bytes) > 500_000:
+            raise ValueError("Signed event XML exceeds DIAN's 500,000-byte limit.")
+        cude = root.findtext(f"{{{CBC}}}UUID")
+        assert cude is not None
+        return cude, xml_bytes, pack_event(xml_bytes, xml_name=f"ar_{cude}.xml")
 
     def _request(
         self, operation: str, parameters: tuple[tuple[str, str], ...]

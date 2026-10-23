@@ -1,5 +1,47 @@
 # Historial de cambios
 
+## 0.5.0 — 2026-10-23
+
+- Pruebas de API pública compartidas por el checkout y el wheel instalado;
+  firma y ZIP comunes para todas las familias, sin wrappers internos redundantes.
+- Restauración de documentación de modelos, catálogos, errores y referencias;
+  matriz navegable de fuentes para 030–051 y ejemplos verificados en CI.
+- Compilación limpia de Sphinx, contratos documentales y referencias obligatorias
+  en el checkout; omisiones de XSD explícitas al probar distribuciones.
+- Validación de pago y catálogos de participantes en módulos neutrales, con
+  imports compatibles; builders de pago/notificación y fixtures por familia.
+  Se preservan los bytes XML y las validaciones específicas de emisión.
+
+- API común `prepare_radian_event()` / `send_radian_event()` para los 22 eventos
+  030–051, con un único `PreparedRadianEvent` y builders especializados por familia.
+- Componentes y modelos por familia para inscripción, terminación de mandato,
+  pagos, endosos y cancelación; catálogos financieros compartidos, CUDE de endosos
+  en blanco, participantes múltiples y precisión Decimal sin redondeos implícitos.
+- Aval 035, limitación/terminación 041/042, protesto 048 y derechos económicos
+  049–051, con adjuntos PDF en memoria, datos notariales, coberturas de aval,
+  saldos explícitos y catálogo de falta de aceptación. Reutilizan la API común,
+  serialización, catálogos, firmas y transporte sin nuevas dependencias.
+- Guías por familia, discrepancias del anexo documentadas y pruebas sintéticas
+  de modelos, XML/XSD, firmas, referencias, bytes de ZIP y transporte.
+
+- Emisión de eventos 030–034 mediante `prepare_radian_event()` y
+  `send_radian_event()`, con CUDE, XAdES-EPES, QR de factura y ZIP en memoria.
+  Modelos inmutables, motivos de reclamo y catálogos compartidos de participantes;
+  declaraciones explícitas, verificación de fecha de firma y envío del ZIP original.
+- Referencias FE 1.9 y ejemplificaciones oficiales preservadas con SHA-256;
+  documentación por evento y pruebas sintéticas de XML, firmas, bytes y transporte.
+
+- Preparación local y envío explícito del mandato RADIAN 043:
+  `prepare_radian_event()` devuelve CUDE, XML XAdES-EPES y ZIP en memoria;
+  `send_radian_event()` envía el artefacto mediante `SendEventUpdateStatus`.
+- Modelos y catálogos para operaciones 431–434, poderes especiales/generales,
+  referencias únicas/múltiples/todas y facultades por factura, con validaciones
+  antes del envío, normalización UTC−05:00 y soportes PDF.
+- `SendEventResult` conserva los campos DianResponse opcionales y sus dos binarios
+  independientes; se reutilizan el parsing seguro y los errores existentes.
+- Pruebas sintéticas con XSD locales, verificación de firmas UBL/SOAP, integridad
+  del ZIP, errores y cierre de conexiones; guía de uso y criterios del anexo.
+
 ## 0.4.0 — 2026-10-21
 
 - `ReferenceNote.code` pasa de `str | None` a `DocumentType | None`, restringido
