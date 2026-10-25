@@ -1,5 +1,9 @@
 # Aval 035
 
+Contexto funcional: [035](../functional/events/035.md).
+
+Esta guía describe la implementación y sus validaciones técnicas.
+
 Parte de los [datos comunes](radian-emission.md#preparación-común-para-los-ejemplos).
 Las tres variantes tienen operación y código fijos `035`.
 
@@ -43,7 +47,7 @@ event = replace(
 )
 ```
 
-Prepara y envía mediante la [API común](radian-emission.md). Las variantes son
+Prepare y envía mediante la [API común](radian-emission.md). Las variantes son
 actos diferentes: no deben enviarse juntas automáticamente.
 
 | Entrada | XPath relativo a `ApplicationResponse` | Cardinalidad / regla |

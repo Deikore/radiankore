@@ -1,7 +1,7 @@
 # Consultar datos de un adquiriente
 
 `GetAcquirer` permite consultar nombre o razón social y correo electrónico de un
-comprador. Usa el mismo cliente, certificado y ambiente de las demás consultas:
+comprador. Utilice el mismo cliente, certificado y ambiente de las demás consultas:
 
 ```python
 from radiankore import DianClient

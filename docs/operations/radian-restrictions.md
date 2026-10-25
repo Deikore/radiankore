@@ -1,6 +1,10 @@
 # Limitación 041 y terminación 042
 
-Usa los [datos comunes](radian-emission.md#preparación-común-para-los-ejemplos).
+Contexto funcional: [041](../functional/events/041.md); [042](../functional/events/042.md).
+
+Esta guía describe la implementación y sus validaciones técnicas.
+
+Utilice los [datos comunes](radian-emission.md#preparación-común-para-los-ejemplos).
 Autoridad y funcionario son identidades suministradas por el consumidor; en los
 ejemplos se reutilizan participantes sintéticos, sin afirmar facultades reales.
 

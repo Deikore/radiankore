@@ -1,6 +1,10 @@
 # Endosos 037–039/047 y cancelación 040
 
-Usa los [datos comunes](radian-emission.md#preparación-común-para-los-ejemplos).
+Contexto funcional: [037](../functional/events/037.md); [038](../functional/events/038.md); [039](../functional/events/039.md); [040](../functional/events/040.md); [047](../functional/events/047.md).
+
+Esta guía describe la implementación y sus validaciones técnicas.
+
+Utilice los [datos comunes](radian-emission.md#preparación-común-para-los-ejemplos).
 
 ## Endoso completo
 
@@ -39,7 +43,7 @@ event = EndorsementEvent(
 | 039 / 039 | `COLLECTION_ENDORSEMENT` | Procuración; valor total, sin precio, tasa ni medio de pago |
 | 047 / 047 | `ORDINARY_ASSIGNMENT_ENDORSEMENT` | Cesión ordinaria; completo y posterior al vencimiento |
 
-Para 038 y 039, sustituye la negociación por
+Para 038 y 039, sustituya la negociación por
 `NegotiationTerms(total_value=Decimal("100000.00"))`. La referencia puede omitir
 vencimiento y la tupla `debtors` puede quedar vacía en estos perfiles, conforme a
 sus cardinalidades. Para 037 y 047, vencimiento, deudores y negociación completa
@@ -57,8 +61,8 @@ ordinary_assignment = replace(
 )
 ```
 
-Prepara `ordinary_assignment` para el caso 047; `event` conserva el endoso 037
-para los ejemplos siguientes. Para garantía y procuración, construye alternativas:
+Prepare `ordinary_assignment` para el caso 047; `event` conserva el endoso 037
+para los ejemplos siguientes. Para garantía y procuración, construya alternativas:
 
 ```python
 guarantee_endorsement = replace(
@@ -102,8 +106,8 @@ contradictoria como rechazo local. Su aceptación se verifica en DIAN.
 
 ## Endoso en blanco
 
-Después de construir un evento 037, 038 o 039, omite las identidades de los
-endosantes y conserva sus participaciones:
+Después de construir un evento 037, 038 o 039, omita las identidades de los
+endosantes y conserve sus participaciones:
 
 ```python
 event = replace(

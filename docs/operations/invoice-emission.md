@@ -1,5 +1,9 @@
 # Emitir eventos de factura 030–034
 
+Contexto funcional: [030](../functional/events/030.md); [031](../functional/events/031.md); [032](../functional/events/032.md); [033](../functional/events/033.md); [034](../functional/events/034.md).
+
+Esta guía describe la implementación y sus validaciones técnicas.
+
 `prepare_radian_event(*, event, software)` valida los datos, calcula CUDE,
 firma un ApplicationResponse UBL 2.1 y crea el ZIP en memoria. No contacta DIAN
 ni lee archivos después de cargar el certificado. `send_radian_event(prepared)`
@@ -154,7 +158,7 @@ if result is not None:
     print(result.is_valid, result.status_code, result.messages)
 ```
 
-Para preparar otro evento, pasa `claim`, `receipt`, `express` o `tacit` en
+Para preparar otro evento, proporcione `claim`, `receipt`, `express` o `tacit` en
 `event`. Estos ejemplos son alternativas; no se envían todos sobre una
 misma factura. Reclamo y aceptación son declaraciones incompatibles.
 
@@ -173,7 +177,7 @@ Las plantillas oficiales completas están en FE 1.9 §6.5.5.7, páginas 301–30
 | Mandatario de persona jurídica | Nombre e identificación del mandatario, razón social y NIT del mandante y adquirente; juramento correspondiente |
 | Mandatario de persona natural comerciante | Identificación y NIT del comerciante, identificación del mandatario y adquirente; juramento correspondiente |
 
-Copia la plantilla aplicable del
+Copie la plantilla aplicable del
 [anexo oficial FE 1.9](https://www.dian.gov.co/impuestos/factura-electronica/Documents/Anexo-Tecnico-Factura-Electronica-de-Venta-vr-1-9.pdf#page=301)
 y completa todos sus campos. No envíes las tres alternativas ni las instrucciones
 editoriales incluidas en las ejemplificaciones. En cualquier evento generado por

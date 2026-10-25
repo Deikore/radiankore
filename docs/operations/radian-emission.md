@@ -11,7 +11,8 @@ y cierra su conexión. No hay reintentos ni cambios automáticos de ambiente. Lo
 rechazos de negocio siguen siendo datos de respuesta; los fallos técnicos conservan
 las excepciones existentes. Los eventos 030–034 exigen que la fecha de emisión
 coincida con la fecha de firma en Colombia; esa restricción no se aplica a
-035–051. El mandato conserva su perfil específico de firma.
+035–051. El mandato tiene estructura y cálculo CUDE propios; todas las familias comparten
+el firmante XAdES-EPES. Consulte [comunicación y firmas](../guides/communication-and-signatures.md).
 
 ## Modelos y variantes
 
@@ -42,7 +43,7 @@ Todas las familias usan `prepare_radian_event` y `send_radian_event`.
 ## Preparación común para los ejemplos
 
 Los siguientes participantes, referencias, DV, software y declaraciones son
-sintéticos. No representan documentos reales ni participantes autorizados. Copia
+sintéticos. No representan documentos reales ni participantes autorizados. Copie
 este bloque antes del ejemplo de la familia elegida y sustituye los datos para
 una integración real. Los antecedentes y la exactitud de las declaraciones son
 responsabilidad del consumidor.

@@ -1,7 +1,7 @@
 # Directorio de correos: GetExchangeEmails
 
-Consulta el directorio de correos registrados para recibir facturas electrónicas.
-No recibe identificación, CUFE ni otros parámetros. Usa el certificado y el
+Consulte el directorio de correos registrados para recibir facturas electrónicas.
+No recibe identificación, CUFE ni otros parámetros. Utilice el certificado y el
 ambiente del cliente; producción es predeterminada.
 
 ```python

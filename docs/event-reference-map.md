@@ -15,7 +15,7 @@ variar: las discrepancias están en las guías por familia.
   y pago de transferencia 051 en p. 280; no falta el final del documento.
 
 Los enlaces a originales y pruebas abren el repositorio, porque esos archivos
-se excluyen del sitio y de las distribuciones. Consulta la
+se excluyen del sitio y de las distribuciones. Consulte la
 [procedencia y los hashes](technical-references.md). Los documentos se usan como
 referencias versionadas; esta matriz no certifica vigencia normativa posterior.
 

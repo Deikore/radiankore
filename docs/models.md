@@ -44,7 +44,7 @@ y `file_name` conservan los valores de `XmlDocumentKey` y `XmlFileName` de DIAN.
 Todos se importan desde `radiankore.models.responses`. Los contratos completos
 se encuentran en las guías de cada operación, con opcionalidad y origen XML:
 
-| Consulta o envío | Modelos | Contrato |
+| Consulte o envío | Modelos | Contrato |
 | --- | --- | --- |
 | Eventos | `InvoiceEventsResult`, `InvoiceEvent`, `EventParty` | [Eventos](operations/events.md) |
 | Numeración | `NumberingRangeResult`, `NumberingRange` | [Rangos](operations/numbering-range.md) |
@@ -102,7 +102,7 @@ lista vacía. El XML guardado permite consultar datos UBL aún no modelados.
 
 `ExchangeEmailsResult` conserva `success`, `status_code` y `message` de SOAP,
 la URL temporal en `download_url` y los registros en `csv`, una tupla de diccionarios leídos con `csv.DictReader`.
-Ambos campos de contenido se excluyen de `repr`. Consulta el
+Ambos campos de contenido se excluyen de `repr`. Consulte el
 [contrato de GetExchangeEmails](operations/exchange-emails.md).
 
 ## Rangos de numeración
@@ -110,7 +110,7 @@ Ambos campos de contenido se excluyen de `repr`. Consulta el
 `NumberingRangeResult` conserva los códigos de negocio como texto y todos los
 rangos en una tupla, incluyendo orden, duplicados y entradas nulas.
 `NumberingRange` contiene la resolución, prefijo, límites enteros, fechas nativas
-y clave técnica excluida de `repr`. Consulta el
+y clave técnica excluida de `repr`. Consulte el
 [contrato de GetNumberingRange](operations/numbering-range.md).
 
 ## Mandato y contratos compartidos

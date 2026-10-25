@@ -112,7 +112,7 @@ distinto de `InvoiceEvent`.
 `compressed_document_info` conserva exactamente el texto recibido, incluidos espacios
 y cadenas vacías, y se excluye de `repr`. No se decodifica ni sustituye `documents`:
 el WSDL no especifica el formato de compresión. La respuesta estructurada se procesa
-sin depender de ese campo. Consulta el [contrato local](https://github.com/Deikore/radiankore/blob/HEAD/docs/references/dian/wsdl/README.md#getdocumentinfo).
+sin depender de ese campo. Consulte el [contrato local](https://github.com/Deikore/radiankore/blob/HEAD/docs/references/dian/wsdl/README.md#getdocumentinfo).
 
 ## Tipos de documento
 
@@ -160,7 +160,7 @@ En los demás documentos, usa texto o `None`, sin enums de motivos.
 
 Las tablas oficiales 13.2.4 y 13.2.5 describen conceptos de corrección de UBL.
 Su aplicación a `DocumentCode` se basa en la observación aportada por el
-mantenedor; el WSDL declara una cadena sin enumeración. Consulta los
+mantenedor; el WSDL declara una cadena sin enumeración. Consulte los
 [catálogos y sus fuentes](../catalogs.md#motivos-de-notas).
 `description` mantiene el texto SOAP y no se sustituye por `.label`.
 `DocumentCorrection.code`, los códigos de `get_reference_notes` y `states`

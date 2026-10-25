@@ -47,3 +47,10 @@ htmlcov/
 
 # Generated documentation
 docs/_build/
+
+# Local event example artifacts
+/emit_event_047.py
+/emit_event_362.py
+/output/event-047/
+/output/event-364/
+/output/event-362/

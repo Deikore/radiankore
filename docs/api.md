@@ -14,10 +14,11 @@ timeout debe ser positivo y finito. Cargar el cliente no realiza conexiones.
 La propiedad `certificate` expone el material ya cargado y `environment` el
 ambiente seleccionado. No hay gestión de cierre a cargo del consumidor.
 `DigitalCertificate.from_file()` y `from_pfx()` también permiten cargar material
-independientemente; consulta [errores y certificado](errors.md).
+independientemente; consulte [errores y certificado](errors.md).
 
 | Método | Retorno | Detalle |
 | --- | --- | --- |
+| `close()` | `None` | [Cierre y recursos](guides/performance.md) |
 | `get_numbering_range(*, account_code: str, account_code_t: str, software_code: str)` | `NumberingRangeResult \| None` | [Numeración](operations/numbering-range.md) |
 | `get_exchange_emails()` | `ExchangeEmailsResult \| None` | [Directorio de correos](operations/exchange-emails.md) |
 | `get_status(track_id: str)` | `DocumentStatusResult \| None` | [Validación](operations/status.md) |
@@ -70,14 +71,14 @@ Los enums, sus etiquetas y las reglas para códigos desconocidos se describen en
 Los modelos de entrada y artefactos de mandato se importan desde
 `radiankore.models.events`. El cliente carga el certificado una vez y lo reutiliza
 para firmar UBL y SOAP. Preparar no contacta DIAN; enviar exige el mismo ambiente y
-no reconstruye el ZIP. Consulta las [reglas y el ejemplo](operations/mandate.md).
+no reconstruye el ZIP. Consulte las [reglas y el ejemplo](operations/mandate.md).
 
 
-Para emitir 030–034, importa `InvoiceResponseEvent`, `InvoiceEventParty`,
+Para emitir 030–034, importe `InvoiceResponseEvent`, `InvoiceEventParty`,
 `InvoiceEventPerson`, `InvoiceEventDocumentReference` y `PreparedRadianEvent`
 desde `radiankore.models.events`. `InvoiceResponseEvent` es una entrada validada;
 `radiankore.models.responses.InvoiceEvent` sigue siendo un registro de consulta.
-Consulta el [contrato y los cinco ejemplos](operations/invoice-emission.md).
+Consulte el [contrato y los cinco ejemplos](operations/invoice-emission.md).
 
 
 `RadianEvent` une quince modelos: `InvoiceResponseEvent`, `MandateEvent`,
@@ -88,10 +89,17 @@ Consulta el [contrato y los cinco ejemplos](operations/invoice-emission.md).
 `EconomicRightsTransferEvent`, `EconomicRightsNotificationEvent` y
 `EconomicRightsPaymentEvent`. Se importan con sus componentes y `PreparedRadianEvent`
 desde `radiankore.models.events`. Todos los eventos 030–051 usan la misma pareja
-de métodos y el mismo tipo de artefacto preparado. Consulta la
+de métodos y el mismo tipo de artefacto preparado. Consulte la
 [guía y variantes](operations/radian-emission.md).
 
 
 La [matriz de fuentes](event-reference-map.md) permite localizar la sección, página,
 ejemplos y pruebas de cada evento; los [modelos](models.md), [catálogos](catalogs.md)
 y [errores](errors.md) documentan los contratos sin duplicar esta tabla de métodos.
+
+## Recursos y construcción desde memoria
+
+Desde 0.6.0, `DianClient.from_pfx()` y `DianClient.from_certificate()` permiten
+usar material en memoria. El constructor y las fábricas aceptan
+`reuse_connections=False`. `close()` y el gestor de contexto controlan el cierre.
+Consulte los contratos y ejemplos en [Rendimiento](guides/performance.md).

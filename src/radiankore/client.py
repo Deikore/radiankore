@@ -5,6 +5,7 @@ from dataclasses import replace
 from datetime import UTC, datetime
 from math import isfinite
 from os import PathLike
+from typing import Self
 
 from lxml import etree
 
@@ -58,7 +59,11 @@ class DianClient:
 
     The certificate is loaded once during construction by DigitalCertificate.
     Only the decoded material is retained; the path and password are not stored.
-    Each operation owns and automatically closes its HTTP connections.
+    By default each operation closes its HTTP connections. Opt in to connection
+    reuse and close the client explicitly or use a context manager. This is a
+    synchronous API; the timeout applies per HTTP phase, not as a total deadline.
+    Loading a certificate does not check trust, revocation or DIAN authorization.
+    See docs/guides/communication-and-signatures.md for both signature profiles.
     """
 
     def __init__(
@@ -68,6 +73,7 @@ class DianClient:
         password: str | bytes | None = None,
         environment: Environment | str = Environment.PRODUCTION,
         timeout: float = 30.0,
+        reuse_connections: bool = False,
     ) -> None:
         """Load a PFX/P12 file, raising immediately if reading or decoding fails.
 
@@ -75,13 +81,94 @@ class DianClient:
         data or passwords raise DigitalCertificateError. String passwords use
         UTF-8; None supports unencrypted containers. No network access occurs.
         """
+        self._validate_options(environment, timeout, reuse_connections)
+        self._initialize(
+            DigitalCertificate.from_file(certificate_path, password=password),
+            environment=environment,
+            timeout=timeout,
+            reuse_connections=reuse_connections,
+        )
+
+    def _initialize(
+        self,
+        certificate: DigitalCertificate,
+        *,
+        environment: Environment | str,
+        timeout: float,
+        reuse_connections: bool,
+    ) -> None:
+        self._validate_options(environment, timeout, reuse_connections)
         self._environment = Environment(environment)
+        if not isinstance(certificate, DigitalCertificate):
+            raise TypeError("certificate must be a DigitalCertificate.")
+        self._certificate = certificate
+        self._transport = transport.SoapTransport(
+            timeout=timeout, reuse_connections=reuse_connections
+        )
+
+    @staticmethod
+    def _validate_options(
+        environment: Environment | str, timeout: float, reuse_connections: bool
+    ) -> None:
+        Environment(environment)
         if isinstance(timeout, bool) or not isfinite(timeout) or timeout <= 0:
             raise ValueError("timeout must be positive and finite.")
-        self._certificate = DigitalCertificate.from_file(
-            certificate_path, password=password
+        if not isinstance(reuse_connections, bool):
+            raise TypeError("reuse_connections must be a bool.")
+
+    @classmethod
+    def from_pfx(
+        cls,
+        data: bytes,
+        *,
+        password: str | bytes | None = None,
+        environment: Environment | str = Environment.PRODUCTION,
+        timeout: float = 30.0,
+        reuse_connections: bool = False,
+    ) -> Self:
+        """Decode PKCS#12 bytes once without retaining the container or password."""
+        cls._validate_options(environment, timeout, reuse_connections)
+        return cls.from_certificate(
+            DigitalCertificate.from_pfx(data, password=password),
+            environment=environment,
+            timeout=timeout,
+            reuse_connections=reuse_connections,
         )
-        self._transport = transport.SoapTransport(timeout=timeout)
+
+    @classmethod
+    def from_certificate(
+        cls,
+        certificate: DigitalCertificate,
+        *,
+        environment: Environment | str = Environment.PRODUCTION,
+        timeout: float = 30.0,
+        reuse_connections: bool = False,
+    ) -> Self:
+        """Use decoded material without I/O; trust and validity remain caller policy.
+
+        The caller must not mutate the native key. Do not share clients across
+        processes or use the same client concurrently. No HTTP connection opens
+        until the first request, even when connection reuse is enabled.
+        """
+        client = cls.__new__(cls)
+        client._initialize(
+            certificate,
+            environment=environment,
+            timeout=timeout,
+            reuse_connections=reuse_connections,
+        )
+        return client
+
+    def close(self) -> None:
+        """Release owned HTTP resources. Repeated closes have no effect."""
+        self._transport.close()
+
+    def __enter__(self) -> Self:
+        self._transport.ensure_open()
+        return self
+
+    def __exit__(self, *_: object) -> None:
+        self.close()
 
     @property
     def certificate(self) -> DigitalCertificate:
@@ -262,8 +349,11 @@ class DianClient:
 
         Invoice events 030-034 must be issued on the signing date in Colombia.
         Other families retain their own profile-specific rules. Inspect or persist
-        the immutable artifact before explicitly calling send_radian_event.
+        the immutable artifact before explicitly calling send_radian_event. The signed
+        XML limit is 500,000 bytes, including embedded attachments. Do not reformat
+        its bytes: the ZIP contains exactly that serialized, signed XML.
         """
+        self._transport.ensure_open()
         if not isinstance(software, RadianSoftware):
             raise TypeError("software must be a RadianSoftware.")
         signing_time = None
@@ -316,6 +406,9 @@ class DianClient:
 
         The artifact must belong to this client's environment. Business rejection
         remains response data; technical failures raise the existing exceptions.
+        None means an absent/nil result, not confirmed business acceptance.
+        Calling this method twice can transmit twice. After an uncertain network
+        failure, reconcile the result before deciding whether to send again.
         """
         if not isinstance(prepared, PreparedRadianEvent):
             raise TypeError("prepared must be a PreparedRadianEvent.")

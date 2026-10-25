@@ -123,3 +123,84 @@ def test_fixture_factory_rejects_unknown_or_inapplicable_variants() -> None:
     for variant in ("unknown", "035-blank", "511-blank"):
         with pytest.raises(ValueError):
             factory(variant)
+
+
+def test_home_has_two_distinct_documentation_routes(documentation_root: Path) -> None:
+    """Readers choose business concepts or implementation before entering a guide."""
+    index = (documentation_root / "index.md").read_text()
+    blocks = re.findall(r"```\{toctree\}\n(.*?)```", index, re.DOTALL)
+    entries = [
+        line.strip()
+        for block in blocks
+        for line in block.splitlines()
+        if line.strip() and not line.startswith(":")
+    ]
+    assert entries == ["functional/index", "technical/index"]
+    assert (documentation_root / "functional/index.md").is_file()
+    assert (documentation_root / "technical/index.md").is_file()
+
+
+def test_functional_pages_exclude_implementation_examples(
+    documentation_root: Path,
+) -> None:
+    """Business content must remain independent of Python, protocols and models."""
+    pages = list((documentation_root / "functional").rglob("*.md"))
+    assert pages
+    forbidden = re.compile(
+        r"```(?:python|pycon|bash|sh|shell|console|xml|json|yaml)\b"
+        r"|\b(?:DianClient|DigitalCertificate|PreparedRadianEvent|RadianSoftware)\b"
+        r"|\b(?:prepare_radian_event|send_radian_event|get_invoice_events)\b"
+        r"|\b(?:SOAP|XAdES|XMLDSig|PKCS|Python|SDK)\b"
+    )
+    for page in pages:
+        assert not forbidden.search(page.read_text()), page.name
+
+
+def test_each_functional_event_has_sources_and_technical_navigation(
+    documentation_root: Path,
+) -> None:
+    """Every supported event has a sourced business page and an implementation link."""
+    event_dir = documentation_root / "functional/events"
+    expected = {event.value for event in EventType} - {"02", "04"}
+    actual = {page.stem for page in event_dir.glob("[0-9][0-9][0-9].md")}
+    assert actual == expected
+    navigation = (event_dir / "index.md").read_text()
+    technical_links = "\n".join(
+        page.read_text() for page in (documentation_root / "operations").glob("*.md")
+    )
+    sections = (
+        "Finalidad",
+        "Actores y responsabilidades",
+        "Cuándo procede y antecedentes",
+        "Información y soportes necesarios",
+        "Variantes y condiciones particulares",
+        "Efectos y restricciones",
+        "Caso práctico",
+        "Eventos relacionados",
+        "Fuentes",
+    )
+    for code in expected:
+        content = (event_dir / f"{code}.md").read_text()
+        assert content.startswith(f"# {code} — ")
+        assert all(f"## {section}\n" in content for section in sections)
+        assert f"\n{code}\n" in navigation
+        assert f"../functional/events/{code}.md" in technical_links
+        assert "https://www.dian.gov.co/" in content
+    assert "dian-responses" in navigation
+    response = (event_dir / "dian-responses.md").read_text()
+    assert "02" in response and "04" in response
+
+
+def test_functional_variants_cover_public_operation_catalogs(
+    documentation_root: Path,
+) -> None:
+    """The business guide must not lose variants when the SDK catalog changes."""
+    from radiankore.catalogs import MandateOperationType, RadianOperationType
+
+    content = "\n".join(
+        page.read_text()
+        for page in (documentation_root / "functional/events").glob("*.md")
+    )
+    codes = set(re.findall(r"(?<!\d)\d{3}(?!\d)", content))
+    assert {operation.value for operation in RadianOperationType} <= codes
+    assert {operation.value for operation in MandateOperationType} <= codes

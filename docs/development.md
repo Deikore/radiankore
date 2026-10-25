@@ -29,7 +29,7 @@ uv run mypy
 uv build
 ```
 
-Código y docstrings en inglés; documentación en español. Usa cuatro espacios,
+Código y docstrings en inglés; documentación en español. Utilice cuatro espacios,
 `snake_case` para funciones y módulos, `PascalCase` para clases y líneas de 88
 caracteres. CI configura Python 3.13, 3.14 y 3.15. El workflow de releases publica
 solo después de superar los controles.

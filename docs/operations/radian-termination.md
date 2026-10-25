@@ -1,6 +1,10 @@
 # Terminación del mandato 044
 
-Usa los [datos comunes](radian-emission.md#preparación-común-para-los-ejemplos).
+Contexto funcional: [044](../functional/events/044.md).
+
+Esta guía describe la implementación y sus validaciones técnicas.
+
+Utilice los [datos comunes](radian-emission.md#preparación-común-para-los-ejemplos).
 
 ```python
 from radiankore.catalogs import RadianOperationType

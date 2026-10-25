@@ -1,64 +1,24 @@
 # radiankore
 
-Librería Python de Deikore SAS para consultas directas a DIAN mediante SOAP y
-certificados PFX/P12. La API es síncrona, admite Python >=3.13 y se distribuye bajo MIT.
-Permite preparar y enviar eventos 030–051; no genera facturas.
+Documentación para comprender los procesos de factura electrónica y RADIAN,
+y para integrarlos mediante la biblioteca Python radiankore.
 
-## Primeros pasos
+## Dos recorridos de lectura
 
-Instala el paquete, crea un `DianClient` y selecciona producción o habilitación.
-El certificado se carga una vez y cada consulta gestiona sus conexiones.
+**Documentación funcional.** Explica los conceptos, los actores, las condiciones
+y los efectos de los eventos. Está dirigida a quienes necesitan comprender o
+definir el proceso de negocio. No requiere conocimientos de programación.
 
-```{toctree}
-:maxdepth: 2
-:caption: Primeros pasos
-
-installation
-environments
-```
-
-## Consultas disponibles
-
-GetStatus devuelve el resultado de validación del documento; GetStatusEvent consulta
-los eventos asociados a una factura. Las demás operaciones permiten consultar
-rangos de numeración, adquirientes, el directorio de correos, información del documento, notas
-referenciadas y el XML original.
+**Documentación técnica.** Explica la instalación, la configuración, las consultas,
+la preparación y el envío de eventos. Incluye ejemplos de Python y la referencia
+necesaria para desarrollar y mantener una integración.
 
 ```{toctree}
-:maxdepth: 2
-:caption: Operaciones
+:maxdepth: 1
 
-operations/numbering-range
-operations/exchange-emails
-operations/status
-operations/events
-operations/acquirer
-operations/document-info
-operations/reference-notes
-operations/xml-document
-operations/mandate
-operations/invoice-emission
-operations/radian-emission
+functional/index
+technical/index
 ```
 
-```{toctree}
-:maxdepth: 2
-:caption: Referencia
-
-api
-models
-catalogs
-errors
-technical-references
-event-reference-map
-```
-
-```{toctree}
-:maxdepth: 2
-:caption: Contribuir
-
-development
-publishing
-readthedocs
-changelog
-```
+Para una primera lectura, comience por la parte funcional. Si ya conoce el proceso,
+puede acceder directamente a la implementación técnica correspondiente.

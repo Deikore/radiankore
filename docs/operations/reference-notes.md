@@ -1,7 +1,7 @@
 # Consultar notas referenciadas
 
 `GetReferenceNotes` devuelve notas tipadas, el estado de la consulta y los campos
-binarios originales del contrato `DianResponse`. Usa el certificado y ambiente del
+binarios originales del contrato `DianResponse`. Utilice el certificado y ambiente del
 mismo cliente:
 
 ```python
@@ -106,4 +106,4 @@ integral XSD ni verifica la firma de la respuesta.
 `XmlBytes` se mantiene independiente y no se interpreta como XML ni se usa como
 fallback. No se descomprime ningún payload. El WSDL describe la respuesta exterior;
 el contenido de notas se apoya en la muestra observada y los XSD UBL locales.
-Consulta el [contrato SOAP local](https://github.com/Deikore/radiankore/blob/HEAD/docs/references/dian/wsdl/README.md#getreferencenotes).
+Consulte el [contrato SOAP local](https://github.com/Deikore/radiankore/blob/HEAD/docs/references/dian/wsdl/README.md#getreferencenotes).

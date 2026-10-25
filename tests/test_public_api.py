@@ -200,6 +200,7 @@ def test_client_public_operations() -> None:
         if not name.startswith("_")
     }
     assert public == {
+        "close",
         "get_numbering_range",
         "get_exchange_emails",
         "get_status",

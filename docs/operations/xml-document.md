@@ -56,7 +56,7 @@ una petición HTTP 404 sigue generando `DianTransportError`. Un estado estándar
 como `HTTPStatus.NOT_FOUND` dentro del resultado no genera una excepción.
 
 Este campo antes era `str | None`: sustituye las comparaciones con cadenas por
-miembros de `HTTPStatus`, y usa `.value` si necesitas el entero correspondiente.
+miembros de `HTTPStatus`, y usa `.value` si necesita el entero correspondiente.
 
 `ValidationDate` acepta fechas ISO mediante `date.fromisoformat()` y timestamps
 ISO mediante `datetime.fromisoformat()`, conservando hora, fracciones y zona si
@@ -72,4 +72,4 @@ encoding, declaración XML, espacios y saltos de línea. Un campo ausente/nulo v
 `None`; presente vacío vale `b""`. Base64 inválido genera `DianResponseError` con
 la causa original. Los bytes no se convierten a texto, no se reformatean ni se
 descomprimen, y no se exige un tipo raíz ni se verifica la firma del documento.
-Consulta el [contrato SOAP local](https://github.com/Deikore/radiankore/blob/HEAD/docs/references/dian/wsdl/README.md#getxmlbydocumentkey).
+Consulte el [contrato SOAP local](https://github.com/Deikore/radiankore/blob/HEAD/docs/references/dian/wsdl/README.md#getxmlbydocumentkey).

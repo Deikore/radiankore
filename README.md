@@ -139,3 +139,13 @@ if xml is not None and xml.document_xml is not None:
 La [documentación completa](https://radiankore.readthedocs.io/) incluye contratos,
 modelos, errores y ejemplos por operación. Para contribuir, consulta
 [CONTRIBUTING](https://github.com/Deikore/radiankore/blob/HEAD/CONTRIBUTING.md).
+
+Comprenda actores, condiciones y eventos en la [documentación funcional](docs/functional/index.md).
+Para desarrollar la integración y consultar ejemplos de Python, use la
+[documentación técnica](docs/technical/index.md).
+
+### Clientes reutilizables y material en memoria
+
+Desde 0.6.0 puede usar `DianClient.from_pfx()` o
+`DianClient.from_certificate()`, con `reuse_connections=True` y cierre mediante
+`with`. Consulte [Rendimiento y ciclo de vida](docs/guides/performance.md).

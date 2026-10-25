@@ -60,4 +60,4 @@ se excluyen de `repr`. Ausente o nulo produce `None`; presente vacío produce `b
 Base64 inválido genera `DianResponseError` conservando la causa. No se interpreta,
 reformatea ni descomprime el contenido, ni se exige una raíz XML particular.
 El modelado de reglas internas del `ApplicationResponse` queda fuera de este método.
-Consulta el [contrato SOAP local](https://github.com/Deikore/radiankore/blob/HEAD/docs/references/dian/wsdl/README.md#getstatus).
+Consulte el [contrato SOAP local](https://github.com/Deikore/radiankore/blob/HEAD/docs/references/dian/wsdl/README.md#getstatus).

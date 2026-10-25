@@ -1,6 +1,10 @@
 # Derechos económicos 049–051
 
-Usa los [datos comunes](radian-emission.md#preparación-común-para-los-ejemplos).
+Contexto funcional: [049](../functional/events/049.md); [050](../functional/events/050.md); [051](../functional/events/051.md).
+
+Esta guía describe la implementación y sus validaciones técnicas.
+
+Utilice los [datos comunes](radian-emission.md#preparación-común-para-los-ejemplos).
 Las tres clases referencian la factura por CUFE/tipo `01` y requieren vencimiento.
 No se reemplaza esta referencia por el CUDE de la transferencia.
 
@@ -39,7 +43,7 @@ event = EconomicRightsTransferEvent(
 | 493 | `ECONOMIC_RIGHTS_PARTIAL_WITHOUT_RECOURSE` | Parcial sin responsabilidad |
 | 494 | `ECONOMIC_RIGHTS_FULL_WITHOUT_RECOURSE` | Total sin responsabilidad |
 
-Para las otras operaciones construye alternativas explícitas. En un caso total,
+Para las otras operaciones construya alternativas explícitas. En un caso total,
 el consumidor aporta el valor total real de los derechos; en este ejemplo es
 100.000, y los campos financieros se suministran nuevamente:
 

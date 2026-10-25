@@ -1,6 +1,6 @@
 # Rangos de numeración: GetNumberingRange
 
-Consulta los rangos de numeración autorizados y sus claves técnicas. La operación
+Consulte los rangos de numeración autorizados y sus claves técnicas. La operación
 no solicita nuevas autorizaciones ni genera facturas.
 
 ```python

@@ -1,5 +1,18 @@
 # Historial de cambios
 
+## 0.6.0 — 2026-10-25
+
+- Fábricas `DianClient.from_pfx` y `from_certificate` para material en memoria.
+- Reutilización opcional de conexiones con transportes SOAP y descarga separados,
+  cierre explícito idempotente y gestor de contexto. El valor predeterminado
+  conserva el cierre por operación y no se añaden reintentos.
+- Pruebas de recursos, conexiones TCP locales y guía de migración y concurrencia.
+- Documentación separada en una sección funcional de actores, procesos y eventos,
+  y otra técnica con ejemplos Python verificados, autenticación SOAP, firma de
+  eventos, consultas, evidencias y operación. Diagramas y referencias navegables.
+- Benchmark sintético reproducible de reutilización de clientes y conexiones;
+  no mide capacidad ni cuotas del servicio DIAN.
+
 ## 0.5.0 — 2026-10-23
 
 - Pruebas de API pública compartidas por el checkout y el wheel instalado;

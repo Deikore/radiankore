@@ -1,6 +1,10 @@
 # Pago 045 e informe para el pago 046
 
-Usa los [datos comunes](radian-emission.md#preparación-común-para-los-ejemplos).
+Contexto funcional: [045](../functional/events/045.md); [046](../functional/events/046.md).
+
+Esta guía describe la implementación y sus validaciones técnicas.
+
+Utilice los [datos comunes](radian-emission.md#preparación-común-para-los-ejemplos).
 
 ## Registrar un pago
 

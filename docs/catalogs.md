@@ -27,7 +27,7 @@ if event.code is EventType.EXPRESS_ACCEPTANCE:
 
 `identification_type` tiene tipo `IdentificationType | None` y `code` tiene tipo
 `EventType | None`. Ambos campos contienen directamente miembros del enum o
-`None` si faltan o están vacíos en el XML. Al construir las dataclasses, pasa el
+`None` si faltan o están vacíos en el XML. Al construir las dataclasses, proporcione el
 enum correspondiente o `None`; una cadena u otro tipo genera `TypeError`.
 
 El parser quita espacios exteriores y utiliza los constructores estrictos de los
@@ -71,7 +71,7 @@ de identificación.
 
 La tabla 13.1.3 de la caja de herramientas FE 1.9, edición 2026, aporta los siete
 códigos y sus etiquetas. El genericode relacionado solo contiene seis: omite `96`.
-Consulta las [copias y procedencia](https://github.com/Deikore/radiankore/blob/HEAD/docs/references/dian/invoicing/1.9/README.md).
+Consulte las [copias y procedencia](https://github.com/Deikore/radiankore/blob/HEAD/docs/references/dian/invoicing/1.9/README.md).
 
 ```python
 from radiankore.catalogs import DocumentType
@@ -86,8 +86,8 @@ El parser normaliza únicamente `1`–`4` a `01`–`04`. Los modelos exigen miem
 del enum o `None`. `DocumentType.from_code()` resuelve solo códigos canónicos:
 devuelve `None` para `"1"`, `" 01 "`, valores desconocidos y ausentes. El catálogo
 no valida reglas de emisión ni se aplica a `DocumentCode` o a los estados.
-En `ReferenceNote.code`, usa `DocumentType.CREDIT_NOTE` o `DocumentType.DEBIT_NOTE`
-y compara con `is`; códigos de otros documentos generan `DianResponseError` al
+En `ReferenceNote.code`, utilice `DocumentType.CREDIT_NOTE` o `DocumentType.DEBIT_NOTE`
+y compare con `is`; códigos de otros documentos generan `DianResponseError` al
 parsear, o `ValueError` al construir el modelo. Los códigos de motivos por línea
 (`NoteResponse.code`) siguen siendo texto.
 
@@ -121,7 +121,7 @@ o `" 1 "`. El parser recorta espacios antes de convertir y rechaza códigos
 desconocidos para notas. El modelo exige un enum del catálogo correspondiente.
 
 Estos enums no se aplican a `DocumentCorrection.code` ni a las respuestas de
-`get_reference_notes`. Los códigos se superponen: usa `is` al comparar miembros
+`get_reference_notes`. Los códigos se superponen: utilice `is` al comparar miembros
 para distinguir crédito de débito, además de comprobar el tipo del documento.
 
 ## Emisión de factura 030–034 y participantes

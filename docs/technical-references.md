@@ -43,3 +43,6 @@ Las referencias originales y sus hashes permanecen en el repositorio; no se
 copian al sitio ni a las distribuciones. Su incorporación y procedencia están en
 el índice enlazado arriba. Las fechas de incorporación no son fechas de vigencia
 normativa ni prueban que no existan revisiones posteriores de DIAN.
+
+La [matriz de evidencia de integración](guides/evidence.md) conecta fuentes,
+implementación, pruebas y discrepancias de comunicación y firma.

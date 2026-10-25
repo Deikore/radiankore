@@ -1,6 +1,10 @@
 # Protesto 048
 
-Usa los [datos comunes](radian-emission.md#preparación-común-para-los-ejemplos).
+Contexto funcional: [048](../functional/events/048.md).
+
+Esta guía describe la implementación y sus validaciones técnicas.
+
+Utilice los [datos comunes](radian-emission.md#preparación-común-para-los-ejemplos).
 El receptor es el adquirente/deudor y la referencia es factura CUFE/01 con
 vencimiento obligatorio. El acta usa su fecha propia y datos notariales.
 

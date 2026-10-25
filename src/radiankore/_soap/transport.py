@@ -1,6 +1,7 @@
 """HTTPX transport for signed SOAP messages and exchange-email downloads."""
 
-from contextlib import suppress
+from collections.abc import Iterator
+from contextlib import contextmanager, suppress
 
 import httpx
 
@@ -14,16 +15,50 @@ def create_http_client(timeout: float) -> httpx.Client:
 
 
 class SoapTransport:
-    """Close each operation's HTTP client before returning response bytes."""
+    """Own isolated SOAP/download pools, optionally retained between operations."""
 
-    def __init__(self, *, timeout: float) -> None:
+    def __init__(self, *, timeout: float, reuse_connections: bool = False) -> None:
         self._timeout = timeout
+        self._reuse_connections = reuse_connections
+        self._clients: dict[str, httpx.Client] = {}
+        self._closed = False
+
+    def ensure_open(self) -> None:
+        if self._closed:
+            raise RuntimeError("DianClient is closed.")
+
+    def close(self) -> None:
+        if self._closed:
+            return
+        self._closed = True
+        try:
+            for client in self._clients.values():
+                client.close()
+        finally:
+            self._clients.clear()
+
+    @contextmanager
+    def _client(self, kind: str) -> Iterator[httpx.Client]:
+        self.ensure_open()
+        if not self._reuse_connections:
+            with create_http_client(self._timeout) as client:
+                yield client
+            return
+        if kind not in self._clients:
+            self._clients[kind] = create_http_client(self._timeout)
+        client = self._clients[kind]
+        # HTTPX persists cookies; signed SOAP authentication must be per message.
+        client.cookies.clear()
+        try:
+            yield client
+        finally:
+            client.cookies.clear()
 
     def post(self, endpoint: str, payload: bytes, *, action: str) -> bytes:
         """Send bytes unchanged and recognize SOAP Faults in HTTP error bodies."""
         try:
             with (
-                create_http_client(self._timeout) as client,
+                self._client("soap") as client,
                 client.stream(
                     "POST",
                     endpoint,
@@ -57,7 +92,7 @@ class SoapTransport:
         """Download exact bytes with no SOAP credentials, redirects or retries."""
         try:
             with (
-                create_http_client(self._timeout) as client,
+                self._client("download") as client,
                 client.stream(
                     "GET", url, timeout=self._timeout, follow_redirects=False
                 ) as response,

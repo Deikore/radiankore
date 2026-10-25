@@ -1,5 +1,9 @@
 # Mandato RADIAN (043)
 
+Contexto funcional: [043](../functional/events/043.md).
+
+Esta guía describe la implementación y sus validaciones técnicas.
+
 `prepare_radian_event()` construye, firma y comprime un ApplicationResponse en
 memoria, sin red ni escritura de archivos. `send_radian_event(prepared)` envía
 exactamente ese ZIP mediante `SendEventUpdateStatus`, autenticado por SOAP.
@@ -8,8 +12,8 @@ No genera facturas ni realiza reintentos automáticos.
 
 ## Ejemplo de preparación y envío
 
-Datos ficticios: sustituye identidades, CUFE, declaración, software y soportes por
-los de tu operación. La declaración debe corresponder a las partes y al contrato;
+Datos ficticios: sustituya identidades, CUFE, declaración, software y soportes por
+los de su operación. La declaración debe corresponder a las partes y al contrato;
 la librería no redacta ni verifica declaraciones jurídicas.
 
 ```python
@@ -120,14 +124,14 @@ if result is not None:
 ## Variantes y restricciones
 
 - Operaciones 431/432: alcance documental general, una facultad ALL17 con su canal.
-  Operaciones 433/434: MR91 seguido por facultades R01–R22. Consulta los
+  Operaciones 433/434: MR91 seguido por facultades R01–R22. Consulte los
   [catálogos](../catalogs.md). El canal PT no está permitido para R01–R05.
 - Tiempo limitado (431/433): ambas fechas son obligatorias y fin ≥ inicio.
-  Tiempo ilimitado (432/434): omite ambas fechas con `MandateValidityPeriod()`.
+  Tiempo ilimitado (432/434): omita ambas fechas con `MandateValidityPeriod()`.
 - `ONE`: una referencia; `MULTIPLE`: entre 2 y 20; `ALL`: tupla vacía explícita.
   Las referencias concretas son facturas `01` y requieren número y CUFE hexadecimal
   de 96 caracteres. ALL produce ID `1`, sin UUID ni DocumentTypeCode en XML.
-- Para facultades por factura en 433/434, pasa `scope=MandateScope(...)` en cada
+- Para facultades por factura en 433/434, proporcione `scope=MandateScope(...)` en cada
   `MandateDocumentReference`. Si se omite, se usa el alcance común del evento.
   Alcances iguales comparten un bloque DocumentResponse; cada grupo conserva
   el orden de sus referencias. El bloque principal conserva todas las referencias
@@ -158,7 +162,7 @@ El límite local es 500.000 bytes para el XML firmado (500 KB decimales, ZA01).
 
 Producción sigue siendo el ambiente predeterminado. Un artefacto de habilitación
 no se puede enviar con un cliente de producción, ni a la inversa. El PIN, los PDFs
-y los binarios preparados no aparecen en `repr`. Consulta los
+y los binarios preparados no aparecen en `repr`. Consulte los
 [modelos de respuesta](../models.md) y [errores](../errors.md).
 
 ## Criterios frente a discrepancias del anexo

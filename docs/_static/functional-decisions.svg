@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" role="img" aria-labelledby="title desc">
+<title id="title">Decisiones ante una factura recibida</title>
+<desc id="desc">El adquirente revisa la factura y la prestación. Una inconformidad puede dar lugar a reclamo; una decisión de conformidad puede dar lugar a aceptación expresa. La aceptación tácita exige revisar por separado sus hechos y términos.</desc>
+<defs><marker id="arrow" markerWidth="9" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="#334e68"/></marker></defs>
+<rect width="720" height="400" rx="12" fill="#f2f6fb"/>
+<g font-family="sans-serif" fill="#17324d" text-anchor="middle" font-size="19">
+<rect x="100" y="20" width="520" height="76" rx="8" fill="#dbeafe"/><text x="360" y="49">Revisar factura y prestación recibida</text><text x="360" y="76" font-size="16">Identificar hechos, fechas y responsables</text>
+<rect x="30" y="145" width="310" height="91" rx="8" fill="#fff0cd"/><text x="185" y="176">Existe una inconformidad</text><text x="185" y="207" font-size="17">Evaluar reclamo y su causa</text>
+<rect x="380" y="145" width="310" height="91" rx="8" fill="#dcfce7"/><text x="535" y="176">Se manifiesta conformidad</text><text x="535" y="207" font-size="17">Evaluar aceptación expresa</text>
+<rect x="30" y="290" width="660" height="84" rx="8" fill="#e7e5ff"/><text x="360" y="322">La aceptación tácita tiene sus propios supuestos</text><text x="360" y="351" font-size="16">Comprobar antecedentes y términos; no deducirla del silencio aislado</text>
+</g><g fill="none" stroke="#334e68" stroke-width="2" marker-end="url(#arrow)"><path d="M270 98L185 141"/><path d="M450 98L535 141"/></g></svg>
