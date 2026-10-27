@@ -147,7 +147,7 @@ class DocumentNote:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class DocumentInfo:
-    """One Documento with reason enums for notes and raw codes for other types."""
+    """One Documento with reason enums for known note codes and text otherwise."""
 
     document_code: CreditNoteReason | DebitNoteReason | str | None = None
     description: str | None = None
@@ -174,11 +174,19 @@ class DocumentInfo:
         if self.document_code is None:
             return
         if self.document_type_id is DocumentType.CREDIT_NOTE:
-            if not isinstance(self.document_code, CreditNoteReason):
-                raise TypeError("document_code must be a CreditNoteReason or None.")
+            if type(self.document_code) is not str and not isinstance(
+                self.document_code, CreditNoteReason
+            ):
+                raise TypeError(
+                    "document_code must be a CreditNoteReason, text or None."
+                )
         elif self.document_type_id is DocumentType.DEBIT_NOTE:
-            if not isinstance(self.document_code, DebitNoteReason):
-                raise TypeError("document_code must be a DebitNoteReason or None.")
+            if type(self.document_code) is not str and not isinstance(
+                self.document_code, DebitNoteReason
+            ):
+                raise TypeError(
+                    "document_code must be a DebitNoteReason, text or None."
+                )
         elif not isinstance(self.document_code, str) or isinstance(
             self.document_code, (CreditNoteReason, DebitNoteReason)
         ):

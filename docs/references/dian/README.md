@@ -69,7 +69,7 @@ fuentes; no carga los documentos durante la ejecución:
 | Catálogo público | Fuente | Versión y cobertura |
 | --- | --- | --- |
 | `DocumentType` | [Tabla FE 1.9 13.1.3 y genericode](invoicing/1.9/README.md) | Caja de herramientas FE 1.9, edición 2026; siete códigos: `01`, `02`, `03`, `04`, `91`, `92`, `96` |
-| `CreditNoteReason`, `DebitNoteReason` | [Tablas FE 1.9 13.2.4 y 13.2.5](invoicing/1.9/README.md) | Edición 2026; motivos de crédito `1`–`6` y débito `1`–`4`; aplicación a `DocumentCode` basada en observación del mantenedor |
+| `CreditNoteReason`, `DebitNoteReason` | [Tablas FE 1.9 13.2.4 y 13.2.5](invoicing/1.9/README.md) | Edición 2026; motivos de crédito `1`–`6` y débito `1`–`4`; aplicación a `DocumentCode` basada en observación del mantenedor. Observado `7` «Otros» en notas crédito aceptadas con notificación «El Código informado no se encuentra en la lista»; los códigos fuera de catálogo se conservan como texto |
 | `IdentificationType` | [TipoIdFiscal-2.1.gc](radian/toolbox/Listas%20de%20valores/TipoIdFiscal-2.1.gc) y anexo RADIAN §14.2.13 | Lista versión 1, modificada el 03-04-2022; 11 códigos: `11`, `12`, `13`, `21`, `22`, `31`, `41`, `42`, `47`, `50`, `91` |
 | `IdentificationType` | [Guía DIAN para completar información de adquirientes](https://www.dian.gov.co/impuestos/factura-electronica/Documents/Guia-Herramienta-para-el-Consumo-de-Web-Services.pdf), tabla de `identificationType` | Añade `48`: PPT (Permiso Protección Temporal). Referencia web consultada el 2026-10-20; sin copia local ni hash |
 | `EventType` | [Eventos-2.1.gc](radian/toolbox/Listas%20de%20valores/Eventos-2.1.gc) | Lista versión 1, modificada el 03-04-2022; códigos `035`–`051` |

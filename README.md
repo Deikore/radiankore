@@ -146,6 +146,6 @@ Para desarrollar la integración y consultar ejemplos de Python, use la
 
 ### Clientes reutilizables y material en memoria
 
-Desde 0.6.0 puede usar `DianClient.from_pfx()` o
+Desde 0.6.1 puede usar `DianClient.from_pfx()` o
 `DianClient.from_certificate()`, con `reuse_connections=True` y cierre mediante
 `with`. Consulte [Rendimiento y ciclo de vida](docs/guides/performance.md).

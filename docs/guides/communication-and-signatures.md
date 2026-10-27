@@ -1,6 +1,6 @@
 # Comunicación con DIAN y las dos firmas
 
-Este capítulo describe **lo implementado en 0.6.0**, contrastado con el código,
+Este capítulo describe **lo implementado en 0.6.1**, contrastado con el código,
 las pruebas, los WSDL guardados y RADIAN 1.1 §§8, 9.3–9.4, 11 y 12.
 No constituye una certificación de interoperabilidad con participantes reales.
 La [matriz de evidencia](evidence.md) distingue pruebas locales de verificaciones pendientes.
@@ -23,7 +23,7 @@ sus parámetros en el orden del contrato. Un cambio de orden no es inocuo.
 interpreta WSDL durante la ejecución. `?WSDL` en `To` es parte del valor firmado,
 no una instrucción para enviar la petición a ese recurso.
 
-Por defecto el cliente HTTP se crea y cierra por operación. Desde 0.6.0 puede
+Por defecto el cliente HTTP se crea y cierra por operación. Desde 0.6.1 puede
 optar por conexiones reutilizables con cierre explícito, según la
 [guía de rendimiento](performance.md). Un timeout positivo y finito se
 aplica a conexión, lectura, escritura y pool; no impone una fecha límite total.

@@ -46,7 +46,7 @@ fuente; CI también ejecuta la suite completa contra el wheel instalado.
 ## Crear la release
 
 Cree una etiqueta `v<VERSION>` que coincida exactamente con `project.version`
-(por ejemplo, `v0.6.0` para `0.6.0`) y publique una release de GitHub desde esa
+(por ejemplo, `v0.6.1` para `0.6.1`) y publique una release de GitHub desde esa
 etiqueta. El workflow:
 
 1. Verifica la correspondencia de etiqueta y versión.
@@ -60,11 +60,11 @@ la página del proyecto en PyPI antes de anunciar la versión. Los números de v
 publicados no se reutilizan; las correcciones se publican como una versión nueva.
 La integración real con DIAN requiere comprobaciones autorizadas aparte de CI.
 
-## Preparación de 0.6.0
+## Preparación de 0.6.1
 
-La versión del manifiesto y del lockfile es `0.6.0`. Las notas de la versión están
-en `CHANGELOG.md`. Una etiqueta local `v0.6.0` identifica el commit preparado;
-crear commits o etiquetas locales no publica el paquete.
+La versión del manifiesto y del lockfile es `0.6.1`. Las notas de la versión están
+en `CHANGELOG.md`. Una etiqueta local `v0.6.1` debe identificar el commit
+preparado; crear commits o etiquetas locales no publica el paquete.
 
 Después de revisar las validaciones, el mantenedor puede enviar `main` y la
 etiqueta al remoto y publicar la release de GitHub. Esa publicación inicia el

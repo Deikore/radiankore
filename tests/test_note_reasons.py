@@ -7,7 +7,6 @@ from dataclasses import asdict
 import pytest
 from lxml import etree
 
-from radiankore import DianResponseError
 from radiankore._soap.document_info_response import parse_document_info_response
 from radiankore._soap.namespaces import XSI
 from radiankore.catalogs import CreditNoteReason, DebitNoteReason, DocumentType
@@ -124,21 +123,24 @@ def test_optional_document_code_remains_none(
     ]
     + [(DocumentType.DEBIT_NOTE, "5"), (DocumentType.DEBIT_NOTE, "6")],
 )
-def test_unknown_or_noncanonical_note_reasons_keep_cause(
+def test_unknown_or_noncanonical_note_reasons_stay_text(
     document_info_response: bytes, kind: DocumentType, code: str
 ) -> None:
     root = etree.fromstring(document_info_response)
     node = document_node(root)
     set_text(node, "DocumentTypeId", kind.value)
     set_text(node, "DocumentCode", code)
-    with pytest.raises(DianResponseError, match="DocumentCode") as error:
-        parse_document_info_response(etree.tostring(root))
-    assert isinstance(error.value.__cause__, ValueError)
+    result = parse_document_info_response(etree.tostring(root))
+    assert result is not None and result.documents[0] is not None
+    document_code = result.documents[0].document_code
+    assert type(document_code) is str
+    assert document_code == code
+    assert DocumentInfo(document_type_id=kind, document_code=code).document_code == code
 
 
 @pytest.mark.parametrize("kind", [DocumentType.CREDIT_NOTE, DocumentType.DEBIT_NOTE])
-@pytest.mark.parametrize("code", ["1", 1, True, DocumentType.SALES_INVOICE])
-def test_note_models_require_enum_members(kind: DocumentType, code: object) -> None:
+@pytest.mark.parametrize("code", [1, True, DocumentType.SALES_INVOICE])
+def test_note_models_reject_non_text_codes(kind: DocumentType, code: object) -> None:
     with pytest.raises(TypeError, match="document_code"):
         DocumentInfo(document_type_id=kind, document_code=code)  # type: ignore[arg-type]
 

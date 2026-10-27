@@ -61,6 +61,8 @@ incluidos orden, repeticiones y entradas nulas.
 `DocumentType`, importado desde `radiankore.catalogs`.
 `DocumentInfo.document_code` usa `CreditNoteReason` para notas crédito,
 `DebitNoteReason` para débito y texto para otros documentos, además de `None`.
+Los códigos de nota fuera del catálogo se conservan como texto, pues DIAN
+puede aceptarlos con notificaciones no bloqueantes y devolverlos.
 
 `ReferenceNote.code` usa `DocumentType.CREDIT_NOTE`, `DocumentType.DEBIT_NOTE`
 o `None`; `NoteResponse.code` conserva los motivos de línea como texto.
@@ -99,7 +101,7 @@ y [errores](errors.md) documentan los contratos sin duplicar esta tabla de méto
 
 ## Recursos y construcción desde memoria
 
-Desde 0.6.0, `DianClient.from_pfx()` y `DianClient.from_certificate()` permiten
+Desde 0.6.1, `DianClient.from_pfx()` y `DianClient.from_certificate()` permiten
 usar material en memoria. El constructor y las fábricas aceptan
 `reuse_connections=False`. `close()` y el gestor de contexto controlan el cierre.
 Consulte los contratos y ejemplos en [Rendimiento](guides/performance.md).

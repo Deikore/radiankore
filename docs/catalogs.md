@@ -117,8 +117,10 @@ procedencia y hashes en el [índice de referencias](https://github.com/Deikore/r
 para notas, o texto para otros documentos. `.label` conserva la descripción
 oficial recortando espacios exteriores. `.from_code()` resuelve únicamente
 códigos exactos; devuelve `None` para valores desconocidos, ausentes, `"01"`
-o `" 1 "`. El parser recorta espacios antes de convertir y rechaza códigos
-desconocidos para notas. El modelo exige un enum del catálogo correspondiente.
+o `" 1 "`. El parser recorta espacios antes de convertir y conserva como texto
+los códigos de nota desconocidos, pues DIAN puede aceptarlos mediante
+notificaciones no bloqueantes (observado `7` «Otros»). El modelo rechaza
+únicamente enums del catálogo contrario y valores que no sean texto.
 
 Estos enums no se aplican a `DocumentCorrection.code` ni a las respuestas de
 `get_reference_notes`. Los códigos se superponen: utilice `is` al comparar miembros

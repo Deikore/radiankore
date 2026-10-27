@@ -1,5 +1,20 @@
 # Historial de cambios
 
+## 0.6.1 — 2026-10-27
+
+- `DocumentInfo.document_code` conserva como texto los códigos de nota fuera
+  de los catálogos FE 1.9 en lugar de generar `DianResponseError` al parsear:
+  DIAN puede aceptarlos con notificaciones no bloqueantes y devolverlos en
+  `get_document_info` (observado `7` «Otros»). Los códigos conocidos siguen
+  resolviendo al enum según `document_type_id` y los modelos solo rechazan
+  enums del catálogo contrario y valores que no sean texto.
+
+### Migración desde 0.6.0
+
+`get_document_info` ya no genera `DianResponseError` por códigos de nota
+desconocidos: `document_code` puede ser texto para notas. Si capturabas esa
+excepción, verifica `isinstance(document.document_code, str)` en su lugar.
+
 ## 0.6.0 — 2026-10-25
 
 - Fábricas `DianClient.from_pfx` y `from_certificate` para material en memoria.

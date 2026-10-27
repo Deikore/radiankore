@@ -1,6 +1,6 @@
 # Rendimiento y ciclo de vida del cliente
 
-Disponible desde radiankore 0.6.0. La API es síncrona y no administra colas,
+Disponible desde radiankore 0.6.1. La API es síncrona y no administra colas,
 trabajadores, permisos de plataforma ni selección de certificados.
 
 ## Construcción desde memoria

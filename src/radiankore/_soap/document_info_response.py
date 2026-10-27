@@ -303,18 +303,15 @@ def _note(node: etree._Element) -> DocumentNote:
 def _document_code(
     node: etree._Element, document_type: DocumentType | None
 ) -> CreditNoteReason | DebitNoteReason | str | None:
-    """Resolve note reasons by type while preserving other document codes as text."""
+    """Resolve note reasons by type while preserving unknown codes as text."""
     value = _text(node, _DOCUMENT, "DocumentCode")
     if value is None:
         return None
-    try:
-        if document_type is DocumentType.CREDIT_NOTE:
-            return CreditNoteReason(value)
-        if document_type is DocumentType.DEBIT_NOTE:
-            return DebitNoteReason(value)
-        return value
-    except ValueError as exc:
-        raise DianResponseError("Unknown DocumentCode reason for note type.") from exc
+    if document_type is DocumentType.CREDIT_NOTE:
+        return CreditNoteReason.from_code(value) or value
+    if document_type is DocumentType.DEBIT_NOTE:
+        return DebitNoteReason.from_code(value) or value
+    return value
 
 
 def _document(node: etree._Element) -> DocumentInfo:
