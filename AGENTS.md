@@ -33,6 +33,20 @@ las referencias se excluyen de wheel y sdist. No modifiques `.agents/`, `.codex/
 Actualiza `uv.lock` al cambiar dependencias o versión. `lxml` y `xmlsec` requieren
 bibliotecas `libxml2` compatibles; sigue la instalación documentada.
 
+## RTK en Codex
+
+- Usar el hook global de RTK y ejecutar los comandos normalmente, sin duplicar
+  hooks locales ni añadir RTK a las dependencias de la librería o de CI.
+- Mantener `uv run ruff ...`, `uv run mypy ...` y `uv run pytest ...`: RTK inserta
+  el filtro específico dentro del entorno del proyecto. En RTK 1.1.0,
+  `uv run --no-sync ...` usa el filtro genérico de `uv` y conserva la salida
+  completa cuando el comando termina correctamente.
+- Mantener las pruebas específicas durante la iteración y ejecutar la cobertura
+  completa al cerrar cambios amplios. RTK no sustituye ninguna comprobación.
+- Consultar el ahorro de este repositorio con `rtk gain --project`.
+- Recuperar detalles mediante la ruta indicada por RTK; usar `rtk bypass <comando>`
+  únicamente cuando la salida filtrada sea inutilizable.
+
 ## Estilo y contratos
 
 Código y docstrings en inglés; documentación en español. Usa cuatro espacios,
