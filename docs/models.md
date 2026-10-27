@@ -7,7 +7,8 @@ y se importan desde `radiankore.models.responses`:
   tupla `events` y `application_response_xml` decodificado como `bytes | None`.
 - `InvoiceEvent`: `id`, `code`, `description`, `reference_id`, `date`, `time`,
   `uuid`, `issuer` y `recipient`.
-- `EventParty`: `tax_number`, `name`, `verification_digit` e `identification_type`.
+- `EventParty`: `tax_number`, `name`, `verification_digit`, `identification_type`
+  e `identification_type_raw`.
 
 Son inmutables, tienen slots y se construyen por argumentos con nombre. Los campos
 opcionales ausentes valen `None` y las colecciones son tuplas. El XML se excluye de
@@ -73,7 +74,8 @@ herramientas. Estas cardinalidades no sustituyen las reglas de negocio RADIAN.
 | `tax_number` | `PartyTaxScheme/CompanyID` | Opcional (`0..1` por esquema) |
 | `name` | `PartyTaxScheme/RegistrationName` | Opcional (`0..1` por esquema) |
 | `verification_digit` | `PartyTaxScheme/CompanyID/@schemeID` | Opcional |
-| `identification_type` | `PartyTaxScheme/CompanyID/@schemeName` | Opcional |
+| `identification_type` | `PartyTaxScheme/CompanyID/@schemeName` | Enum reconocido o `None` |
+| `identification_type_raw` | `PartyTaxScheme/CompanyID/@schemeName` | Texto original o `None` |
 
 Dentro de `DocumentResponse`, `Response` es obligatorio (`1..1`) y
 `DocumentReference` es obligatorio y repetible (`1..n`). El modelo representa la
@@ -85,10 +87,17 @@ Se lee el primer `CompanyID` de estos esquemas y sus atributos de identificació
 para `name` se lee el primer `RegistrationName` disponible. Un participante
 presente se conserva aunque falte su identificación. Los atributos opcionales
 vacíos se representan con `None`; se quitan los espacios exteriores y se conservan
-los ceros iniciales. `identification_type` se convierte a `IdentificationType` y
-`code` a `EventType`. Si un código no pertenece al catálogo correspondiente, el
-parser genera `DianResponseError` con el `ValueError` original como causa. No se
-calcula ni valida el dígito.
+los ceros iniciales. Para tipos de identificación, el campo `identification_type_raw`
+conserva el texto original antes de normalizarlo, incluidos los espacios exteriores.
+`identification_type` reconoce códigos y etiquetas oficiales, normalizando
+mayúsculas, tildes, Unicode y espacios; un valor desconocido queda solo en el campo
+raw y el enum vale `None`. Si falta el dato, es nulo o contiene solo espacios,
+ambos campos valen `None`. Estas reglas también se aplican a `DocumentParty` y a
+las notas asociadas. Los dos modelos mantienen sus campos tipados e inmutables.
+
+`code` se convierte a `EventType`; un código de evento desconocido sigue generando
+`DianResponseError` con el `ValueError` original como causa. No se calcula ni valida
+el dígito.
 
 Estas reglas cubren los campos representados por los modelos; el parser no realiza
 validación integral contra XSD ni valida las reglas de emisión RADIAN.

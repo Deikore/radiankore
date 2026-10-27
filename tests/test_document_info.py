@@ -82,6 +82,7 @@ def test_complete_document_graph(document_info_response: bytes) -> None:
         tax_number="000123",
         origin="Document origin",
         identification_type=IdentificationType("31"),
+        identification_type_raw="31",
     )
     assert document.recipient is not None
     assert document.recipient.identification_type is IdentificationType("13")
@@ -514,7 +515,6 @@ def test_decimal_lexical_forms(document_info_response: bytes, value: str) -> Non
         ("Key", "1_0"),
         ("Key", "\u0661"),
         ("Codigo", "999"),
-        ("TipoDoc", "999"),
     ],
 )
 def test_invalid_typed_values_keep_cause(
@@ -766,15 +766,21 @@ def test_document_party_nit_spelling_in_all_nested_records(
 
 
 @pytest.mark.parametrize("value", ["Unknown document", "Nitt", "N.I.T.", "Nit31"])
-def test_unrecognized_document_identification_names_still_raise(
+def test_unrecognized_document_identification_names_are_preserved(
     document_info_response: bytes,
     value: str,
 ) -> None:
     root = etree.fromstring(document_info_response)
-    find(root, "TipoDoc").text = value
-    with pytest.raises(DianResponseError) as error:
-        parse_document_info_response(etree.tostring(root))
-    assert isinstance(error.value.__cause__, ValueError)
+    issuer = find(root, "Emisor")
+    kind_node = issuer.find("{http://schemas.datacontract.org/2004/07/Entidad}TipoDoc")
+    assert kind_node is not None
+    kind_node.text = value
+    result = parse_document_info_response(etree.tostring(root))
+    assert result is not None and result.documents[0] is not None
+    party = result.documents[0].issuer
+    assert party is not None
+    assert party.identification_type is None
+    assert party.identification_type_raw == value
 
 
 def test_nit_text_alias_is_local_to_document_info_parser() -> None:

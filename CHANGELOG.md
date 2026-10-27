@@ -1,5 +1,35 @@
 # Historial de cambios
 
+## 0.6.2 — 2026-10-27
+
+- Un resolver compartido reconoce códigos y etiquetas oficiales de identificación
+  en `get_document_info`, `get_invoice_events` y `get_reference_notes`, incluidos
+  los participantes anidados en documentos, eventos, notas y referencias.
+  Resuelve nombres como `Nit` y `Cédula de ciudadanía` normalizando mayúsculas,
+  tildes, representación Unicode y espacios, sin coincidencias aproximadas.
+- `DocumentParty` y `EventParty` añaden `identification_type_raw: str | None`.
+  Este campo conserva el texto recibido antes de normalizarlo, incluidos los
+  espacios exteriores, tanto para tipos conocidos como desconocidos.
+- Los tipos desconocidos ya no provocan `DianResponseError`: la consulta conserva
+  el valor en `identification_type_raw` y devuelve `identification_type=None`.
+  Un dato ausente, nulo, vacío o compuesto solo por espacios deja ambos campos
+  en `None`.
+- Se mantiene `identification_type: IdentificationType | None` en las respuestas.
+  El constructor del catálogo y los modelos de emisión conservan sus validaciones
+  estrictas; los errores de XML y los demás códigos tipados mantienen su manejo.
+
+### Migración desde 0.6.1
+
+Si capturabas `DianResponseError` por tipos de identificación desconocidos,
+comprueba ahora `party.identification_type is None` junto con
+`party.identification_type_raw is not None`. Un enum vacío con texto raw indica
+un valor recibido que todavía no pertenece al catálogo; ambos campos vacíos
+indican un dato no informado. No asumas un código por defecto.
+
+Los consumidores que serializan dataclasses recibirán el campo adicional
+`identification_type_raw`; actualiza esquemas externos que rechacen campos nuevos.
+La emisión sigue requiriendo un miembro válido de `IdentificationType`.
+
 ## 0.6.1 — 2026-10-27
 
 - `DocumentInfo.document_code` conserva como texto los códigos de nota fuera

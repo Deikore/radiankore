@@ -25,6 +25,7 @@ class DocumentParty:
     name: str | None = None
     tax_number: str | None = None
     identification_type: IdentificationType | None = None
+    identification_type_raw: str | None = None
     origin: str | None = None
 
     def __post_init__(self) -> None:
@@ -35,6 +36,10 @@ class DocumentParty:
             raise TypeError(
                 "identification_type must be an IdentificationType or None."
             )
+        if self.identification_type_raw is not None and not isinstance(
+            self.identification_type_raw, str
+        ):
+            raise TypeError("identification_type_raw must be a string or None.")
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

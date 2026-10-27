@@ -8,6 +8,7 @@ from enum import StrEnum
 
 from lxml import etree
 
+from radiankore._soap.identification import resolve_identification
 from radiankore._soap.namespaces import ARRAY
 from radiankore._soap.parsing import (
     element_text,
@@ -21,7 +22,6 @@ from radiankore.catalogs import (
     DebitNoteReason,
     DocumentType,
     EventType,
-    IdentificationType,
 )
 from radiankore.exceptions import DianResponseError
 from radiankore.models.responses.document_info import (
@@ -155,29 +155,23 @@ def _document_type(node: etree._Element, namespace: str) -> DocumentType | None:
         ) from exc
 
 
-def _identification_type(node: etree._Element) -> IdentificationType | None:
-    """Resolve numeric codes and the Nit spelling observed in GetDocumentInfo."""
-    value = _text(node, _PARTY, "TipoDoc")
-    if value is not None and value.casefold() == "nit":
-        return IdentificationType.NIT
-    try:
-        return IdentificationType(value) if value is not None else None
-    except ValueError as exc:
-        raise DianResponseError(
-            "Unknown TipoDoc code in document information."
-        ) from exc
-
-
 def _date(node: etree._Element, namespace: str, name: str) -> date | None:
     """Read YYYY-MM-DD calendar dates, preserving missing values as None."""
     return read_date(node, namespace, name, context="document information")
 
 
 def _party(node: etree._Element) -> DocumentParty:
+    identification = node.find(f"{{{_PARTY}}}TipoDoc")
+    kind, raw = resolve_identification(
+        identification.text
+        if identification is not None and not is_nil(identification)
+        else None
+    )
     return DocumentParty(
         name=_text(node, _PARTY, "Nombre"),
         tax_number=_text(node, _PARTY, "NumeroDoc"),
-        identification_type=_identification_type(node),
+        identification_type=kind,
+        identification_type_raw=raw,
         origin=_text(node, _PARTY, "Procedencia"),
     )
 

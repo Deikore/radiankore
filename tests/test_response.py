@@ -55,6 +55,7 @@ def test_parse_nine_events_without_deduplication(soap_response: bytes) -> None:
         name="Synthetic RecipientParty",
         verification_digit="7",
         identification_type=IdentificationType.CITIZENSHIP_CARD,
+        identification_type_raw="13",
     )
     assert event.id == "EVENT-0001"
     assert event.uuid == "SYNTHETIC-EVENT-UUID-1"
@@ -158,7 +159,7 @@ def test_nil_event_code_is_absent(
 
 @pytest.mark.parametrize("party_name", ["IssuerParty", "RecipientParty"])
 @pytest.mark.parametrize("value", ["099", "1", "031", "FUTURE"])
-def test_unknown_identification_is_rejected(
+def test_unknown_identification_is_preserved(
     soap_response: bytes, application_response: bytes, party_name: str, value: str
 ) -> None:
     root = etree.fromstring(application_response)
@@ -168,11 +169,17 @@ def test_unknown_identification_is_rejected(
     )
     assert company is not None
     company.set("schemeName", value)
-    with pytest.raises(DianResponseError, match="Unknown identification type") as error:
-        parse_invoice_events_response(
-            _replace_payload(soap_response, etree.tostring(root))
-        )
-    assert isinstance(error.value.__cause__, ValueError)
+    result = parse_invoice_events_response(
+        _replace_payload(soap_response, etree.tostring(root))
+    )
+    parsed = (
+        result.events[0].issuer
+        if party_name == "IssuerParty"
+        else result.events[0].recipient
+    )
+    assert parsed is not None
+    assert parsed.identification_type is None
+    assert parsed.identification_type_raw == value
 
 
 def test_spaced_event_code_resolves_to_enum(

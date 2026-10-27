@@ -103,11 +103,17 @@ documentos y notas; los eventos también contienen validaciones.
 
 `DocumentEvent` usa
 `EventType` y `DocumentParty` usa `IdentificationType`. En esta operación,
-`TipoDoc` admite códigos numéricos y el texto `Nit` observado en respuestas DIAN
-(sin distinguir mayúsculas); se convierte a `IdentificationType.NIT` (`"31"`).
-Los demás valores desconocidos generan `DianResponseError`. Esta conversión es
-local al parser: los modelos siguen exigiendo enums. `DocumentEvent` es un contrato
-distinto de `InvoiceEvent`.
+`TipoDoc` admite códigos numéricos y etiquetas oficiales de `IdentificationType`,
+como `Nit` y `Cédula de ciudadanía`. La comparación de etiquetas normaliza
+mayúsculas, tildes, representación Unicode y espacios; no usa coincidencias
+aproximadas. `identification_type_raw` conserva el texto recibido antes de esa
+normalización, incluidos los espacios exteriores. Un valor desconocido devuelve
+`identification_type=None` y conserva su texto en `identification_type_raw`, sin
+interrumpir la consulta. Para un elemento ausente, nulo, vacío o compuesto solo
+por espacios, ambos campos valen `None`.
+Esta conversión es local a las respuestas: los modelos siguen exigiendo enums
+en `identification_type` y las entradas de emisión mantienen sus validaciones.
+`DocumentEvent` es un contrato distinto de `InvoiceEvent`.
 
 `compressed_document_info` conserva exactamente el texto recibido, incluidos espacios
 y cadenas vacías, y se excluye de `repr`. No se decodifica ni sustituye `documents`:

@@ -4,9 +4,9 @@ from datetime import date, datetime, time, timedelta, timezone
 
 from lxml import etree
 
+from radiankore._soap.identification import resolve_identification
 from radiankore._soap.namespaces import CAC, CBC
 from radiankore._soap.parsing import element_text, is_nil
-from radiankore.catalogs import IdentificationType
 from radiankore.exceptions import DianResponseError
 from radiankore.models.responses import EventParty
 
@@ -32,20 +32,17 @@ def party(parent: etree._Element, name: str) -> EventParty | None:
     if node is None:
         return None
     company_id = node.find(f"{{{CAC}}}PartyTaxScheme/{{{CBC}}}CompanyID")
-    identification_code = _attribute(company_id, "schemeName")
-    try:
-        identification_type = (
-            IdentificationType(identification_code)
-            if identification_code is not None
-            else None
-        )
-    except ValueError as exc:
-        raise DianResponseError("Unknown identification type in a UBL party.") from exc
+    identification_type, raw = resolve_identification(
+        company_id.get("schemeName")
+        if company_id is not None and not is_nil(company_id)
+        else None
+    )
     return EventParty(
         tax_number=element_text(node, f"{{{CAC}}}PartyTaxScheme/{{{CBC}}}CompanyID"),
         name=element_text(node, f"{{{CAC}}}PartyTaxScheme/{{{CBC}}}RegistrationName"),
         verification_digit=_attribute(company_id, "schemeID"),
         identification_type=identification_type,
+        identification_type_raw=raw,
     )
 
 

@@ -11,7 +11,8 @@ class EventParty:
     """Optional identification and registered name of an event participant.
 
     CompanyID supplies tax_number, schemeID supplies verification_digit, and
-    schemeName supplies identification_type as an IdentificationType member.
+    schemeName supplies identification_type when recognized, while
+    identification_type_raw preserves the original code or label.
     Identification codes are available through the member's value property.
     """
 
@@ -19,6 +20,7 @@ class EventParty:
     name: str | None = None
     verification_digit: str | None = None
     identification_type: IdentificationType | None = None
+    identification_type_raw: str | None = None
 
     def __post_init__(self) -> None:
         """Require an IdentificationType member or None without coercing strings."""
@@ -28,6 +30,10 @@ class EventParty:
             raise TypeError(
                 "identification_type must be an IdentificationType or None."
             )
+        if self.identification_type_raw is not None and not isinstance(
+            self.identification_type_raw, str
+        ):
+            raise TypeError("identification_type_raw must be a string or None.")
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

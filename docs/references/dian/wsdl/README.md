@@ -84,18 +84,20 @@ seguido del nombre del tipo; respeta esta separación al leer los hijos anidados
   `Key` obligatorio `xs:int` y `Value` obligatorio `xs:string` nillable.
 - Las otras colecciones permiten elementos nulos. Se conserva el orden y las
   entradas repetidas, sin convertir estados a diccionario.
-- Los códigos XML son cadenas. Vincular `Entidad/TipoDoc` y `Evento/Codigo` con
-  catálogos estrictos es una decisión explícita de la librería; los demás códigos
+- Los códigos XML son cadenas. La resolución de `Entidad/TipoDoc` conserva
+  también el valor original; `Evento/Codigo` usa un catálogo estricto. Los demás códigos
   se conservan como texto sin inventar enumeraciones.
 
 Las pruebas usan un XML sintético completo. La aceptación del certificado y el
 contenido real de esta operación requieren validación autorizada contra DIAN.
 
-Una respuesta real aportada por el usuario contiene `Entidad/TipoDoc` como `Nit`,
-aunque el catálogo de identificación usa `31`. El parser de GetDocumentInfo acepta
-ese nombre sin distinguir mayúsculas y lo convierte a `IdentificationType.NIT`;
-conserva el soporte de códigos numéricos y rechaza nombres desconocidos. El WSDL
-solo declara `xs:string` y no garantiza que se devuelvan códigos numéricos.
+Las respuestas aportadas por el usuario contienen `Entidad/TipoDoc` como `Nit` y
+`Cédula de ciudadanía`, aunque el catálogo usa `31` y `13`. Los lectores de
+participantes de GetDocumentInfo y UBL reconocen códigos y etiquetas oficiales,
+normalizando mayúsculas, tildes, Unicode y espacios para su comparación. Conservan
+el texto recibido en `identification_type_raw`; los valores desconocidos dejan el
+enum en `None` sin interrumpir la consulta. El WSDL solo declara `xs:string` y no
+garantiza que se devuelvan códigos numéricos.
 
 ## GetReferenceNotes
 
