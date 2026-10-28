@@ -76,3 +76,15 @@ las familias 030–051. Se reutilizan excepciones de
 firma, transporte, SOAP y parsing. No hay reintentos. Un rechazo de DIAN se devuelve
 como `SendEventResult`; un resultado ausente/nil es `None`. La emisión real requiere
 antecedentes y participantes autorizados que no se consultan automáticamente.
+
+## API asíncrona
+
+`DianTransportError.retry_after: float | None` conserva una pausa HTTP expresada
+en segundos cuando la respuesta contiene un Retry-After válido. Es información
+para el consumidor, no un reintento automático. El cliente async también aplica
+esa pausa a nuevas solicitudes del mismo servicio.
+
+Un plazo total vencido produce `DianTransportError` con `TimeoutError` como causa;
+`CancelledError` se propaga. Una emisión interrumpida puede tener resultado
+desconocido: no la reenvíe automáticamente. Consulte
+[timeouts, cierre y cancelación](guides/async.md).

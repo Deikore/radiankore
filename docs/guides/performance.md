@@ -1,7 +1,9 @@
 # Rendimiento y ciclo de vida del cliente
 
-Disponible desde radiankore 0.6.1. La API es síncrona y no administra colas,
-trabajadores, permisos de plataforma ni selección de certificados.
+Esta guía describe `DianClient` y el pooling síncrono disponible desde 0.6.1.
+Para consultas concurrentes desde 0.7.0, consulte el [cliente async](async.md)
+y los [benchmarks reales de eventos](event-query-benchmark.md).
+La librería no administra permisos de plataforma ni selección de certificados.
 
 ## Construcción desde memoria
 

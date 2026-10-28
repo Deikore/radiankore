@@ -1,5 +1,38 @@
 # Historial de cambios
 
+## 0.7.0 — 2026-10-28
+
+- Añade `AsyncDianClient` con ocho consultas, preparación local y envío de eventos
+  mediante HTTPX asíncrono, pools reutilizados y procesamiento local acotado.
+- Añade `iter_queries` y `QueryResult` para streaming con backpressure y tareas
+  fijas; conserva índices, duplicados, resultados ausentes y errores por elemento.
+- Añade `AsyncDianLimiter` y `DianTimeouts`: límites por cliente y servicio,
+  tasa compartida opcional, cooldown Retry-After y plazo total de operación.
+- La cancelación conserva las plazas de trabajos nativos hasta su terminación;
+  el cierre drena inicializadores, lotes, operaciones, pools y executor.
+- Comparte validación, firma, preparación y clasificación HTTP/SOAP con la API
+  síncrona, que conserva sus métodos y defaults. `DianTransportError` añade
+  `retry_after: float | None`. No hay reintentos ni cambios implícitos de ambiente.
+- Incorpora pruebas sintéticas, TCP/TLS local y benchmark reproducible de cinco
+  alternativas; tests y CI no contactan DIAN.
+- Añade un script y una guía para medir consultas reales de eventos por lotes,
+  con informes agregados JSON/Markdown. Su ejecución contra DIAN es explícita;
+  documenta mediciones aportadas por el usuario en producción: lotes de 100 CUFEs,
+  tres repeticiones por configuración, medianas de 8,56 s con concurrencia 5,
+  4,64 s con concurrencia 10 y 3,27 s con concurrencia 20, sin errores. Incluye
+  percentiles y límites de la comparación observacional. Los ensayos de 500
+  CUFEs obtuvieron medianas de 44,29, 21,51 y 11,42 s con concurrencias 5, 10 y
+  20, sin errores; se conserva un p99 de 4,57 s observado con concurrencia 20.
+- Amplía las mediciones reales a 1.000 CUFEs: medianas de 89,58, 44,78 y
+  22,41 s con concurrencias 5, 10 y 20, respectivamente; 9.000 consultas sin
+  excepciones, timeouts ni reintentos.
+- Aplica el cooldown `Retry-After` al recibir las cabeceras HTTP, incluso si
+  la lectura del cuerpo de error continúa pendiente. Corrige la clasificación
+  de timeouts HTTPX en el comparador local.
+- Presenta el cliente async como recorrido principal, con ejemplos verificables
+  de consulta individual, lotes, puente síncrono y construcción y envío del acuse
+  030. Destaca los nueve benchmarks reales y conserva sus datos agregados.
+
 ## 0.6.2 — 2026-10-27
 
 - Un resolver compartido reconoce códigos y etiquetas oficiales de identificación

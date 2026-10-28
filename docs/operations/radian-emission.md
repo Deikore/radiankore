@@ -1,13 +1,17 @@
 # Emitir eventos RADIAN
 
+`AsyncDianClient` utiliza los mismos modelos con `await`. Consulte el
+[ejemplo completo de preparación y envío async](../guides/async.md).
+
 `prepare_radian_event(*, event, software)` prepara todos los eventos 030–051
 mediante modelos específicos. Devuelve `PreparedRadianEvent`, con código, número,
 CUDE, ambiente y bytes originales del XML firmado y ZIP. `send_radian_event(prepared)`
 envía ese ZIP una vez mediante `SendEventUpdateStatus` y devuelve
 `SendEventResult | None`.
 
-La preparación no realiza I/O después de cargar el certificado. Cada envío posee
-y cierra su conexión. No hay reintentos ni cambios automáticos de ambiente. Los
+La preparación no realiza I/O después de cargar el certificado. El cliente
+async reutiliza sus pools hasta `aclose()`; el sync cierra por operación salvo
+pooling opcional. No hay reintentos ni cambios automáticos de ambiente. Los
 rechazos de negocio siguen siendo datos de respuesta; los fallos técnicos conservan
 las excepciones existentes. Los eventos 030–034 exigen que la fecha de emisión
 coincida con la fecha de firma en Colombia; esa restricción no se aplica a

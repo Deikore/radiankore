@@ -4,6 +4,9 @@ Contexto funcional: [043](../functional/events/043.md).
 
 Esta guía describe la implementación y sus validaciones técnicas.
 
+Los mismos modelos se pueden preparar y enviar con `AsyncDianClient` y `await`;
+consulte el [patrón de emisión async](../guides/async.md).
+
 `prepare_radian_event()` construye, firma y comprime un ApplicationResponse en
 memoria, sin red ni escritura de archivos. `send_radian_event(prepared)` envía
 exactamente ese ZIP mediante `SendEventUpdateStatus`, autenticado por SOAP.

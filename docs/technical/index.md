@@ -4,6 +4,11 @@ Esta parte explica cómo utilizar radiankore para consultar documentos y prepara
 y enviar eventos. Los ejemplos utilizan datos ficticios. Cada operación indica
 sus entradas, resultados, validaciones y errores.
 
+Para iniciar una integración, consulte el [cliente async](../guides/async.md).
+Para evaluar tamaños de lote y concurrencias, revise los
+[benchmarks reales de eventos](../guides/event-query-benchmark.md), con 14.400
+consultas medidas en producción y sus informes agregados originales.
+
 Para comprender las condiciones del acto que va a implementar, consulte primero
 la [documentación funcional](../functional/index.md). Un ejemplo ejecutable no
 sustituye la comprobación de facultades o antecedentes de negocio.
@@ -15,6 +20,14 @@ sustituye la comprobación de facultades o antecedentes de negocio.
 ../installation
 ../environments
 ../guides/preparation
+../guides/async
+```
+
+```{toctree}
+:maxdepth: 1
+:caption: Rendimiento y benchmarks
+
+../guides/event-query-benchmark
 ../guides/performance
 ```
 
@@ -69,6 +82,7 @@ sustituye la comprobación de facultades o antecedentes de negocio.
 :caption: Mantenimiento del proyecto
 
 ../development
+../ASYNC_ARCHITECTURE_PLAN
 ../publishing
 ../readthedocs
 ../changelog

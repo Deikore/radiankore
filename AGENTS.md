@@ -2,12 +2,12 @@
 
 ## Estructura y alcance
 
-`radiankore` es una librería síncrona Python >=3.13.
+`radiankore` es una librería Python >=3.13 con clientes síncrono y asíncrono.
 Consulta ocho operaciones SOAP de DIAN, descritas en README, y emite el evento
 de mandato (043), los eventos de factura 030–034 y los demás eventos RADIAN
 035–042/044–051 mediante `SendEventUpdateStatus`. No genera facturas.
 
-En `src/radiankore/`, `client.py` coordina consultas y emisión, `certificate.py`
+En `src/radiankore/`, `client.py` y `async_client.py` coordinan consultas y emisión, `certificate.py`
 carga certificados y `environment.py` selecciona ambientes. `_soap/` contiene
 firma, transporte y parsers; `_soap/events/` contiene el builder, firma UBL,
 empaquetado ZIP y parser de emisión, con builders separados por familia y componentes de dominio compartidos. `models/responses/` y
@@ -54,8 +54,12 @@ Código y docstrings en inglés; documentación en español. Usa cuatro espacios
 Mantén dataclasses inmutables, con slots y argumentos por nombre, sin procesamiento
 XML ni HTTP dentro de los modelos.
 
-Reutiliza `_request` y los lectores compartidos. El certificado se carga una vez;
-cada operación de red cierra sus conexiones. Producción es predeterminada.
+Reutiliza `_request` y los lectores compartidos. El certificado se carga una vez.
+`DianClient` cierra conexiones por operación salvo pooling opcional;
+`AsyncDianClient` conserva pools propios y se cierra con `async with` o `aclose()`.
+Mantén la firma, lectura de certificados, XML y ZIP fuera del event loop y
+conserva el cupo de cada trabajo nativo cancelado hasta su terminación física.
+Producción es predeterminada.
 Los eventos 030–051 usan `prepare_radian_event` y `send_radian_event`, con un
 único `PreparedRadianEvent`. Se preparan sin I/O y se envían explícitamente con
 el ZIP original y el mismo ambiente; valida facultades, soportes, XSD y firmas serializadas en tests.
@@ -80,6 +84,8 @@ Sigue [CONTRIBUTING](CONTRIBUTING.md); nunca incluyas secretos ni documentos rea
 
 Sphinx/MyST/Furo compila docs/; sigue [la guía](docs/readthedocs.md).
 No incorpores referencias originales al sitio ni detalles extensos al README.
+Los benchmarks reales contienen solo métricas agregadas; no añadas CUFEs ni
+credenciales y no ejecutes el benchmark remoto como parte de tests o CI.
 
 ## Publicación
 

@@ -33,6 +33,7 @@ uv run ruff check .
 uv run ruff format --check .
 uv run mypy
 uv run pytest --cov --cov-report=term-missing
+uv run --no-project --with-requirements docs/requirements.txt sphinx-build -E -W --keep-going -b html docs docs/_build/html
 uv build
 uvx twine check dist/*
 ```
@@ -46,7 +47,7 @@ fuente; CI también ejecuta la suite completa contra el wheel instalado.
 ## Crear la release
 
 Cree una etiqueta `v<VERSION>` que coincida exactamente con `project.version`
-(por ejemplo, `v0.6.2` para `0.6.2`) y publique una release de GitHub desde esa
+(por ejemplo, `v0.7.0` para `0.7.0`) y publique una release de GitHub desde esa
 etiqueta. El workflow:
 
 1. Verifica la correspondencia de etiqueta y versión.
@@ -60,13 +61,25 @@ la página del proyecto en PyPI antes de anunciar la versión. Los números de v
 publicados no se reutilizan; las correcciones se publican como una versión nueva.
 La integración real con DIAN requiere comprobaciones autorizadas aparte de CI.
 
-## Preparación de 0.6.2
+## Release 0.7.0
 
-La versión del manifiesto y del lockfile es `0.6.2`. Las notas de la versión están
-en `CHANGELOG.md`. Una etiqueta local `v0.6.2` debe identificar el commit
-preparado; crear commits o etiquetas locales no publica el paquete.
+El manifiesto y el lockfile identifican `0.7.0`; `CHANGELOG.md` registra la API
+asíncrona y la compatibilidad síncrona conservada. El README presenta primero
+`AsyncDianClient`; la [guía async](guides/async.md) incluye consultas individuales,
+lotes, puente síncrono y construcción y envío de un acuse 030.
 
-Después de revisar las validaciones, el mantenedor puede enviar `main` y la
-etiqueta al remoto y publicar la release de GitHub. Esa publicación inicia el
-workflow anterior. Confirme su resultado en PyPI antes de retirar el wheel
-provisional que utiliza el backend para instalar esta versión.
+Los [benchmarks reales](guides/event-query-benchmark.md) conservan nueve
+configuraciones, 27 muestras y 14.400 consultas observadas en producción.
+Revise las tablas contra sus JSON y compruebe que solo se distribuyen métricas
+agregadas. El [informe técnico](ASYNC_ARCHITECTURE_PLAN.md) separa resultados
+locales y objetivos pendientes, incluido el objetivo de throughput frente a hilos.
+
+Antes de etiquetar, valide el wheel instalado en Python 3.13–3.15, los ejemplos
+publicados contra transporte simulado y la documentación con advertencias como
+errores. Los scripts de benchmark son herramientas del checkout, no comandos
+instalados con el wheel. No ejecute mediciones remotas en CI.
+
+Un commit local no publica el paquete. La etiqueta `v0.7.0` y la release de
+GitHub se crean después de revisar las validaciones; publicar esa release activa
+el workflow. Mantenga los artefactos de construcción y los registros de pruebas
+fuera del commit.

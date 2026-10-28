@@ -1,0 +1,125 @@
+{
+  "kind": "real-dian-event-queries",
+  "complete": true,
+  "started_at_utc": "2026-10-28T15:20:59.344751+00:00",
+  "environment": "production",
+  "python": "3.13.12",
+  "platform": "Linux-7.0.0-30-generic-x86_64-with-glibc2.43",
+  "dependencies": {
+    "radiankore": "0.7.0",
+    "httpx": "0.28.1",
+    "lxml": "6.1.3",
+    "xmlsec": "1.3.17",
+    "cryptography": "50.0.2"
+  },
+  "configuration": {
+    "counts": [
+      1000
+    ],
+    "concurrency": [
+      10
+    ],
+    "processing_workers": 2,
+    "repetitions": 3,
+    "requests_per_second": null,
+    "total_timeout_seconds": 60,
+    "warmup_queries_per_trial": 0,
+    "order_seed": 42,
+    "percentile_method": "median p50; nearest-rank p95/p99",
+    "pool_policy": "new client per trial; load/close excluded from batch time",
+    "cufe_selection": "file prefix per count; duplicates preserved"
+  },
+  "results": [
+    {
+      "count": 1000,
+      "concurrency": 10,
+      "elapsed_seconds": 44.78212888201233,
+      "successful_queries": 1000,
+      "successful_queries_per_second": 22.33033634096995,
+      "latency_success_ms": {
+        "p50": 428.2410310115665,
+        "p95": 569.1868750145659,
+        "p99": 861.9663509307429
+      },
+      "latency_all_ms": {
+        "p50": 428.2410310115665,
+        "p95": 569.1868750145659,
+        "p99": 861.9663509307429
+      },
+      "errors": {},
+      "timeouts": 0,
+      "responses": 1000,
+      "business_valid_responses": 997,
+      "responses_without_events": 3,
+      "events_total": 4938,
+      "retries": 0,
+      "repetition": 2,
+      "recorded_at_utc": "2026-10-28T15:21:44.200979+00:00",
+      "unique_cufes": 1000,
+      "certificate_load_seconds": 0.06252530810888857,
+      "client_close_seconds": 0.0009895999683067203,
+      "warmup": null
+    },
+    {
+      "count": 1000,
+      "concurrency": 10,
+      "elapsed_seconds": 45.10795861610677,
+      "successful_queries": 1000,
+      "successful_queries_per_second": 22.169036921190408,
+      "latency_success_ms": {
+        "p50": 431.50744203012437,
+        "p95": 584.8651310661808,
+        "p99": 854.0140010882169
+      },
+      "latency_all_ms": {
+        "p50": 431.50744203012437,
+        "p95": 584.8651310661808,
+        "p99": 854.0140010882169
+      },
+      "errors": {},
+      "timeouts": 0,
+      "responses": 1000,
+      "business_valid_responses": 997,
+      "responses_without_events": 3,
+      "events_total": 4938,
+      "retries": 0,
+      "repetition": 1,
+      "recorded_at_utc": "2026-10-28T15:22:29.376369+00:00",
+      "unique_cufes": 1000,
+      "certificate_load_seconds": 0.06466431100852787,
+      "client_close_seconds": 0.0011309030232951045,
+      "warmup": null
+    },
+    {
+      "count": 1000,
+      "concurrency": 10,
+      "elapsed_seconds": 44.69487361598294,
+      "successful_queries": 1000,
+      "successful_queries_per_second": 22.373930589713062,
+      "latency_success_ms": {
+        "p50": 429.22045750310645,
+        "p95": 575.3253529546782,
+        "p99": 885.5181590188295
+      },
+      "latency_all_ms": {
+        "p50": 429.22045750310645,
+        "p95": 575.3253529546782,
+        "p99": 885.5181590188295
+      },
+      "errors": {},
+      "timeouts": 0,
+      "responses": 1000,
+      "business_valid_responses": 997,
+      "responses_without_events": 3,
+      "events_total": 4938,
+      "retries": 0,
+      "repetition": 3,
+      "recorded_at_utc": "2026-10-28T15:23:14.128784+00:00",
+      "unique_cufes": 1000,
+      "certificate_load_seconds": 0.054890291998162866,
+      "client_close_seconds": 0.001094912993721664,
+      "warmup": null
+    }
+  ],
+  "finished_at_utc": "2026-10-28T15:23:14.129711+00:00"
+}

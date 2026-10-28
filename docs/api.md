@@ -1,5 +1,10 @@
 # API pública
 
+Desde 0.7.0, `AsyncDianClient` ofrece estas operaciones con `await`, pools
+reutilizados y procesamiento local acotado. La [guía async](guides/async.md)
+incluye consultas, lotes y envío completos. `DianClient` conserva el contrato
+síncrono descrito en las tablas.
+
 ## Cliente y certificado
 
 ```python
@@ -105,3 +110,10 @@ Desde 0.6.1, `DianClient.from_pfx()` y `DianClient.from_certificate()` permiten
 usar material en memoria. El constructor y las fábricas aceptan
 `reuse_connections=False`. `close()` y el gestor de contexto controlan el cierre.
 Consulte los contratos y ejemplos en [Rendimiento](guides/performance.md).
+
+## API asíncrona
+
+`AsyncDianClient` conserva los argumentos y resultados de las operaciones anteriores
+mediante `await`. `AsyncDianLimiter`, `DianTimeouts` y `QueryResult` son exports
+públicos adicionales. Consulte el [contrato async](guides/async.md) para fábricas,
+configuración, cierre, streaming, cancelación y límites.

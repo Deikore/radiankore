@@ -4,6 +4,10 @@ Contexto funcional: [030](../functional/events/030.md); [031](../functional/even
 
 Esta guía describe la implementación y sus validaciones técnicas.
 
+Para preparar y enviar con `AsyncDianClient`, consulte el
+[ejemplo completo de acuse 030 con await](../guides/async.md).
+Los modelos de esta guía se comparten entre ambos clientes.
+
 `prepare_radian_event(*, event, software)` valida los datos, calcula CUDE,
 firma un ApplicationResponse UBL 2.1 y crea el ZIP en memoria. No contacta DIAN
 ni lee archivos después de cargar el certificado. `send_radian_event(prepared)`

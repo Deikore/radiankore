@@ -1,5 +1,10 @@
 # Modelos públicos
 
+Los clientes síncrono y asíncrono comparten los modelos de dominio y respuesta.
+La configuración `DianTimeouts` y el resultado de lote `QueryResult` se importan
+desde `radiankore`; sus campos, defaults y semántica se detallan en la
+[guía del cliente async](guides/async.md).
+
 Los modelos de eventos están en `src/radiankore/models/responses/invoice_events.py`
 y se importan desde `radiankore.models.responses`:
 

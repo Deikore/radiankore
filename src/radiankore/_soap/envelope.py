@@ -1,6 +1,7 @@
 """Build SOAP requests without downloading a WSDL at runtime."""
 
 from base64 import b64encode
+from contextlib import AbstractContextManager, nullcontext
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
@@ -29,6 +30,7 @@ def build_signed_request(
     action: str,
     certificate: DigitalCertificate,
     environment: Environment,
+    certificate_lock: AbstractContextManager[object] | None = None,
 ) -> bytes:
     """Build one operation's SOAP body and sign its fresh request envelope."""
     envelope = etree.Element(
@@ -59,9 +61,9 @@ def build_signed_request(
         EncodingType=BASE64_BINARY,
     )
     token.set(f"{{{WSU}}}Id", token_id)
-    token.text = b64encode(certificate.certificate.public_bytes(Encoding.DER)).decode(
-        "ascii"
-    )
+    with certificate_lock or nullcontext():
+        public_der = certificate.certificate.public_bytes(Encoding.DER)
+    token.text = b64encode(public_der).decode("ascii")
     etree.SubElement(header, f"{{{WSA}}}Action").text = action
     to = etree.SubElement(header, f"{{{WSA}}}To")
     to.set(f"{{{WSU}}}Id", to_id)
@@ -71,6 +73,11 @@ def build_signed_request(
     for name, value in parameters:
         etree.SubElement(operation_node, f"{{{WCF}}}{name}").text = value
     sign_envelope(
-        envelope, security, certificate=certificate, to_id=to_id, token_id=token_id
+        envelope,
+        security,
+        certificate=certificate,
+        to_id=to_id,
+        token_id=token_id,
+        certificate_lock=certificate_lock,
     )
     return etree.tostring(envelope, encoding="UTF-8", xml_declaration=True)

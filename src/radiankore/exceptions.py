@@ -12,9 +12,16 @@ class DianSignatureError(DianError):
 class DianTransportError(DianError):
     """HTTP communication failed without a usable SOAP Fault."""
 
-    def __init__(self, message: str, *, status_code: int | None = None) -> None:
+    def __init__(
+        self,
+        message: str,
+        *,
+        status_code: int | None = None,
+        retry_after: float | None = None,
+    ) -> None:
         super().__init__(message)
         self.status_code = status_code
+        self.retry_after = retry_after
 
 
 class DianSoapFaultError(DianError):

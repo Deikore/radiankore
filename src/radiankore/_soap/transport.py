@@ -1,12 +1,12 @@
 """HTTPX transport for signed SOAP messages and exchange-email downloads."""
 
 from collections.abc import Iterator
-from contextlib import contextmanager, suppress
+from contextlib import contextmanager
 
 import httpx
 
-from radiankore._soap.parsing import soap_body
-from radiankore.exceptions import DianResponseError, DianTransportError
+from radiankore._soap.http import check_response
+from radiankore.exceptions import DianTransportError
 
 
 def create_http_client(timeout: float) -> httpx.Client:
@@ -73,16 +73,7 @@ class SoapTransport:
                 ) as response,
             ):
                 data = response.read()
-                try:
-                    response.raise_for_status()
-                except httpx.HTTPStatusError as exc:
-                    with suppress(DianResponseError):
-                        soap_body(data)
-                    raise DianTransportError(
-                        f"DIAN returned HTTP {response.status_code}.",
-                        status_code=response.status_code,
-                    ) from exc
-                return data
+                return check_response(response, data, True)
         except httpx.RequestError as exc:
             raise DianTransportError(
                 "Unable to communicate with the DIAN service."
@@ -97,13 +88,7 @@ class SoapTransport:
                     "GET", url, timeout=self._timeout, follow_redirects=False
                 ) as response,
             ):
-                try:
-                    response.raise_for_status()
-                except httpx.HTTPStatusError as exc:
-                    raise DianTransportError(
-                        f"DIAN download returned HTTP {response.status_code}.",
-                        status_code=response.status_code,
-                    ) from exc
+                check_response(response, b"", False)
                 return response.read()
         except httpx.RequestError as exc:
             raise DianTransportError("Unable to download the DIAN archive.") from exc
