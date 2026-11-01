@@ -32,6 +32,7 @@ from radiankore.models.events import (
     MandateValidityPeriod,
     RadianSoftware,
 )
+from tests.test_event_conformance import assert_profile
 
 
 @pytest.fixture(scope="module")
@@ -65,6 +66,7 @@ def verify(xml: bytes, certificate: DigitalCertificate) -> None:
 @pytest.mark.parametrize("operation", list(MandateOperationType))
 @pytest.mark.parametrize("nature", list(MandateNature))
 @pytest.mark.parametrize("mode", list(MandateReferenceType))
+@pytest.mark.parametrize("environment", list(Environment))
 def test_all_mandate_variants(
     mandate_event: MandateEvent,
     radian_software: RadianSoftware,
@@ -73,6 +75,7 @@ def test_all_mandate_variants(
     operation: MandateOperationType,
     nature: MandateNature,
     mode: MandateReferenceType,
+    environment: Environment,
 ) -> None:
     limited = operation.value in ("431", "433")
     general_documents = operation.value in ("431", "432")
@@ -126,7 +129,7 @@ def test_all_mandate_variants(
         else MandateValidityPeriod(),
     )
     root = build_mandate_application_response(
-        event, software=radian_software, environment=Environment.HABILITATION
+        event, software=radian_software, environment=environment
     )
     sign_application_response(
         root, certificate=digital_certificate, signer_role=radian_software.signer_role
@@ -135,7 +138,11 @@ def test_all_mandate_variants(
     parsed = etree.fromstring(raw)
     assert ubl_schema.validate(parsed), str(ubl_schema.error_log)
     verify(raw, digital_certificate)
-    assert parsed.findtext(f"{{{CBC}}}ProfileExecutionID") == "2"
+    assert_profile(parsed, "043", environment)
+    assert (
+        parsed.findtext(f"{{{CBC}}}ProfileExecutionID")
+        == environment.profile_execution_id
+    )
     customization = parsed.find(f"{{{CBC}}}CustomizationID")
     assert customization is not None and customization.get("schemeID") == nature.value
     primary, scope_block = parsed.findall(f"{{{CAC}}}DocumentResponse")
@@ -175,8 +182,13 @@ def test_all_mandate_variants(
         ).encode()
     ).hexdigest()
     assert cude == expected
+    host = (
+        "catalogo-vpfe.dian.gov.co"
+        if environment is Environment.PRODUCTION
+        else "catalogo-vpfe-hab.dian.gov.co"
+    )
     assert parsed.findtext(f".//{{{STS}}}QRCode") == (
-        f"https://catalogo-vpfe-hab.dian.gov.co/document/searchqr?documentkey={cude}"
+        f"https://{host}/document/searchqr?documentkey={cude}"
     )
     assert (
         parsed.findtext(f".//{{{STS}}}SoftwareSecurityCode")

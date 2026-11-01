@@ -78,6 +78,8 @@ class EndorsementEvent:
         blank = self.form is EndorsementForm.BLANK
         participations(self.endorsers, blank=blank, sender=True, anonymous=blank)
         participations(self.endorsees, blank=blank)
+        for participant in self.endorsers + self.endorsees:
+            decimal_value(participant.amount, "endorsement amount", positive=True)
         if not isinstance(self.negotiation, NegotiationTerms):
             raise TypeError("negotiation must be a NegotiationTerms.")
         if not isinstance(self.debtors, tuple):

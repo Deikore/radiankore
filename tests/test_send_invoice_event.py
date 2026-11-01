@@ -12,7 +12,7 @@ import httpx
 import pytest
 from lxml import etree
 
-import radiankore.client as client_module
+import radiankore._soap.operations as operations_module
 from radiankore import DianClient, DigitalCertificate, Environment
 from radiankore._soap import transport
 from radiankore._soap.namespaces import CBC, RESPONSE, WCF, XADES
@@ -34,7 +34,7 @@ def invoice_clock(monkeypatch: pytest.MonkeyPatch) -> None:
             assert tz is UTC
             return datetime(2026, 10, 22, 18, 0, 0, tzinfo=UTC)
 
-    monkeypatch.setattr(client_module, "datetime", Clock)
+    monkeypatch.setattr(operations_module, "datetime", Clock)
 
 
 def send_result(wrap: Callable[[etree._Element], bytes]) -> bytes:
@@ -182,7 +182,7 @@ def test_colombian_signing_date_at_utc_midnight(
         def now(tz: object) -> datetime:
             return datetime(2026, 10, 23, 2, 0, tzinfo=UTC)
 
-    monkeypatch.setattr(client_module, "datetime", Clock)
+    monkeypatch.setattr(operations_module, "datetime", Clock)
     client = DianClient(encrypted_pfx_path, password="test-password")
     prepared = client.prepare_radian_event(
         event=invoice_event_factory(EventType.EXPRESS_ACCEPTANCE),

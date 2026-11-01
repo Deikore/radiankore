@@ -7,10 +7,12 @@ from urllib.request import Request
 import httpx
 
 from radiankore._async_runtime import BoundedProcessor
+from radiankore._soap.body import read_async_body
 from radiankore._soap.http import check_response, retry_after
 from radiankore.async_limiter import AsyncDianLimiter
 from radiankore.async_models import DianTimeouts
 from radiankore.exceptions import DianTransportError
+from radiankore.limits import DianResponseLimits
 
 
 class _RejectCookies(DefaultCookiePolicy):
@@ -51,11 +53,13 @@ class AsyncSoapTransport:
         timeouts: DianTimeouts,
         concurrency: int,
         limiter: AsyncDianLimiter,
+        response_limits: DianResponseLimits | None = None,
     ) -> None:
         self._processor = processor
         self._timeouts = timeouts
         self._concurrency = concurrency
         self._limiter = limiter
+        self._response_limits = response_limits or DianResponseLimits()
         self._clients: dict[str, asyncio.Task[httpx.AsyncClient]] = {}
 
     async def ready(self, kind: str) -> httpx.AsyncClient:
@@ -96,7 +100,9 @@ class AsyncSoapTransport:
                 follow_redirects=False,
             ) as response:
                 self._observe(response, endpoint)
-                data = await response.aread()
+                data = await read_async_body(
+                    response, self._response_limits.soap_bytes, "SOAP"
+                )
                 if response.is_success:
                     return data
                 return await self._processor.run(check_response, response, data, True)
@@ -112,7 +118,9 @@ class AsyncSoapTransport:
                 self._observe(response, service)
                 if not response.is_success:
                     await self._processor.run(check_response, response, b"", False)
-                return await response.aread()
+                return await read_async_body(
+                    response, self._response_limits.download_bytes, "download"
+                )
         except httpx.RequestError as exc:
             raise DianTransportError("Unable to download the DIAN archive.") from exc
 

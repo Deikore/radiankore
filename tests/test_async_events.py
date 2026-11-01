@@ -28,6 +28,7 @@ from radiankore.models.events import (
     RadianSoftware,
 )
 from tests.async_support import install_http
+from tests.test_event_conformance import assert_profile
 from tests.test_send_radian_event import result_xml
 from tests.test_signing import _verify
 
@@ -79,6 +80,9 @@ def test_async_prepare_and_single_send(
             )
             assert not clients
             verify_event_signature(prepared.xml_bytes, digital_certificate)
+            assert_profile(
+                etree.fromstring(prepared.xml_bytes), prepared.code.value, environment
+            )
             with ZipFile(BytesIO(prepared.zip_bytes)) as archive:
                 assert archive.namelist() == [f"ar_{prepared.cude}.xml"]
                 assert archive.read(archive.namelist()[0]) == prepared.xml_bytes

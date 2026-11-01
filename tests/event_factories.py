@@ -240,7 +240,12 @@ def radian_event_factory() -> Callable[[str], RadianEvent]:
             header=header,
             operation_type=op,
             reference=reference,
-            payers=endorsers,
+            payer=RadianParticipation(
+                party=party,
+                amount=Decimal("500000.00")
+                if op.value == "451"
+                else Decimal("1000000.00"),
+            ),
             restriction=PaymentRestriction.UNRESTRICTED,
             effective_date=date(2026, 10, 21),
             current_value=Decimal("1000000.00"),

@@ -12,12 +12,14 @@ from radiankore import DianClient, DigitalCertificate, Environment
 ```
 
 `DianClient(certificate_path, *, password=None, environment=Environment.PRODUCTION,
-timeout=30.0)` recibe una ruta `str | os.PathLike[str]`. La contraseña admite
+timeout=30.0, reuse_connections=False, response_limits=None)` recibe una ruta
+`str | os.PathLike[str]`. La contraseña admite
 `str | bytes | None`. El ambiente admite `Environment` o su valor de texto; el
 timeout debe ser positivo y finito. Cargar el cliente no realiza conexiones.
 
 La propiedad `certificate` expone el material ya cargado y `environment` el
-ambiente seleccionado. No hay gestión de cierre a cargo del consumidor.
+ambiente seleccionado. Por defecto las conexiones síncronas se cierran por
+operación; al reutilizarlas, use `with` o `close()`.
 `DigitalCertificate.from_file()` y `from_pfx()` también permiten cargar material
 independientemente; consulte [errores y certificado](errors.md).
 
@@ -110,6 +112,12 @@ Desde 0.6.1, `DianClient.from_pfx()` y `DianClient.from_certificate()` permiten
 usar material en memoria. El constructor y las fábricas aceptan
 `reuse_connections=False`. `close()` y el gestor de contexto controlan el cierre.
 Consulte los contratos y ejemplos en [Rendimiento](guides/performance.md).
+
+Desde 0.7.1, ambos clientes y todas sus fábricas reciben
+`response_limits: DianResponseLimits | None = None`. Omitirlo o pasar `None`
+activa topes de 16 MiB para SOAP, 64 MiB para ZIP y 128 MiB para CSV expandido.
+Cada campo de `DianResponseLimits` admite `None` para desactivar solo ese tope.
+Consulte [configuración y errores de tamaño](guides/response-limits.md).
 
 ## API asíncrona
 

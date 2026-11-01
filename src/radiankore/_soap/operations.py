@@ -1,7 +1,8 @@
 """Local operation helpers shared by synchronous and asynchronous clients."""
 
 from base64 import b64encode
-from datetime import datetime
+from contextlib import AbstractContextManager, nullcontext
+from datetime import UTC, datetime
 
 from lxml import etree
 
@@ -79,32 +80,36 @@ def prepare_event(
     software: RadianSoftware,
     certificate: DigitalCertificate,
     environment: Environment,
-    signing_time: datetime | None,
+    *,
+    certificate_lock: AbstractContextManager[object] | None = None,
 ) -> PreparedRadianEvent:
-    """Build, sign, serialize and ZIP one local artifact without I/O."""
+    """Build and ZIP off-lock; serialize native certificate access during signing."""
     if not isinstance(software, RadianSoftware):
         raise TypeError("software must be a RadianSoftware.")
-    if isinstance(event, InvoiceResponseEvent):
-        assert signing_time is not None
-        stamp = colombian_issue_datetime(event.issue_date, event.issue_time)
-        signing_stamp = colombian_issue_datetime(
-            signing_time.date(), signing_time.timetz()
-        )
-        if stamp.date() != signing_stamp.date():
-            raise ValueError(
-                "Invoice event issue_date must match the signing date in Colombia."
-            )
     root = build_radian_application_response(
         event,
         software=software,
         environment=environment,
     )
-    sign_application_response(
-        root,
-        certificate=certificate,
-        signer_role=software.signer_role,
-        signing_time=signing_time,
-    )
+    with certificate_lock or nullcontext():
+        signing_time = None
+        if isinstance(event, InvoiceResponseEvent):
+            # Read the real clock after any lock wait, including a midnight rollover.
+            signing_time = datetime.now(UTC)
+            stamp = colombian_issue_datetime(event.issue_date, event.issue_time)
+            signing_stamp = colombian_issue_datetime(
+                signing_time.date(), signing_time.timetz()
+            )
+            if stamp.date() != signing_stamp.date():
+                raise ValueError(
+                    "Invoice event issue_date must match the signing date in Colombia."
+                )
+        sign_application_response(
+            root,
+            certificate=certificate,
+            signer_role=software.signer_role,
+            signing_time=signing_time,
+        )
     if isinstance(event, MandateEvent):
         code = EventType.MANDATE
         event_number = event.event_number

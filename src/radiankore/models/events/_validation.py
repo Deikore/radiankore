@@ -3,19 +3,30 @@
 from radiankore.catalogs import IdentificationType
 
 
-def text(value: str, name: str, *, maximum: int | None = None) -> None:
+def text(
+    value: str, name: str, *, minimum: int = 1, maximum: int | None = None
+) -> None:
     """Require nonblank text without modifying the caller's value."""
     if not isinstance(value, str):
         raise TypeError(f"{name} must be a string.")
     if not value.strip():
         raise ValueError(f"{name} must not be empty.")
+    if len(value) < minimum:
+        raise ValueError(f"{name} must contain at least {minimum} characters.")
     if maximum is not None and len(value) > maximum:
         raise ValueError(f"{name} must contain at most {maximum} characters.")
 
 
-def identity(number: str, kind: IdentificationType, digit: str | None) -> None:
+def identity(
+    number: str,
+    kind: IdentificationType,
+    digit: str | None,
+    *,
+    minimum: int = 1,
+    maximum: int | None = None,
+) -> None:
     """Validate an identity; only NIT uses a caller-supplied verification digit."""
-    text(number, "identification number")
+    text(number, "identification number", minimum=minimum, maximum=maximum)
     if not isinstance(kind, IdentificationType):
         raise TypeError("identification_type must be an IdentificationType.")
     if kind is IdentificationType.NIT:

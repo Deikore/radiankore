@@ -26,6 +26,8 @@ class RadianSoftware:
             self.provider_tax_number,
             IdentificationType.NIT,
             self.provider_verification_digit,
+            minimum=3,
+            maximum=15,
         )
         if self.signer_role not in ("supplier", "thirdparty"):
             raise ValueError("signer_role must be supplier or thirdparty.")

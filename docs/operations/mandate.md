@@ -126,6 +126,16 @@ if result is not None:
 
 ## Variantes y restricciones
 
+- `MandateParty.organization_type` permite indicar persona jurídica o natural;
+  su valor predeterminado conserva `OrganizationType.LEGAL_PERSON`.
+  `tax_scheme` conserva `PartyTaxScheme.VAT` como predeterminado y admite los
+  cuatro pares del catálogo tributario. Ambos datos se serializan para el
+  mandante; el grupo del mandatario conserva su perfil PowerOfAttorney.
+- Número de evento: 1–50 caracteres; nombre de parte: 5–450; notas: hasta 5.000;
+  número de factura referenciada: hasta 50. Nombres/apellidos, cargo y nacionalidad
+  de personas: hasta 100; departamento: hasta 200. Las identificaciones de parte
+  admiten 3–13 caracteres; las de representante del mandante, hasta 14, y las de
+  agente/notario, hasta 15. Los límites se aplican sin recortar ni rellenar datos.
 - Operaciones 431/432: alcance documental general, una facultad ALL17 con su canal.
   Operaciones 433/434: MR91 seguido por facultades R01–R22. Consulte los
   [catálogos](../catalogs.md). El canal PT no está permitido para R01–R05.

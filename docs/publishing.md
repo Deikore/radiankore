@@ -47,7 +47,7 @@ fuente; CI también ejecuta la suite completa contra el wheel instalado.
 ## Crear la release
 
 Cree una etiqueta `v<VERSION>` que coincida exactamente con `project.version`
-(por ejemplo, `v0.7.0` para `0.7.0`) y publique una release de GitHub desde esa
+(por ejemplo, `v0.7.1` para `0.7.1`) y publique una release de GitHub desde esa
 etiqueta. El workflow:
 
 1. Verifica la correspondencia de etiqueta y versión.
@@ -61,10 +61,31 @@ la página del proyecto en PyPI antes de anunciar la versión. Los números de v
 publicados no se reutilizan; las correcciones se publican como una versión nueva.
 La integración real con DIAN requiere comprobaciones autorizadas aparte de CI.
 
-## Release 0.7.0
+## Release 0.7.1
 
-El manifiesto y el lockfile identifican `0.7.0`; `CHANGELOG.md` registra la API
-asíncrona y la compatibilidad síncrona conservada. El README presenta primero
+El manifiesto y el lockfile deben identificar `0.7.1`, y la etiqueta debe ser
+`v0.7.1`. Esta versión incorpora la revisión XML de 030–051 y las correcciones
+de preparación asíncrona, cierre de pools y admisión por servicio.
+
+Las notas de release deben destacar dos cambios de migración:
+
+- `InvoicePaymentEvent` utiliza `payer` en lugar de `payers`, con un único pago
+  y comprobación de importes y saldo. Consulte la
+  [migración de 045](operations/radian-payments.md).
+- `DianResponseLimits` activa topes de 16/64/128 MiB para SOAP, ZIP y CSV
+  expandido. Omitir `response_limits` o pasar `None` activa los predeterminados;
+  los campos individuales aceptan `None` para desactivar un tope. Consulte
+  [la configuración](guides/response-limits.md).
+
+Compruebe que el tag apunta al mismo commit que pasó CI. La publicación en
+PyPI utiliza exclusivamente los artefactos producidos por la validación del
+workflow de esa release. Verifique después una instalación de
+`radiankore==0.7.1` en un entorno limpio, sin depender del checkout.
+
+## Antecedente: release 0.7.0
+
+La versión `0.7.0` introdujo la API asíncrona conservando la API síncrona.
+El README presenta primero
 `AsyncDianClient`; la [guía async](guides/async.md) incluye consultas individuales,
 lotes, puente síncrono y construcción y envío de un acuse 030.
 
@@ -79,7 +100,7 @@ publicados contra transporte simulado y la documentación con advertencias como
 errores. Los scripts de benchmark son herramientas del checkout, no comandos
 instalados con el wheel. No ejecute mediciones remotas en CI.
 
-Un commit local no publica el paquete. La etiqueta `v0.7.0` y la release de
+Un commit local no publica el paquete. La etiqueta `v0.7.1` y la release de
 GitHub se crean después de revisar las validaciones; publicar esa release activa
 el workflow. Mantenga los artefactos de construcción y los registros de pruebas
 fuera del commit.

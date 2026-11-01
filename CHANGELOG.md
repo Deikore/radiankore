@@ -1,5 +1,39 @@
 # Historial de cambios
 
+## 0.7.1 — 2026-11-01
+
+- Añade `DianResponseLimits`, compartido por ambos clientes y sus fábricas, con
+  límites activos de 16 MiB para SOAP, 64 MiB para ZIP y 128 MiB para CSV
+  descomprimido. Cada campo admite `None` para desactivar solo ese límite;
+  omitir `response_limits` o pasar `None` conserva los topes predeterminados.
+  Las lecturas comprueban los bytes decodificados y la expansión ZIP sin fiarse
+  de `Content-Length`. Los excesos HTTP generan `DianTransportError`; los de
+  CSV, `DianResponseError`, sin devolver resultados parciales.
+- Corrige el cierre síncrono para intentar cerrar todos los pools y propagar
+  después el primer error. El limitador async espera el cupo del servicio antes
+  de reservar uno global, permitiendo avanzar a otros servicios disponibles.
+
+- Corrige los literales AAH04 de los endosos 037–039 y exige participaciones
+  positivas en endosos y cesionarios de 049, conservando las sumas clasificadas
+  como notificación y el cero de cobertura total del aval.
+- **Cambio incompatible:** `InvoicePaymentEvent.payers` se sustituye por
+  `payer: RadianParticipation`, conforme a AAF12 (`1..1`). Migre
+  `payers=(participación,)` a `payer=participación`. 045 y 051 comparten las
+  comprobaciones de pago positivo, valor actual, pago total y ecuación de saldo
+  con precisión Decimal independiente del contexto del consumidor.
+- `MandateParty` añade organización y tributo explícitos, conservando los
+  predeterminados de persona jurídica e IVA. Aplica límites de número, nombre,
+  notas, referencias e identificación según el perfil y papel de cada persona.
+  Los participantes FE y RADIAN y el proveedor de software comprueban los
+  tamaños de identificación correspondientes; el nombre RADIAN conserva 5–450.
+- Reduce el bloqueo de preparación asíncrona a la firma UBL y el acceso al
+  certificado. Construcción, serialización y ZIP progresan fuera del bloqueo;
+  la hora de firma de 030–034 se obtiene después de esperar su adquisición.
+- Añade controles de perfil sobre XML firmado para todos los eventos 030–051,
+  regresiones de entradas inválidas y recursos asíncronos, y una matriz de
+  conformidad con las discrepancias de los originales DIAN. Conserva las
+  referencias y no añade reintentos.
+
 ## 0.7.0 — 2026-10-28
 
 - Añade `AsyncDianClient` con ocho consultas, preparación local y envío de eventos

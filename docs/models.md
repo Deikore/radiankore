@@ -5,6 +5,11 @@ La configuración `DianTimeouts` y el resultado de lote `QueryResult` se importa
 desde `radiankore`; sus campos, defaults y semántica se detallan en la
 [guía del cliente async](guides/async.md).
 
+`DianResponseLimits`, también importado desde `radiankore`, se comparte entre
+ambos clientes. Sus campos `soap_bytes`, `download_bytes` y `csv_bytes` tienen
+topes predeterminados de 16/64/128 MiB; cada campo acepta `None` para desactivarlo.
+Consulte [límites de respuesta](guides/response-limits.md).
+
 Los modelos de eventos están en `src/radiankore/models/responses/invoice_events.py`
 y se importan desde `radiankore.models.responses`:
 
@@ -135,6 +140,11 @@ participantes, facultades, vigencia y adjuntos. Se importa desde
 La guía documenta sus campos y variantes. `RadianSoftware.pin` y los bytes de
 los artefactos preparados se excluyen de `repr`.
 
+`MandateParty` añade `organization_type=OrganizationType.LEGAL_PERSON` y
+`tax_scheme=PartyTaxScheme.VAT`. Permiten declarar la condición del mandante
+sin inferirla de su identificación; los valores predeterminados conservan el
+XML anterior para personas jurídicas responsables de IVA.
+
 Las [entradas RADIAN por familia](operations/radian-emission.md#modelos-y-variantes)
 son quince modelos, incluidos factura y mandato, unidos por `RadianEvent`;
 sus componentes se enumeran abajo.
@@ -175,6 +185,7 @@ con slots y argumentos por nombre, sin XML ni HTTP en sus validaciones.
 | `RadianInvoiceReference` | `document_number`, `uuid`, `due_date=None`; tipo derivado `01` |
 | `RadianEventReference` | `document_number`, `uuid`; tipo derivado `96` |
 | `RadianParticipation` | `amount: Decimal`, `party=None`, `factor_type=None` |
+| `InvoicePaymentEvent` | `header`, `operation_type`, `reference`, `payer: RadianParticipation`, `restriction`, `effective_date`, `current_value`, `remaining_value`, `currency=CurrencyCode.COP` |
 | `RegistrationPaymentState` | `invoice_value`, `paid_value`, `remaining_value` |
 | `NegotiationTerms` | `total_value`; `price=None`, `discount_rate=None`, `payment_means=None`, `currency=CurrencyCode.COP` |
 | `GuaranteeCommitment` | `party`, `amount`; cero significa cobertura total, campo de hasta 25 caracteres |
@@ -193,6 +204,12 @@ por el modelo de evento donde corresponda. Las tuplas conservan orden y duplicad
 de la operación, y el mandato usa el código fijo 043.
 `PreparedRadianEvent` valida códigos emitibles 030–051, conserva el ambiente y
 exige bytes inmutables y un CUDE hexadecimal de 96 caracteres.
+
+045 utiliza `payer`, igual que 051, y exige un único pago positivo y coherente
+con el saldo. El argumento anterior `payers` se elimina; consulte la
+[migración](operations/radian-payments.md#migración-de-payers-a-payer).
+En los endosos y las transferencias, las participaciones deben ser positivas;
+el cero que significa cobertura total pertenece al perfil del aval.
 Los campos financieros conservan `Decimal`, y el artefacto excluye los binarios
 de `repr`. La [guía](operations/radian-emission.md) documenta los campos de cada
 familia y los errores de composición.

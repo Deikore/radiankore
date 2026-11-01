@@ -5,8 +5,10 @@ from contextlib import contextmanager
 
 import httpx
 
+from radiankore._soap.body import read_body
 from radiankore._soap.http import check_response
 from radiankore.exceptions import DianTransportError
+from radiankore.limits import DianResponseLimits
 
 
 def create_http_client(timeout: float) -> httpx.Client:
@@ -17,9 +19,16 @@ def create_http_client(timeout: float) -> httpx.Client:
 class SoapTransport:
     """Own isolated SOAP/download pools, optionally retained between operations."""
 
-    def __init__(self, *, timeout: float, reuse_connections: bool = False) -> None:
+    def __init__(
+        self,
+        *,
+        timeout: float,
+        reuse_connections: bool = False,
+        response_limits: DianResponseLimits | None = None,
+    ) -> None:
         self._timeout = timeout
         self._reuse_connections = reuse_connections
+        self._response_limits = response_limits or DianResponseLimits()
         self._clients: dict[str, httpx.Client] = {}
         self._closed = False
 
@@ -31,11 +40,18 @@ class SoapTransport:
         if self._closed:
             return
         self._closed = True
+        error: Exception | None = None
         try:
             for client in self._clients.values():
-                client.close()
+                try:
+                    client.close()
+                except Exception as exc:
+                    if error is None:
+                        error = exc
         finally:
             self._clients.clear()
+        if error is not None:
+            raise error
 
     @contextmanager
     def _client(self, kind: str) -> Iterator[httpx.Client]:
@@ -72,7 +88,7 @@ class SoapTransport:
                     follow_redirects=False,
                 ) as response,
             ):
-                data = response.read()
+                data = read_body(response, self._response_limits.soap_bytes, "SOAP")
                 return check_response(response, data, True)
         except httpx.RequestError as exc:
             raise DianTransportError(
@@ -89,6 +105,8 @@ class SoapTransport:
                 ) as response,
             ):
                 check_response(response, b"", False)
-                return response.read()
+                return read_body(
+                    response, self._response_limits.download_bytes, "download"
+                )
         except httpx.RequestError as exc:
             raise DianTransportError("Unable to download the DIAN archive.") from exc

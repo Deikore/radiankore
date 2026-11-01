@@ -2,7 +2,7 @@
 
 import datetime as dt
 from dataclasses import dataclass
-from decimal import Decimal, localcontext
+from decimal import Decimal
 
 from radiankore.catalogs import (
     CurrencyCode,
@@ -69,6 +69,8 @@ class EconomicRightsTransferEvent:
         participations(self.transferees)
         for participant in self.transferors:
             decimal_value(participant.amount, "transferor amount", positive=True)
+        for participant in self.transferees:
+            decimal_value(participant.amount, "transferee amount", positive=True)
         if not isinstance(self.debtors, tuple) or not self.debtors:
             raise ValueError("debtors must be a nonempty tuple.")
         for debtor in self.debtors:
@@ -142,19 +144,9 @@ class EconomicRightsPaymentEvent:
             effective_date=self.effective_date,
             current_value=self.current_value,
             remaining_value=self.remaining_value,
+            paid_amount=self.payer.amount,
             partial=partial,
         )
-        decimal_value(self.payer.amount, "paid amount", positive=True)
-        if self.payer.amount > self.current_value:
-            raise ValueError("Paid amount must not exceed current_value (AAF19b).")
-        if not partial and self.payer.amount != self.current_value:
-            raise ValueError("Full payment must equal current_value (AAF19c).")
-        with localcontext() as context:
-            context.prec = 50
-            if self.payer.amount + self.remaining_value != self.current_value:
-                raise ValueError(
-                    "Paid amount plus remaining_value must equal current_value (AAK07)."
-                )
         currency(self.currency)
 
     @property

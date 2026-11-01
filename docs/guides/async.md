@@ -32,7 +32,9 @@ constructor directo `AsyncDianClient(certificate, ...)` son síncronos y no
 realizan I/O. Las fábricas validan opciones antes de leer el certificado.
 
 Los argumentos comunes son `environment`, `timeouts`, `concurrency`,
-`processing_workers` y `limiter`. El ambiente predeterminado es producción.
+`processing_workers`, `limiter` y `response_limits`. Desde 0.7.1 se aplican
+[límites de respuesta](response-limits.md) activos de 16/64/128 MiB para SOAP,
+ZIP y CSV expandido. El ambiente predeterminado es producción.
 Cada cliente tiene un certificado y ambiente fijos; crearlo no verifica
 confianza, revocación, vigencia ni autorización de ese material.
 
@@ -80,6 +82,14 @@ async def preparar_y_enviar(client, event, software):
     result = await client.send_radian_event(prepared)
     return prepared, result
 ```
+
+La construcción del árbol XML y su serialización/compresión no mantienen el
+bloqueo del certificado. Pueden progresar junto con otra operación dentro de
+`processing_workers`. La firma UBL y el acceso al material nativo sí se protegen
+con el bloqueo compartido con la firma SOAP. Para 030–034, la fecha real de firma
+se lee después de esperar ese bloqueo, incluso si durante la espera cambia el
+día en Colombia. Cancelar la espera conserva ocupado el cupo del trabajo nativo
+hasta que termina, también durante la compresión.
 
 Preparar no transmite, no carga archivos y no abre pools HTTP. Enviar utiliza el
 ZIP original una sola vez, sin reconstruir XML ni reintentar. `None` no confirma
@@ -242,6 +252,9 @@ Un `AsyncDianLimiter` compartido limita intercambios HTTP entre clientes y
 permite una tasa global de inicios. `service_limits` utiliza el endpoint SOAP
 exacto o el origen de descarga terminado en `/`; nunca la URL firmada completa.
 La configuración se fija al construirlo. No coordina procesos o máquinas.
+
+Esperar un cupo de servicio no reserva capacidad global: otro servicio disponible
+puede avanzar. Cancelar una espera libera los cupos ya adquiridos.
 
 Un `Retry-After` válido de una respuesta HTTP de error pausa nuevos intentos al
 servicio afectado. `DianTransportError.retry_after` devuelve segundos o `None`.

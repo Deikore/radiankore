@@ -28,12 +28,12 @@ from radiankore.models.events.radian_common import (
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class InvoicePaymentEvent:
-    """Explicit full/partial payment, independently restricted or unrestricted."""
+    """One payment participation (AAF12), independently restricted or unrestricted."""
 
     header: RadianEventHeader
     operation_type: RadianOperationType
     reference: RadianInvoiceReference
-    payers: tuple[RadianParticipation, ...]
+    payer: RadianParticipation
     restriction: PaymentRestriction
     effective_date: dt.date
     current_value: Decimal
@@ -44,13 +44,14 @@ class InvoicePaymentEvent:
         operation(self.operation_type, ("451", "452"))
         event_inputs(self.header, self.reference, RadianInvoiceReference)
         maturity(self.reference)
-        participations(self.payers, sender=True)
+        participations((self.payer,), sender=True)
         payment_values(
             header=self.header,
             restriction=self.restriction,
             effective_date=self.effective_date,
             current_value=self.current_value,
             remaining_value=self.remaining_value,
+            paid_amount=self.payer.amount,
             partial=self.operation_type is RadianOperationType.PARTIAL_PAYMENT,
         )
         currency(self.currency)

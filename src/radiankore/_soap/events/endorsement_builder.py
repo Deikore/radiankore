@@ -19,9 +19,9 @@ from radiankore.environment import Environment
 from radiankore.models.events import EndorsementEvent, RadianSoftware
 
 _DESCRIPTIONS = {
-    "037": "Endoso en Propiedad",
-    "038": "Endoso en Garantía",
-    "039": "Endoso en Procuración",
+    "037": "Endoso en propiedad",
+    "038": "Endoso en garantía",
+    "039": "Endoso en procuración",
     "047": "Endoso con efectos de cesión ordinaria",
 }
 

@@ -86,9 +86,15 @@ class RadianParty:
     tax_scheme: PartyTaxScheme = PartyTaxScheme.VAT
 
     def __post_init__(self) -> None:
-        identity(self.tax_number, self.identification_type, self.verification_digit)
+        identity(
+            self.tax_number,
+            self.identification_type,
+            self.verification_digit,
+            minimum=3,
+            maximum=13,
+        )
         if self.name is not None:
-            text(self.name, "name", maximum=450)
+            text(self.name, "name", minimum=5, maximum=450)
         if not isinstance(self.organization_type, OrganizationType):
             raise TypeError("organization_type must be an OrganizationType.")
         if not isinstance(self.tax_scheme, PartyTaxScheme):
@@ -123,6 +129,8 @@ class RadianPerson:
             self.identification_number,
             self.identification_type,
             self.verification_digit,
+            minimum=3,
+            maximum=14,
         )
         text(self.first_name, "first_name", maximum=100)
         text(self.family_name, "family_name", maximum=100)

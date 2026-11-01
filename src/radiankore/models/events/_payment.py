@@ -1,7 +1,7 @@
 """Pure payment date and balance rules shared across RADIAN model families."""
 
 import datetime as dt
-from decimal import Decimal
+from decimal import Decimal, localcontext
 
 from radiankore._datetime import colombian_issue_datetime
 from radiankore.catalogs import PaymentRestriction
@@ -19,6 +19,7 @@ def payment_values(
     effective_date: dt.date,
     current_value: Decimal,
     remaining_value: Decimal,
+    paid_amount: Decimal,
     partial: bool,
 ) -> None:
     """Share payment date/balance rules without conflating payment and restriction."""
@@ -34,3 +35,14 @@ def payment_values(
         raise ValueError("Partial payments require a positive, reduced balance.")
     if not partial and remaining_value != 0:
         raise ValueError("Full payments require a zero remaining_value.")
+    decimal_value(paid_amount, "paid amount", positive=True)
+    if paid_amount > current_value:
+        raise ValueError("Paid amount must not exceed current_value (AAF19b).")
+    if not partial and paid_amount != current_value:
+        raise ValueError("Full payment must equal current_value (AAF19c).")
+    with localcontext() as context:
+        context.prec = 50
+        if paid_amount + remaining_value != current_value:
+            raise ValueError(
+                "Paid amount plus remaining_value must equal current_value (AAK07)."
+            )

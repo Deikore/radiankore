@@ -11,6 +11,8 @@
 - `DianSignatureError`: clave no RSA o fallo al firmar el sobre.
 - `DianTransportError`: fallo de red o HTTP sin SOAP Fault; expone `status_code`.
   También cubre la descarga del ZIP de `GetExchangeEmails`, sin resultado parcial.
+  Desde 0.7.1 incluye excesos del límite de bytes SOAP o ZIP; esos errores de
+  tamaño no representan un estado HTTP y dejan `status_code=None`.
 - `DianSoapFaultError`: fallo SOAP, incluso con HTTP 500; expone `code` y `reason`.
 - `DianResponseError`: SOAP, Base64 o UBL malformados,
   URL o UTF-8 inválidos de `GetExchangeEmails`, ZIP corrupto o sin un único CSV,
@@ -19,6 +21,11 @@
   fechas o límites `xs:long` inválidos en `GetNumberingRange`,
   códigos HTTP inválidos en `GetDocumentInfo` o
   `GetXmlByDocumentKey`, o fechas y otros valores tipados inválidos de las respuestas.
+  Incluye también un CSV expandido que exceda el tope configurado.
+
+`DianResponseLimits` activa topes de 16/64/128 MiB por defecto. Un exceso detiene
+la lectura y cierra el stream, sin resultado parcial; consulte
+[configuración y desactivación por campo](guides/response-limits.md).
 
 Las cuatro excepciones de operación heredan de `DianError` y se exportan desde
 `radiankore`. Las causas de errores técnicos se conservan cuando corresponde.

@@ -8,10 +8,12 @@ La librería no administra permisos de plataforma ni selección de certificados.
 ## Construcción desde memoria
 
 `DianClient.from_pfx(data, *, password=None, environment=Environment.PRODUCTION,
-timeout=30.0, reuse_connections=False)` carga un PKCS#12 desde bytes.
+timeout=30.0, reuse_connections=False, response_limits=None)` carga un PKCS#12 desde bytes.
 `DianClient.from_certificate(certificate, *, environment=Environment.PRODUCTION,
-timeout=30.0, reuse_connections=False)` utiliza un `DigitalCertificate` ya cargado.
+timeout=30.0, reuse_connections=False, response_limits=None)` utiliza un `DigitalCertificate` ya cargado.
 Ambas devuelven un cliente y no abren conexiones de red durante la construcción.
+Desde 0.7.1, `response_limits=None` activa los topes predeterminados compartidos
+con el cliente async; consulte [límites de respuesta](response-limits.md).
 
 ```python
 from radiankore import DianClient, DigitalCertificate
@@ -48,6 +50,8 @@ Use `with` o llame a `close()` al finalizar. El cierre es idempotente. Las
 operaciones de red y la preparación de eventos rechazan un cliente cerrado con
 `RuntimeError`. Cerrar recursos HTTP no garantiza el borrado físico de todos los
 objetos criptográficos: Python y las bibliotecas nativas administran su memoria.
+Si falla el cierre de un pool, se intenta cerrar el otro antes de propagar el
+primer error. Las llamadas repetidas a `close()` conservan su idempotencia.
 
 HTTPX puede reutilizar conexiones TCP cuando el servidor las mantiene abiertas,
 lo que evita parte del establecimiento repetido de conexiones. Esto no garantiza

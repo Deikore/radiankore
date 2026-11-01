@@ -59,8 +59,6 @@ def build_radian_application_response(
         event,
         (
             InvoicePaymentEvent,
-            InvoiceResponseEvent,
-            MandateEvent,
             PaymentReportEvent,
             EconomicRightsNotificationEvent,
             EconomicRightsPaymentEvent,

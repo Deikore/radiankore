@@ -16,6 +16,7 @@ from radiankore._soap.parsing import (
     soap_result,
 )
 from radiankore.exceptions import DianResponseError
+from radiankore.limits import DianResponseLimits
 from radiankore.models.responses import ExchangeEmailsResult
 
 
@@ -64,8 +65,11 @@ def parse_exchange_emails_response(data: bytes) -> ExchangeEmailsResult | None:
     )
 
 
-def extract_exchange_emails_csv(data: bytes) -> bytes:
+def extract_exchange_emails_csv(
+    data: bytes, limits: DianResponseLimits | None = None
+) -> bytes:
     """Read the single CSV member in memory without interpreting its encoding."""
+    maximum = (limits or DianResponseLimits()).csv_bytes
     try:
         with ZipFile(BytesIO(data)) as archive:
             entries = [
@@ -75,7 +79,24 @@ def extract_exchange_emails_csv(data: bytes) -> bytes:
             ]
             if len(entries) != 1:
                 raise ValueError("Expected exactly one CSV member in the archive.")
-            return archive.read(entries[0])
+            entry = entries[0]
+            if maximum is not None and entry.file_size > maximum:
+                raise DianResponseError(
+                    f"The CSV exceeded its {maximum}-byte decompression limit."
+                )
+            body = bytearray()
+            with archive.open(entry) as member:
+                while chunk := member.read(
+                    64 * 1024
+                    if maximum is None
+                    else min(64 * 1024, maximum - len(body) + 1)
+                ):
+                    if maximum is not None and len(body) + len(chunk) > maximum:
+                        raise DianResponseError(
+                            f"The CSV exceeded its {maximum}-byte decompression limit."
+                        )
+                    body.extend(chunk)
+            return bytes(body)
     except (
         BadZipFile,
         RuntimeError,
@@ -88,10 +109,12 @@ def extract_exchange_emails_csv(data: bytes) -> bytes:
         raise DianResponseError("Invalid CSV archive in GetExchangeEmails.") from exc
 
 
-def parse_exchange_emails_csv(data: bytes) -> tuple[dict[str, str], ...]:
+def parse_exchange_emails_csv(
+    data: bytes, limits: DianResponseLimits | None = None
+) -> tuple[dict[str, str], ...]:
     """Read UTF-8 CSV records with native csv, preserving all values as text."""
     try:
-        text = extract_exchange_emails_csv(data).decode("utf-8-sig")
+        text = extract_exchange_emails_csv(data, limits).decode("utf-8-sig")
         try:
             dialect = csv.Sniffer().sniff(text[:65536], delimiters=",;|\t")
         except csv.Error:

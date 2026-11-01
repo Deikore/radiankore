@@ -14,6 +14,8 @@ from radiankore.catalogs import (
     MandateReferenceType,
     MandateTime,
     MandatorType,
+    OrganizationType,
+    PartyTaxScheme,
 )
 from radiankore.models.events._validation import identity as _identity
 from radiankore.models.events._validation import text as _text
@@ -37,16 +39,22 @@ class MandatePerson:
             self.identification_number,
             self.identification_type,
             self.verification_digit,
+            minimum=3,
+            maximum=15,
         )
-        _text(self.first_name, "first_name")
-        _text(self.family_name, "family_name")
+        _text(self.first_name, "first_name", maximum=100)
+        _text(self.family_name, "family_name", maximum=100)
         for name, value in (
             ("job_title", self.job_title),
             ("nationality_id", self.nationality_id),
             ("organization_department", self.organization_department),
         ):
             if value is not None:
-                _text(value, name)
+                _text(
+                    value,
+                    name,
+                    maximum=200 if name == "organization_department" else 100,
+                )
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -59,10 +67,22 @@ class MandateParty:
     role: MandatorType | MandateeType
     representative: MandatePerson
     verification_digit: str | None = None
+    organization_type: OrganizationType = OrganizationType.LEGAL_PERSON
+    tax_scheme: PartyTaxScheme = PartyTaxScheme.VAT
 
     def __post_init__(self) -> None:
-        _text(self.name, "name")
-        _identity(self.tax_number, self.identification_type, self.verification_digit)
+        _text(self.name, "name", minimum=5, maximum=450)
+        _identity(
+            self.tax_number,
+            self.identification_type,
+            self.verification_digit,
+            minimum=3,
+            maximum=13,
+        )
+        if not isinstance(self.organization_type, OrganizationType):
+            raise TypeError("organization_type must be an OrganizationType.")
+        if not isinstance(self.tax_scheme, PartyTaxScheme):
+            raise TypeError("tax_scheme must be a PartyTaxScheme.")
         if not isinstance(self.role, (MandatorType, MandateeType)):
             raise TypeError("role must be a MandatorType or MandateeType.")
         if not isinstance(self.representative, MandatePerson):
@@ -111,7 +131,7 @@ class MandateDocumentReference:
     scope: MandateScope | None = None
 
     def __post_init__(self) -> None:
-        _text(self.document_number, "document_number")
+        _text(self.document_number, "document_number", maximum=50)
         if not isinstance(self.document_type, DocumentType):
             raise TypeError("document_type must be a DocumentType.")
         if self.document_type is not DocumentType.SALES_INVOICE:
@@ -200,7 +220,7 @@ class MandateEvent:
         ):
             if not isinstance(value, kind):
                 raise TypeError(f"Expected {kind.__name__}.")
-        _text(self.event_number, "event_number")
+        _text(self.event_number, "event_number", maximum=50)
         if (
             type(self.issue_date) is not dt.date
             or type(self.effective_date) is not dt.date
@@ -211,7 +231,7 @@ class MandateEvent:
         if not isinstance(self.notes, tuple) or not self.notes:
             raise ValueError("notes must be a nonempty tuple of declarations.")
         for note in self.notes:
-            _text(note, "declaration")
+            _text(note, "declaration", maximum=5000)
         if not isinstance(self.sender_party, MandateParty) or not isinstance(
             self.mandatee_party, MandateParty
         ):
@@ -220,6 +240,11 @@ class MandateEvent:
             raise ValueError("sender_party must have a MandatorType role.")
         if not isinstance(self.mandatee_party.role, MandateeType):
             raise ValueError("mandatee_party must have a MandateeType role.")
+        _text(
+            self.sender_party.representative.identification_number,
+            "sender representative identification number",
+            maximum=14,
+        )
         if self.acceptance is not True:
             raise ValueError("Mandatee acceptance must be explicitly True.")
         if not isinstance(self.document_references, tuple) or not all(

@@ -54,6 +54,8 @@ def _party(parent: etree._Element, tag: str, party: MandateParty) -> None:
             number=party.tax_number,
             kind=party.identification_type,
             digit=party.verification_digit,
+            organization_type=party.organization_type,
+            tax_scheme=party.tax_scheme,
         )
         _person(node, party.representative)
     poa = _sub_element(node, CAC, "PowerOfAttorney")

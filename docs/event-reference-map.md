@@ -5,6 +5,9 @@ sus fuentes versionadas, ejemplos originales y pruebas. Las páginas son física
 del PDF. Los nombres de eventos del catálogo y sus descripciones XML pueden
 variar: las discrepancias están en las guías por familia.
 
+El [informe de conformidad XML](technical/xml-conformance.md) relaciona reglas,
+correcciones, límites y pruebas independientes de las ejemplificaciones.
+
 ## Dos anexos con alcances diferentes
 
 - **FE 1.9:** `docs/references/dian/invoicing/1.9/anexo-tecnico.pdf`, 753 páginas.

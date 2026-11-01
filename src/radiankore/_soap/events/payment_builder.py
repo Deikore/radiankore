@@ -46,14 +46,12 @@ def _build_paid_event(
 ) -> etree._Element:
     """Serialize a payment with financial participation and its effective date."""
     if isinstance(event, InvoicePaymentEvent):
-        payers = event.payers
         extension = "InformacionPagos"
         description = "Pago de la factura electrónica de venta como título valor"
     else:
-        payers = (event.payer,)
         extension = "InformacionPagoTransferencia"
         description = "Pago de la transferencia de derechos económicos"
-    first = payers[0].party
+    first = event.payer.party
     assert first is not None
     root = event_root(
         event.header,
@@ -73,7 +71,7 @@ def _build_paid_event(
             ("ValorPendienteTituloValor", event.remaining_value),
         ),
     )
-    financial_party(root, "SenderParty", payers, event.currency)
+    financial_party(root, "SenderParty", (event.payer,), event.currency)
     named_xml_party(root, "ReceiverParty", DIAN_PARTY)
     block, response = document_response(
         root, event.code, description, list_id=event.restriction.value

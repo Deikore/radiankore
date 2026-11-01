@@ -61,14 +61,15 @@ class AsyncDianLimiter:
     @asynccontextmanager
     async def _slot(self, service: str) -> AsyncIterator[None]:
         self._affinity.bind()
-        # Every user acquires scopes in this order, avoiding lock inversion.
-        async with self._slots:
-            semaphore = self._services.get(service)
-            if semaphore is None:
+        # Waiters on one service must not reserve global capacity for other services.
+        # Every user acquires service then global, avoiding lock inversion.
+        semaphore = self._services.get(service)
+        if semaphore is None:
+            async with self._slots:
                 yield
-            else:
-                async with semaphore:
-                    yield
+        else:
+            async with semaphore, self._slots:
+                yield
 
     async def _wait(self, service: str) -> None:
         loop = self._affinity.bind()

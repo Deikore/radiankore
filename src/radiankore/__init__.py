@@ -13,6 +13,7 @@ from radiankore.exceptions import (
     DianSoapFaultError,
     DianTransportError,
 )
+from radiankore.limits import DianResponseLimits
 
 __all__ = [
     "AsyncDianClient",
@@ -20,6 +21,7 @@ __all__ = [
     "DianClient",
     "DianError",
     "DianResponseError",
+    "DianResponseLimits",
     "DianSignatureError",
     "DianSoapFaultError",
     "DianTimeouts",

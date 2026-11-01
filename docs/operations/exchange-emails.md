@@ -72,3 +72,9 @@ Los SOAP Fault conservan `DianSoapFaultError`.
 
 Las pruebas son sintéticas. La aceptación del certificado y el contenido real del
 archivo requieren una consulta autorizada contra DIAN.
+
+Desde 0.7.1 se aplican, por defecto, topes de 16 MiB para SOAP, 64 MiB para el
+ZIP descargado y 128 MiB para el CSV expandido. Un exceso HTTP genera
+`DianTransportError`; uno de CSV, `DianResponseError`, sin resultado parcial.
+Ambos clientes permiten configurar o desactivar cada campo mediante
+[`DianResponseLimits`](../guides/response-limits.md).

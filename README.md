@@ -134,6 +134,15 @@ Los resultados utilizan dataclasses inmutables y campos opcionales cuando
 corresponda. `AsyncDianClient` reutiliza sus pools durante su vida y admite
 consultas concurrentes, con límites configurables y sin reintentos automáticos.
 
+La revisión XML incorpora correcciones de endosos, pagos y mandato. En 045,
+`InvoicePaymentEvent` recibe ahora `payer` en lugar de `payers`; consulte la
+[migración de pagos](https://radiankore.readthedocs.io/en/latest/operations/radian-payments.html#migracion-de-payers-a-payer)
+y el [informe de conformidad](https://radiankore.readthedocs.io/en/latest/technical/xml-conformance.html).
+
+Desde 0.7.1 hay límites activos de **16 MiB para SOAP, 64 MiB para ZIP y 128 MiB
+para CSV descomprimido**, configurables mediante `DianResponseLimits`. Consulte
+[cómo ampliarlos o desactivarlos por campo](https://radiankore.readthedocs.io/en/latest/guides/response-limits.html).
+
 ## Cliente síncrono
 
 `DianClient` conserva su API y sus defaults. Para llamadas síncronas directas:

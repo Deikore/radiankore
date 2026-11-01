@@ -21,6 +21,7 @@ sustituye la comprobación de facultades o antecedentes de negocio.
 ../environments
 ../guides/preparation
 ../guides/async
+../guides/response-limits
 ```
 
 ```{toctree}
@@ -74,6 +75,7 @@ sustituye la comprobación de facultades o antecedentes de negocio.
 ../errors
 ../technical-references
 ../event-reference-map
+xml-conformance
 ../guides/evidence
 ```
 

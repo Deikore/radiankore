@@ -1,7 +1,6 @@
 """Synchronous DIAN client for invoice events, documents and acquirer information."""
 
 from dataclasses import replace
-from datetime import UTC, datetime
 from math import isfinite
 from os import PathLike
 from typing import Self
@@ -35,8 +34,8 @@ from radiankore.catalogs import IdentificationType
 from radiankore.certificate import DigitalCertificate
 from radiankore.environment import Environment
 from radiankore.exceptions import DianTransportError
+from radiankore.limits import DianResponseLimits
 from radiankore.models.events import (
-    InvoiceResponseEvent,
     PreparedRadianEvent,
     RadianEvent,
     RadianSoftware,
@@ -74,6 +73,7 @@ class DianClient:
         environment: Environment | str = Environment.PRODUCTION,
         timeout: float = 30.0,
         reuse_connections: bool = False,
+        response_limits: DianResponseLimits | None = None,
     ) -> None:
         """Load a PFX/P12 file, raising immediately if reading or decoding fails.
 
@@ -81,12 +81,13 @@ class DianClient:
         data or passwords raise DigitalCertificateError. String passwords use
         UTF-8; None supports unencrypted containers. No network access occurs.
         """
-        self._validate_options(environment, timeout, reuse_connections)
+        self._validate_options(environment, timeout, reuse_connections, response_limits)
         self._initialize(
             DigitalCertificate.from_file(certificate_path, password=password),
             environment=environment,
             timeout=timeout,
             reuse_connections=reuse_connections,
+            response_limits=response_limits,
         )
 
     def _initialize(
@@ -96,25 +97,36 @@ class DianClient:
         environment: Environment | str,
         timeout: float,
         reuse_connections: bool,
+        response_limits: DianResponseLimits | None,
     ) -> None:
-        self._validate_options(environment, timeout, reuse_connections)
+        self._validate_options(environment, timeout, reuse_connections, response_limits)
         self._environment = Environment(environment)
         if not isinstance(certificate, DigitalCertificate):
             raise TypeError("certificate must be a DigitalCertificate.")
         self._certificate = certificate
+        self._response_limits = response_limits or DianResponseLimits()
         self._transport = transport.SoapTransport(
-            timeout=timeout, reuse_connections=reuse_connections
+            timeout=timeout,
+            reuse_connections=reuse_connections,
+            response_limits=self._response_limits,
         )
 
     @staticmethod
     def _validate_options(
-        environment: Environment | str, timeout: float, reuse_connections: bool
+        environment: Environment | str,
+        timeout: float,
+        reuse_connections: bool,
+        response_limits: DianResponseLimits | None,
     ) -> None:
         Environment(environment)
         if isinstance(timeout, bool) or not isfinite(timeout) or timeout <= 0:
             raise ValueError("timeout must be positive and finite.")
         if not isinstance(reuse_connections, bool):
             raise TypeError("reuse_connections must be a bool.")
+        if response_limits is not None and not isinstance(
+            response_limits, DianResponseLimits
+        ):
+            raise TypeError("response_limits must be DianResponseLimits or None.")
 
     @classmethod
     def from_pfx(
@@ -125,14 +137,16 @@ class DianClient:
         environment: Environment | str = Environment.PRODUCTION,
         timeout: float = 30.0,
         reuse_connections: bool = False,
+        response_limits: DianResponseLimits | None = None,
     ) -> Self:
         """Decode PKCS#12 bytes once without retaining the container or password."""
-        cls._validate_options(environment, timeout, reuse_connections)
+        cls._validate_options(environment, timeout, reuse_connections, response_limits)
         return cls.from_certificate(
             DigitalCertificate.from_pfx(data, password=password),
             environment=environment,
             timeout=timeout,
             reuse_connections=reuse_connections,
+            response_limits=response_limits,
         )
 
     @classmethod
@@ -143,6 +157,7 @@ class DianClient:
         environment: Environment | str = Environment.PRODUCTION,
         timeout: float = 30.0,
         reuse_connections: bool = False,
+        response_limits: DianResponseLimits | None = None,
     ) -> Self:
         """Use decoded material without I/O; trust and validity remain caller policy.
 
@@ -156,6 +171,7 @@ class DianClient:
             environment=environment,
             timeout=timeout,
             reuse_connections=reuse_connections,
+            response_limits=response_limits,
         )
         return client
 
@@ -213,7 +229,9 @@ class DianClient:
         if result is None or result.download_url is None:
             return result
         archive = self._transport.get(result.download_url)
-        return replace(result, csv=parse_exchange_emails_csv(archive))
+        return replace(
+            result, csv=parse_exchange_emails_csv(archive, self._response_limits)
+        )
 
     def get_status(self, track_id: str) -> DocumentStatusResult | None:
         """Query document validation status and independently decoded payloads.
@@ -316,7 +334,6 @@ class DianClient:
             software,
             self._certificate,
             self._environment,
-            datetime.now(UTC) if isinstance(event, InvoiceResponseEvent) else None,
         )
 
     def send_radian_event(

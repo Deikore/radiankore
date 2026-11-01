@@ -45,7 +45,13 @@ class InvoiceEventParty:
 
     def __post_init__(self) -> None:
         text(self.name, "name", maximum=450)
-        identity(self.tax_number, self.identification_type, self.verification_digit)
+        identity(
+            self.tax_number,
+            self.identification_type,
+            self.verification_digit,
+            minimum=3,
+            maximum=13,
+        )
         if not isinstance(self.organization_type, OrganizationType):
             raise TypeError("organization_type must be an OrganizationType.")
         if not isinstance(self.tax_scheme, PartyTaxScheme):

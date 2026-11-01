@@ -12,7 +12,6 @@ from collections.abc import (
 )
 from contextlib import asynccontextmanager
 from dataclasses import replace
-from datetime import UTC, datetime
 from os import PathLike
 from typing import Self
 
@@ -48,8 +47,8 @@ from radiankore.catalogs import IdentificationType
 from radiankore.certificate import DigitalCertificate
 from radiankore.environment import Environment
 from radiankore.exceptions import DianTransportError
+from radiankore.limits import DianResponseLimits
 from radiankore.models.events import (
-    InvoiceResponseEvent,
     PreparedRadianEvent,
     RadianEvent,
     RadianSoftware,
@@ -86,21 +85,32 @@ class AsyncDianClient:
         concurrency: int = 5,
         processing_workers: int = 2,
         limiter: AsyncDianLimiter | None = None,
+        response_limits: DianResponseLimits | None = None,
     ) -> None:
         self._validate_options(
-            environment, timeouts, concurrency, processing_workers, limiter
+            environment,
+            timeouts,
+            concurrency,
+            processing_workers,
+            limiter,
+            response_limits,
         )
         if not isinstance(certificate, DigitalCertificate):
             raise TypeError("certificate must be a DigitalCertificate.")
         self._certificate = certificate
         self._environment = Environment(environment)
         self._timeouts = timeouts or DianTimeouts()
+        self._response_limits = response_limits or DianResponseLimits()
         self._concurrency = concurrency
         self._affinity = LoopBound()
         self._processor = BoundedProcessor(processing_workers)
         self._limiter = limiter or AsyncDianLimiter(concurrency=concurrency)
         self._transport = AsyncSoapTransport(
-            self._processor, self._timeouts, concurrency, self._limiter
+            self._processor,
+            self._timeouts,
+            concurrency,
+            self._limiter,
+            self._response_limits,
         )
         self._slots = asyncio.Semaphore(concurrency)
         self._crypto_lock = threading.Lock()
@@ -118,6 +128,7 @@ class AsyncDianClient:
         concurrency: int,
         processing_workers: int,
         limiter: AsyncDianLimiter | None,
+        response_limits: DianResponseLimits | None,
     ) -> None:
         Environment(environment)
         count(concurrency, "concurrency")
@@ -126,6 +137,10 @@ class AsyncDianClient:
             raise TypeError("timeouts must be DianTimeouts or None.")
         if limiter is not None and not isinstance(limiter, AsyncDianLimiter):
             raise TypeError("limiter must be AsyncDianLimiter or None.")
+        if response_limits is not None and not isinstance(
+            response_limits, DianResponseLimits
+        ):
+            raise TypeError("response_limits must be DianResponseLimits or None.")
 
     @classmethod
     def from_certificate(
@@ -137,6 +152,7 @@ class AsyncDianClient:
         concurrency: int = 5,
         processing_workers: int = 2,
         limiter: AsyncDianLimiter | None = None,
+        response_limits: DianResponseLimits | None = None,
     ) -> Self:
         """Use decoded material without file I/O or opening connections."""
         return cls(
@@ -146,6 +162,7 @@ class AsyncDianClient:
             concurrency=concurrency,
             processing_workers=processing_workers,
             limiter=limiter,
+            response_limits=response_limits,
         )
 
     @classmethod
@@ -159,10 +176,16 @@ class AsyncDianClient:
         concurrency: int = 5,
         processing_workers: int = 2,
         limiter: AsyncDianLimiter | None = None,
+        response_limits: DianResponseLimits | None = None,
     ) -> Self:
         """Read and decode PKCS#12 off-loop, closing loader resources on failure."""
         cls._validate_options(
-            environment, timeouts, concurrency, processing_workers, limiter
+            environment,
+            timeouts,
+            concurrency,
+            processing_workers,
+            limiter,
+            response_limits,
         )
         processor = BoundedProcessor(1)
         try:
@@ -178,6 +201,7 @@ class AsyncDianClient:
             concurrency=concurrency,
             processing_workers=processing_workers,
             limiter=limiter,
+            response_limits=response_limits,
         )
 
     @classmethod
@@ -191,10 +215,16 @@ class AsyncDianClient:
         concurrency: int = 5,
         processing_workers: int = 2,
         limiter: AsyncDianLimiter | None = None,
+        response_limits: DianResponseLimits | None = None,
     ) -> Self:
         """Decode in-memory PKCS#12 off-loop; never retain password or PFX bytes."""
         cls._validate_options(
-            environment, timeouts, concurrency, processing_workers, limiter
+            environment,
+            timeouts,
+            concurrency,
+            processing_workers,
+            limiter,
+            response_limits,
         )
         processor = BoundedProcessor(1)
         try:
@@ -210,6 +240,7 @@ class AsyncDianClient:
             concurrency=concurrency,
             processing_workers=processing_workers,
             limiter=limiter,
+            response_limits=response_limits,
         )
 
     @property
@@ -404,20 +435,21 @@ class AsyncDianClient:
             async with self._limiter._slot(service):
                 await self._limiter._wait(service)
                 archive = await self._transport.get(url, service)
-            rows = await self._processor.run(parse_exchange_emails_csv, archive)
+            rows = await self._processor.run(
+                parse_exchange_emails_csv, archive, self._response_limits
+            )
             return replace(result, csv=rows)
 
     def _prepare(
         self, event: RadianEvent, software: RadianSoftware
     ) -> PreparedRadianEvent:
-        with self._crypto_lock:
-            return prepare_event(
-                event,
-                software,
-                self._certificate,
-                self._environment,
-                datetime.now(UTC) if isinstance(event, InvoiceResponseEvent) else None,
-            )
+        return prepare_event(
+            event,
+            software,
+            self._certificate,
+            self._environment,
+            certificate_lock=self._crypto_lock,
+        )
 
     async def prepare_radian_event(
         self, *, event: RadianEvent, software: RadianSoftware
