@@ -129,7 +129,7 @@ def assert_profile(root: etree._Element, code: str, environment: Environment) ->
         tail.pop(0)
     assert tail[:2] == [f"{{{CAC}}}SenderParty", f"{{{CAC}}}ReceiverParty"]
     assert tail[2:] and set(tail[2:]) == {f"{{{CAC}}}DocumentResponse"}
-    if code != "043":
+    if code not in {"041", "042", "043", "048"}:
         assert len(tail) == 3
     assert root.findtext(f"{{{CBC}}}UBLVersionID") == "UBL 2.1"
     profile = "DIAN 2.1: ApplicationResponse de "

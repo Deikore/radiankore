@@ -21,7 +21,15 @@ from radiankore.models.events import (
 )
 
 event = EconomicRightsTransferEvent(
-    header=header,
+    header=replace(
+        header,
+        notes=(
+            EventNote(
+                kind=EventNoteKind.ECONOMIC_RIGHTS_TRANSFER,
+                text="Manifiesto bajo la gravedad de juramento que entre Comercial Sintética, NIT 900000001, en calidad de cedente, y Comprador Sintético, NIT 900000002, en calidad de cesionario, se suscribió un contrato de cesión de derechos económicos, dando cumplimiento a los términos y condiciones establecidos en el Código Civil. Ejemplo ficticio.",
+            ),
+        ),
+    ),
     operation_type=RadianOperationType.ECONOMIC_RIGHTS_PARTIAL_WITH_RECOURSE,
     reference=invoice,
     transferors=(RadianParticipation(party=holder, amount=Decimal("50000.00")),),

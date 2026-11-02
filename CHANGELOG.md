@@ -1,5 +1,21 @@
 # Historial de cambios
 
+## 0.7.2 — 2026-11-01
+
+- Completa las entradas Python de eventos 030–051 con notas tipadas por propósito,
+  declaraciones obligatorias y opcionales, y representación explícita por mandato.
+- Admite varios DocumentResponse y referencias en 041/042/048, con evidencias
+  propias, varios representantes y notarios en 043, identidades tributarias
+  adicionales y campos tributarios opcionales independientes.
+- Cambio incompatible: `notes` recibe `tuple[EventNote, ...]`; las cadenas ya no
+  se clasifican automáticamente. En `MandateParty`, `representative` pasa a
+  `representatives`; en `MandateAttachedDocument`, `issuer` pasa a `issuers`.
+  Restricciones y protestos reciben sus referencias y evidencias en `responses`.
+- Valida propósitos y posiciones antes de firmar; las notas adicionales no
+  sustituyen declaraciones. Limita `factor_type` a endosatarios 037/047.
+- Publica el inventario de notas, matriz de campos XML, migración y pruebas
+  de cardinalidades, firma serializada y preparación síncrona/asíncrona.
+
 ## 0.7.1 — 2026-11-01
 
 - Añade `DianResponseLimits`, compartido por ambos clientes y sus fábricas, con

@@ -12,11 +12,13 @@ from radiankore.catalogs import (
     RadianOperationType,
 )
 from radiankore.models.events._payment import payment_values
+from radiankore.models.events.notes import validate_event_notes
 from radiankore.models.events.radian_common import (
     RadianEventHeader,
     RadianInvoiceReference,
     RadianParticipation,
     RadianParty,
+    additional_senders,
     currency,
     decimal_value,
     event_inputs,
@@ -64,6 +66,9 @@ class EconomicRightsTransferEvent:
     def __post_init__(self) -> None:
         operation(self.operation_type, ("491", "492", "493", "494"))
         event_inputs(self.header, self.reference, RadianInvoiceReference)
+        validate_event_notes(
+            self.header.notes, code=self.code.value, operation=self.operation_type.value
+        )
         maturity(self.reference)
         participations(self.transferors, sender=True)
         participations(self.transferees)
@@ -98,8 +103,14 @@ class EconomicRightsNotificationEvent:
     reference: RadianInvoiceReference
     current_value: Decimal
 
+    additional_sender_parties: tuple[RadianParty, ...] = ()
+
     def __post_init__(self) -> None:
         event_inputs(self.header, self.reference, RadianInvoiceReference)
+        additional_senders(self.additional_sender_parties)
+        validate_event_notes(
+            self.header.notes, code=self.code.value, operation=self.operation_type.value
+        )
         maturity(self.reference)
         named_party(self.sender_party, sender=True)
         named_party(self.receiver_party)
@@ -130,9 +141,15 @@ class EconomicRightsPaymentEvent:
     remaining_value: Decimal
     currency: CurrencyCode = CurrencyCode.COP
 
+    additional_sender_parties: tuple[RadianParty, ...] = ()
+
     def __post_init__(self) -> None:
         operation(self.operation_type, ("511", "512"))
         event_inputs(self.header, self.reference, RadianInvoiceReference)
+        additional_senders(self.additional_sender_parties)
+        validate_event_notes(
+            self.header.notes, code=self.code.value, operation=self.operation_type.value
+        )
         maturity(self.reference)
         participations((self.payer,), sender=True)
         partial = (

@@ -105,14 +105,16 @@ def test_all_mandate_variants(
     note = None
     if nature is MandateNature.GENERAL:
         notary = replace(
-            mandate_event.sender_party.representative,
+            mandate_event.sender_party.representatives[0],
             job_title="Notario",
             organization_department="1",
         )
-        contract = replace(contract, issuer=notary, effective_date=date(2026, 10, 21))
+        contract = replace(
+            contract, issuers=(notary,), effective_date=date(2026, 10, 21)
+        )
         note = MandateAttachedDocument(
             document_id="VALIDITY-1",
-            issuer=notary,
+            issuers=(notary,),
             embedded_bytes=b"%PDF-1.7\nSynthetic validity note",
         )
     event = replace(

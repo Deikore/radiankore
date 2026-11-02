@@ -45,8 +45,8 @@ def test_public_immutable_models(
         ({"issuer_person": None}, TypeError),
         ({"claim_reason": InvoiceClaimReason.GOODS_NOT_DELIVERED}, ValueError),
         ({"notes": ["note"]}, TypeError),
-        ({"notes": ("",)}, ValueError),
-        ({"notes": ("x" * 10_001,)}, ValueError),
+        ({"notes": ("",)}, TypeError),
+        ({"notes": ("x" * 10_001,)}, TypeError),
     ],
 )
 def test_invalid_event_inputs(
@@ -73,7 +73,7 @@ def test_event_specific_inputs(
             ).issuer_person,
         )
     tacit = invoice_event_factory(EventType.TACIT_ACCEPTANCE)
-    with pytest.raises(ValueError, match="sworn"):
+    with pytest.raises(ValueError, match=r"statement|declaration"):
         replace(tacit, notes=())
     with pytest.raises(ValueError, match="DIAN receiver"):
         replace(tacit, receiver_party=claim.receiver_party)

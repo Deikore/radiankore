@@ -1,6 +1,6 @@
 # Comunicación con DIAN y las dos firmas
 
-Este capítulo describe **lo implementado en 0.6.1**, contrastado con el código,
+Este capítulo describe **lo implementado en 0.7.2**, contrastado con el código,
 las pruebas, los WSDL guardados y RADIAN 1.1 §§8, 9.3–9.4, 11 y 12.
 No constituye una certificación de interoperabilidad con participantes reales.
 La [matriz de evidencia](evidence.md) distingue pruebas locales de verificaciones pendientes.

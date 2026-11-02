@@ -40,6 +40,9 @@ Los datos siguientes son ficticios y no corresponden a participantes habilitados
 Los ejemplos comparten participantes y referencia para mostrar qué cambia por evento.
 
 ```python
+from radiankore.catalogs import EventNoteKind
+from radiankore.models.events import EventNote
+
 from datetime import datetime, timedelta, timezone
 
 from radiankore import DianClient, Environment
@@ -135,8 +138,11 @@ tacit = InvoiceResponseEvent(
     sender_party=seller,
     document_reference=reference,
     notes=(
-        "Declaración sintética para demostrar la API; sustituir por el juramento "
-        "aplicable del anexo FE 1.9 antes de una emisión real.",
+        EventNote(
+            kind=EventNoteKind.TACIT_ACCEPTANCE_DIRECT,
+            text="Declaración sintética para demostrar la API; sustituir por el juramento "
+            "aplicable del anexo FE 1.9 antes de una emisión real.",
+        ),
     ),
 )
 software = RadianSoftware(
@@ -168,6 +174,9 @@ misma factura. Reclamo y aceptación son declaraciones incompatibles.
 
 ## Declaraciones explícitas y representación
 
+Todas las notas usan `EventNote`; el [inventario de propósitos](event-notes.md)
+detalla alternativas, obligatoriedad y migración desde cadenas.
+
 El consumidor aporta los textos de `notes`; la librería conserva caracteres,
 orden y repeticiones. En 034 se exige al menos una nota no vacía. Se comprueba su
 presencia, no la veracidad de los hechos ni el contenido jurídico del juramento.
@@ -185,8 +194,8 @@ Copie la plantilla aplicable del
 [anexo oficial FE 1.9](https://www.dian.gov.co/impuestos/factura-electronica/Documents/Anexo-Tecnico-Factura-Electronica-de-Venta-vr-1-9.pdf#page=301)
 y completa todos sus campos. No envíes las tres alternativas ni las instrucciones
 editoriales incluidas en las ejemplificaciones. En cualquier evento generado por
-mandatario, incluye también la nota de representación de §6.5.4, AAD11, con los
-nombres reales del mandatario y mandante. La librería no deduce representación
+mandatario, incluye primero `MandateRepresentation(...).as_note()` y utiliza
+el propósito de juramento correspondiente al mandante en 034. La librería no deduce representación
 del rol `thirdparty` del firmante.
 
 ## Hashes, firma y envío

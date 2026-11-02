@@ -189,3 +189,19 @@ un envío interrumpido; una segunda llamada sigue siendo una decisión explícit
 La aceptación en habilitación con software y participantes autorizados sigue
 pendiente. No existe una prueba local que convierta esa dependencia externa en
 una garantía de aceptación de todos los eventos.
+
+## Ampliación 0.7.2 de entradas completas
+
+La [matriz de entradas XML](event-input-matrix.md) amplía la auditoría inicial.
+Se corrigen las restricciones artificiales de cardinalidad: 041/042/048 admiten
+varios DocumentResponse; 041/048 varias referencias por bloque; 043 varios
+representantes y notarios por soporte. Se prueban hijos tributarios opcionales,
+identidades adicionales y notas tipadas por propósito; no basta una nota no vacía
+para satisfacer cualquier declaración. CompanyLegalFormCode queda limitado a
+endosatarios 037/047, únicos perfiles que lo incluyen en sus tablas de generación.
+
+Los casos repetidos usan el primer XPath de referencia/identidad para CUDE/QR,
+sin concatenar claves ni alterar sus fórmulas. Los importes globales de las
+extensiones permanecen globales; no se inventan reglas de reparto por referencia.
+Las [notas](../operations/event-notes.md) documentan las alternativas de 034/035/043,
+las cláusulas obligatorias de 038/039/048/049 y las notas opcionales de 036/044.

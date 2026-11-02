@@ -120,7 +120,7 @@ def build_invoice_application_response(
     _sub_element(root, CBC, "IssueDate", stamp.date().isoformat())
     _sub_element(root, CBC, "IssueTime", stamp.timetz().isoformat(timespec="seconds"))
     for note in event.notes:
-        _sub_element(root, CBC, "Note", note)
+        _sub_element(root, CBC, "Note", note.text)
     _party(root, "SenderParty", event.sender_party)
     _party(root, "ReceiverParty", receiver)
     response = _sub_element(root, CAC, "DocumentResponse")

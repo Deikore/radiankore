@@ -51,6 +51,7 @@ from radiankore.models.events import (
     RadianSoftware,
 )
 from tests.event_factories import radian_event_factory as make_radian_event_factory
+from tests.event_notes import synthetic_notes
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[1]
 _RADIAN_XSD = _PROJECT_ROOT / (
@@ -306,17 +307,14 @@ def mandate_event() -> "MandateEvent":
         event_number="TEST-1",
         issue_date=date(2026, 10, 22),
         issue_time=time(10, 30),
-        notes=(
-            "Declaración sintética: el representante confiere las facultades indicadas "
-            "en el contrato de prueba; no constituye un mandato real.",
-        ),
+        notes=synthetic_notes("043"),
         sender_party=MandateParty(
             name="Synthetic Mandator",
             tax_number="900000001",
             identification_type=IdentificationType.NIT,
             verification_digit="1",
             role=MandatorType.INVOICE_ISSUER,
-            representative=person,
+            representatives=(person,),
         ),
         mandatee_party=MandateParty(
             name="Synthetic Mandatee",
@@ -324,7 +322,7 @@ def mandate_event() -> "MandateEvent":
             identification_type=IdentificationType.NIT,
             verification_digit="2",
             role=MandateeType.ELECTRONIC_NEGOTIATION_SYSTEM,
-            representative=person,
+            representatives=(person,),
         ),
         effective_date=date(2026, 10, 22),
         document_references=(
@@ -408,11 +406,7 @@ def invoice_event_factory() -> Callable[[EventType], InvoiceResponseEvent]:
             claim_reason=InvoiceClaimReason.DOCUMENT_INCONSISTENCIES
             if code is EventType.INVOICE_CLAIM
             else None,
-            notes=(
-                "Declaración sintética; no constituye aceptación de una factura real.",
-            )
-            if code is EventType.TACIT_ACCEPTANCE
-            else (),
+            notes=synthetic_notes(code.value),
         )
 
     return make

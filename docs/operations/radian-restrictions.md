@@ -14,6 +14,9 @@ from dataclasses import replace
 from radiankore.catalogs import RadianOperationType
 from radiankore.models.events import (
     CirculationRestrictionEvent,
+    CirculationRestrictionResponse,
+    CirculationRestrictionTerminationResponse,
+    RestrictionDocumentReference,
     CirculationRestrictionTerminationEvent,
     RadianEventReference,
     RadianPdfAttachment,
@@ -26,11 +29,17 @@ evidence = RadianPdfAttachment(
 event = CirculationRestrictionEvent(
     header=header,
     operation_type=RadianOperationType.RESTRICTION_ATTACHMENT,
-    reference=invoice,
     authorities=(holder,),
-    officials=(debtor,),
-    attachment=evidence,
     measure_value=Decimal("100000.00"),
+    responses=(
+        CirculationRestrictionResponse(
+            references=(
+                RestrictionDocumentReference(
+                    reference=invoice, officials=(debtor,), attachment=evidence
+                ),
+            )
+        ),
+    ),
 )
 payment_order = replace(
     event,
@@ -51,15 +60,21 @@ Para terminar una limitación registrada:
 event = CirculationRestrictionTerminationEvent(
     header=header,
     operation_type=RadianOperationType.RESTRICTION_TERMINATION_JUDGMENT,
-    reference=RadianEventReference(
-        document_number="LIMITACION-EJEMPLO-1",
-        uuid="d" * 96,
-    ),
     authorities=(holder,),
-    officials=(debtor,),
-    attachment=evidence,
     debt_value=Decimal("100000.00"),
     restriction_value=Decimal("50000.00"),
+    responses=(
+        CirculationRestrictionTerminationResponse(
+            reference=RestrictionDocumentReference(
+                reference=RadianEventReference(
+                    document_number="LIMITACION-EJEMPLO-1",
+                    uuid="d" * 96,
+                ),
+                officials=(debtor,),
+                attachment=evidence,
+            )
+        ),
+    ),
 )
 early_termination = replace(
     event,
@@ -70,8 +85,8 @@ early_termination = replace(
 | Entrada | Correspondencia | Requisito |
 | --- | --- | --- |
 | `authorities` | `SenderParty/PartyTaxScheme` | Tupla no vacía de autoridades con NIT; AAF04 |
-| `officials` | `DocumentReference/IssuerParty/PartyTaxScheme` | Tupla no vacía; identidad y nombre explícitos; AAH24 |
-| `attachment` | `DocumentReference/Attachment/EmbeddedDocumentBinaryObject` | PDF obligatorio; AAN01–07 |
+| `responses[].references[].officials` en 041 / `responses[].reference.officials` en 042 | `DocumentReference/IssuerParty/PartyTaxScheme` | Tupla no vacía; identidad y nombre explícitos; AAH24 |
+| `responses[].references[].attachment` en 041 / `responses[].reference.attachment` en 042 | `DocumentReference/Attachment/EmbeddedDocumentBinaryObject` | PDF obligatorio; AAN01–07 |
 | `measure_value` de 041 | `InformacionMedidaCautelar/MontoMedidaCautelar` | Decimal no negativo, hasta 20 caracteres |
 | Importes de 042 | `InformacionMedidaCautelar/ValorDeuda`, `ValorLimitación` | Ambos explícitos, no negativos, hasta 20 caracteres |
 
@@ -95,3 +110,7 @@ y solo requieren DV para NIT.
 
 Fuentes: §§7.2.1.7–8, 7.2.4.6–7, 7.2.5.9–10, 9.2.3.6–7 y 9.2.10–11;
 las cuatro ejemplificaciones de 041/042.
+
+`responses` admite varios bloques en ambos perfiles. Cada bloque de 041 admite
+varias referencias con su PDF y funcionarios; cada bloque de 042 contiene una
+referencia a una limitación. Véase la [matriz y migración](../technical/event-input-matrix.md).

@@ -53,6 +53,9 @@ una integración real. Los antecedentes y la exactitud de las declaraciones son
 responsabilidad del consumidor.
 
 ```python
+from radiankore.catalogs import EventNoteKind
+from radiankore.models.events import EventNote
+
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
@@ -71,7 +74,12 @@ header = RadianEventHeader(
     event_number="RADIAN-EJEMPLO-1",
     issue_date=stamp.date(),
     issue_time=stamp.timetz(),
-    notes=("Declaración sintética; no constituye un acto mercantil real.",),
+    notes=(
+        EventNote(
+            kind=EventNoteKind.ADDITIONAL,
+            text="Declaración sintética; no constituye un acto mercantil real.",
+        ),
+    ),
 )
 holder = RadianParty(
     name="Tenedor sintético",
@@ -137,6 +145,7 @@ roles, vigencia, autorización y declaraciones de representación.
 ```{toctree}
 :maxdepth: 1
 
+event-notes
 radian-termination
 radian-registration
 radian-payments
@@ -146,6 +155,11 @@ radian-economic-rights
 radian-restrictions
 radian-protests
 ```
+
+## Notas tipadas y cobertura
+
+Todas las notas usan `EventNote`. Consulte el [inventario completo y la migración](event-notes.md)
+y la [matriz de campos XML](../technical/event-input-matrix.md).
 
 ## Validaciones, precisión y bytes
 

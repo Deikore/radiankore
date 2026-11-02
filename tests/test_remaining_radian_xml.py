@@ -49,7 +49,11 @@ def test_pdf_bytes_metadata_and_issuer_are_preserved(
     )
     protest = isinstance(event, ProtestEvent)
     attachment = (
-        event.act.attachment if isinstance(event, ProtestEvent) else event.attachment
+        event.responses[0].act.attachment
+        if isinstance(event, ProtestEvent)
+        else event.responses[0].references[0].attachment
+        if isinstance(event, CirculationRestrictionEvent)
+        else event.responses[0].reference.attachment
     )
     client = DianClient(encrypted_pfx_path, password="test-password")
     prepared = client.prepare_radian_event(event=event, software=radian_software)
@@ -76,13 +80,16 @@ def test_pdf_bytes_metadata_and_issuer_are_preserved(
     assert all(node.get(name) == value for name, value in expected_metadata.items())
     if protest:
         assert isinstance(event, ProtestEvent)
-        assert root.findtext(base + "/cbc:ID", namespaces=NS) == event.act.notary_number
+        assert (
+            root.findtext(base + "/cbc:ID", namespaces=NS)
+            == event.responses[0].act.notary_number
+        )
         assert (
             root.findtext(
                 "cac:DocumentResponse/cac:LineResponse/cac:Response/cbc:EffectiveDate",
                 namespaces=NS,
             )
-            == event.act.effective_date.isoformat()
+            == event.responses[0].act.effective_date.isoformat()
         )
         assert (
             root.findtext(
@@ -235,8 +242,19 @@ def test_embedded_pdf_is_subject_to_signed_size_limit(
     client = DianClient(encrypted_pfx_path, password="test-password")
     event = replace(
         event,
-        attachment=replace(
-            event.attachment, content_bytes=b"%PDF-1.7\n" + b"x" * 375000
+        responses=(
+            replace(
+                event.responses[0],
+                references=(
+                    replace(
+                        event.responses[0].references[0],
+                        attachment=replace(
+                            event.responses[0].references[0].attachment,
+                            content_bytes=b"%PDF-1.7\n" + b"x" * 375000,
+                        ),
+                    ),
+                ),
+            ),
         ),
     )
     with pytest.raises(ValueError, match="500,000"):

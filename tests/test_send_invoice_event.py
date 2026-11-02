@@ -22,6 +22,7 @@ from radiankore.models.events import (
     InvoiceResponseEvent,
     RadianSoftware,
 )
+from tests.event_notes import additional_notes
 
 
 @pytest.fixture
@@ -166,7 +167,9 @@ def test_signing_date_and_size_limits(
     )
     with pytest.raises(ValueError, match="500,000"):
         client.prepare_radian_event(
-            event=replace(event, notes=("x" * 10_000,) * 51),
+            event=replace(
+                event, notes=event.notes + additional_notes(*("x" * 10_000,) * 51)
+            ),
             software=radian_software,
         )
 

@@ -125,3 +125,11 @@ Consulte [configuración y errores de tamaño](guides/response-limits.md).
 mediante `await`. `AsyncDianLimiter`, `DianTimeouts` y `QueryResult` son exports
 públicos adicionales. Consulte el [contrato async](guides/async.md) para fábricas,
 configuración, cierre, streaming, cancelación y límites.
+
+## Entradas completas de eventos (0.7.2)
+
+Los métodos de preparación y envío conservan sus firmas. Los modelos incorporan
+notas `EventNote` y grupos repetibles; las cadenas sin clasificación ya no se
+aceptan. Consulte la [matriz completa y migración](technical/event-input-matrix.md)
+y el [inventario de notas](operations/event-notes.md). Estos cambios están
+disponibles desde 0.7.2 y requieren migrar las entradas de emisión de 0.7.1.

@@ -25,6 +25,7 @@ from radiankore.models.events import (
     RadianEvent,
     RadianSoftware,
 )
+from tests.event_notes import additional_notes
 
 
 def result_xml(
@@ -222,6 +223,12 @@ def test_size_limit_and_no_fe_same_day_restriction(
     client = DianClient(encrypted_pfx_path, password="test-password")
     # The fixed historical issue date remains valid for this RADIAN profile.
     client.prepare_radian_event(event=event, software=radian_software)
-    oversized = replace(event, header=replace(event.header, notes=("x" * 5000,) * 101))
+    oversized = replace(
+        event,
+        header=replace(
+            event.header,
+            notes=event.header.notes + additional_notes(*("x" * 5000,) * 101),
+        ),
+    )
     with pytest.raises(ValueError, match="500,000"):
         client.prepare_radian_event(event=oversized, software=radian_software)

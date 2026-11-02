@@ -71,7 +71,13 @@ def _build_paid_event(
             ("ValorPendienteTituloValor", event.remaining_value),
         ),
     )
-    financial_party(root, "SenderParty", (event.payer,), event.currency)
+    financial_party(
+        root,
+        "SenderParty",
+        (event.payer,),
+        event.currency,
+        additional_tax_parties=event.additional_sender_parties,
+    )
     named_xml_party(root, "ReceiverParty", DIAN_PARTY)
     block, response = document_response(
         root, event.code, description, list_id=event.restriction.value
@@ -109,7 +115,12 @@ def _build_notice(
         environment=environment,
     )
     custom_extension(root, extension, (("ValorFEV-TV", value),))
-    named_xml_party(root, "SenderParty", event.sender_party)
+    named_xml_party(
+        root,
+        "SenderParty",
+        event.sender_party,
+        additional_parties=event.additional_sender_parties,
+    )
     named_xml_party(root, "ReceiverParty", event.receiver_party)
     block, _ = document_response(root, event.code, description)
     document_reference(block, event.reference)

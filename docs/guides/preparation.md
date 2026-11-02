@@ -9,7 +9,7 @@ los recursos autorizados para el ambiente correspondiente.
 
 ## Instalación y compatibilidad
 
-Para consumir la versión documentada: `python -m pip install radiankore==0.5.0`.
+Para consumir la versión documentada: `python -m pip install radiankore==0.7.2`.
 Para contribuir al repositorio: `uv sync --locked`. No son procedimientos
 intercambiables: el segundo utiliza el checkout y su lockfile. Consulte
 [instalación](../installation.md) para las bibliotecas nativas de `lxml`/`xmlsec`.

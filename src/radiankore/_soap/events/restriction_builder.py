@@ -19,6 +19,7 @@ from radiankore._soap.namespaces import CAC
 from radiankore.environment import Environment
 from radiankore.models.events import (
     CirculationRestrictionEvent,
+    CirculationRestrictionResponse,
     CirculationRestrictionTerminationEvent,
     RadianSoftware,
 )
@@ -63,10 +64,17 @@ def build_restriction(
     for authority in event.authorities:
         party_tax(sender, authority)
     named_xml_party(root, "ReceiverParty", DIAN_PARTY)
-    block, _ = document_response(root, event.code, description)
-    reference = document_reference(block, event.reference, include_due=False)
-    attach_pdf(reference, event.attachment)
-    issuer = _sub_element(reference, CAC, "IssuerParty")
-    for official in event.officials:
-        party_tax(issuer, official)
+    for response in event.responses:
+        block, _ = document_response(root, event.code, description)
+        references = (
+            response.references
+            if isinstance(response, CirculationRestrictionResponse)
+            else (response.reference,)
+        )
+        for item in references:
+            reference = document_reference(block, item.reference, include_due=False)
+            attach_pdf(reference, item.attachment)
+            issuer = _sub_element(reference, CAC, "IssuerParty")
+            for official in item.officials:
+                party_tax(issuer, official)
     return root

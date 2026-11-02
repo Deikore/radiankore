@@ -47,7 +47,7 @@ fuente; CI también ejecuta la suite completa contra el wheel instalado.
 ## Crear la release
 
 Cree una etiqueta `v<VERSION>` que coincida exactamente con `project.version`
-(por ejemplo, `v0.7.1` para `0.7.1`) y publique una release de GitHub desde esa
+(por ejemplo, `v0.7.2` para `0.7.2`) y publique una release de GitHub desde esa
 etiqueta. El workflow:
 
 1. Verifica la correspondencia de etiqueta y versión.
@@ -61,7 +61,32 @@ la página del proyecto en PyPI antes de anunciar la versión. Los números de v
 publicados no se reutilizan; las correcciones se publican como una versión nueva.
 La integración real con DIAN requiere comprobaciones autorizadas aparte de CI.
 
-## Release 0.7.1
+## Release 0.7.2
+
+El manifiesto, el lockfile y el changelog deben identificar `0.7.2`; la etiqueta
+debe ser `v0.7.2`. Esta versión completa los modelos de eventos 030–051 y su
+documentación de correspondencia XML, notas y cardinalidades.
+
+Las notas de release deben destacar los cambios incompatibles:
+
+- `notes` recibe `tuple[EventNote, ...]`; los propósitos se clasifican con
+  `EventNoteKind`. Las notas adicionales no sustituyen declaraciones obligatorias.
+- `MandateParty.representative` pasa a `representatives`; los soportes de mandato
+  reciben `issuers` en lugar de `issuer`.
+- Restricciones 041/042 y protestos 048 reciben sus referencias y evidencias
+  mediante los componentes de `responses`.
+- `factor_type` solo se admite para endosatarios 037/047.
+
+Enlace el [inventario y la migración de notas](operations/event-notes.md) y la
+[matriz completa de entradas](technical/event-input-matrix.md). Compruebe las
+2795 pruebas y los ejemplos documentales con certificados sintéticos y transporte
+simulado; no emita eventos reales como parte de la publicación.
+
+El tag debe apuntar al mismo commit que pasó CI. Después de publicar la release,
+revise el workflow y verifique una instalación de `radiankore==0.7.2` desde PyPI
+en un entorno limpio. No reutilice ni modifique la etiqueta `v0.7.1`.
+
+## Antecedente: release 0.7.1
 
 El manifiesto y el lockfile deben identificar `0.7.1`, y la etiqueta debe ser
 `v0.7.1`. Esta versión incorpora la revisión XML de 030–051 y las correcciones
@@ -100,7 +125,7 @@ publicados contra transporte simulado y la documentación con advertencias como
 errores. Los scripts de benchmark son herramientas del checkout, no comandos
 instalados con el wheel. No ejecute mediciones remotas en CI.
 
-Un commit local no publica el paquete. La etiqueta `v0.7.1` y la release de
+Un commit local no publica el paquete. La etiqueta `v0.7.2` y la release de
 GitHub se crean después de revisar las validaciones; publicar esa release activa
 el workflow. Mantenga los artefactos de construcción y los registros de pruebas
 fuera del commit.

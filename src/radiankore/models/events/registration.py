@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from decimal import Decimal, localcontext
 
 from radiankore.catalogs import EventType, RadianOperationType
+from radiankore.models.events.notes import validate_event_notes
 from radiankore.models.events.radian_common import (
     RadianEventHeader,
     RadianInvoiceReference,
@@ -50,6 +51,9 @@ class RadianRegistrationEvent:
     def __post_init__(self) -> None:
         operation(self.operation_type, ("361", "362", "363", "364"))
         event_inputs(self.header, self.reference, RadianInvoiceReference)
+        validate_event_notes(
+            self.header.notes, code=self.code.value, operation=self.operation_type.value
+        )
         maturity(self.reference)
         named_party(self.sender_party, sender=True)
         if not isinstance(self.payment_state, RegistrationPaymentState):

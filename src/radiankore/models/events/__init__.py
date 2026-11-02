@@ -35,6 +35,7 @@ from radiankore.models.events.mandate import (
     MandateValidityPeriod,
 )
 from radiankore.models.events.mandate_termination import MandateTerminationEvent
+from radiankore.models.events.notes import EventNote, MandateRepresentation
 from radiankore.models.events.payments import InvoicePaymentEvent, PaymentReportEvent
 from radiankore.models.events.prepared import (
     PreparedRadianEvent,
@@ -42,6 +43,7 @@ from radiankore.models.events.prepared import (
 )
 from radiankore.models.events.protests import (
     ProtestAct,
+    ProtestDocumentResponse,
     ProtestEvent,
     ProtestNotary,
 )
@@ -59,8 +61,12 @@ from radiankore.models.events.registration import (
 )
 from radiankore.models.events.restrictions import (
     CirculationRestrictionEvent,
+    CirculationRestrictionResponse,
     CirculationRestrictionTerminationEvent,
+    CirculationRestrictionTerminationResponse,
+    RestrictionDocumentReference,
 )
+from radiankore.models.events.tax_details import RadianTaxDetails
 
 type RadianEvent = (
     InvoiceResponseEvent
@@ -82,13 +88,16 @@ type RadianEvent = (
 
 __all__ = [
     "CirculationRestrictionEvent",
+    "CirculationRestrictionResponse",
     "CirculationRestrictionTerminationEvent",
+    "CirculationRestrictionTerminationResponse",
     "EconomicRightsNotificationEvent",
     "EconomicRightsPaymentEvent",
     "EconomicRightsTransferEvent",
     "EconomicRightsTransferTerms",
     "EndorsementCancellationEvent",
     "EndorsementEvent",
+    "EventNote",
     "GuaranteeBeneficiary",
     "GuaranteeCommitment",
     "GuaranteeEvent",
@@ -102,6 +111,7 @@ __all__ = [
     "MandateEvent",
     "MandateParty",
     "MandatePerson",
+    "MandateRepresentation",
     "MandateScope",
     "MandateTerminationEvent",
     "MandateValidityPeriod",
@@ -109,6 +119,7 @@ __all__ = [
     "PaymentReportEvent",
     "PreparedRadianEvent",
     "ProtestAct",
+    "ProtestDocumentResponse",
     "ProtestEvent",
     "ProtestNotary",
     "RadianEvent",
@@ -121,5 +132,7 @@ __all__ = [
     "RadianPerson",
     "RadianRegistrationEvent",
     "RadianSoftware",
+    "RadianTaxDetails",
     "RegistrationPaymentState",
+    "RestrictionDocumentReference",
 ]

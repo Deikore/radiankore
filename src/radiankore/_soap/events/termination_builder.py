@@ -40,7 +40,14 @@ def build_termination(
         software=software,
         environment=environment,
     )
-    sender = named_xml_party(root, "SenderParty", event.sender_party)
+    sender = named_xml_party(
+        root,
+        "SenderParty",
+        event.sender_party,
+        additional_parties=event.additional_sender_parties
+        if isinstance(event, EndorsementCancellationEvent)
+        else (),
+    )
     if isinstance(event, MandateTerminationEvent):
         for person in event.representatives:
             _person(

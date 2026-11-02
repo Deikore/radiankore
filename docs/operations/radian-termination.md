@@ -7,11 +7,21 @@ Esta guía describe la implementación y sus validaciones técnicas.
 Utilice los [datos comunes](radian-emission.md#preparación-común-para-los-ejemplos).
 
 ```python
+from dataclasses import replace
+
 from radiankore.catalogs import RadianOperationType
 from radiankore.models.events import MandateTerminationEvent, RadianEventReference
 
 event = MandateTerminationEvent(
-    header=header,
+    header=replace(
+        header,
+        notes=(
+            EventNote(
+                kind=EventNoteKind.MANDATE_TERMINATION,
+                text="Manifestación sintética de terminación del mandato identificado; fecha efectiva 2026-10-22. No corresponde a un mandato real.",
+            ),
+        ),
+    ),
     operation_type=RadianOperationType.MANDATE_REVOCATION,
     sender_party=holder,
     representatives=(representative,),

@@ -5,6 +5,7 @@ from datetime import date, time
 
 from radiankore.catalogs import IdentificationType, OrganizationType
 from radiankore.models.events import RadianEvent
+from tests.event_notes import synthetic_notes
 
 
 def radian_event_factory() -> Callable[[str], RadianEvent]:
@@ -21,7 +22,9 @@ def radian_event_factory() -> Callable[[str], RadianEvent]:
     )
     from radiankore.models.events import (
         CirculationRestrictionEvent,
+        CirculationRestrictionResponse,
         CirculationRestrictionTerminationEvent,
+        CirculationRestrictionTerminationResponse,
         EconomicRightsNotificationEvent,
         EconomicRightsPaymentEvent,
         EconomicRightsTransferEvent,
@@ -35,6 +38,7 @@ def radian_event_factory() -> Callable[[str], RadianEvent]:
         NegotiationTerms,
         PaymentReportEvent,
         ProtestAct,
+        ProtestDocumentResponse,
         ProtestEvent,
         ProtestNotary,
         RadianEventHeader,
@@ -46,6 +50,7 @@ def radian_event_factory() -> Callable[[str], RadianEvent]:
         RadianPerson,
         RadianRegistrationEvent,
         RegistrationPaymentState,
+        RestrictionDocumentReference,
     )
 
     party = RadianParty(
@@ -65,11 +70,7 @@ def radian_event_factory() -> Callable[[str], RadianEvent]:
         event_number="RADIAN-TEST-1",
         issue_date=date(2026, 10, 22),
         issue_time=time(10, 30),
-        notes=(
-            "Declaración sintética; no constituye un acto mercantil real.",
-            "Nota repetida",
-            "Nota repetida",
-        ),
+        notes=(),
     )
     reference = RadianInvoiceReference(
         document_number="FE-TEST-1", uuid="a" * 96, due_date=date(2026, 12, 31)
@@ -99,7 +100,9 @@ def radian_event_factory() -> Callable[[str], RadianEvent]:
 
     def _guarantee(op: RadianOperationType) -> RadianEvent:
         return GuaranteeEvent(
-            header=header,
+            header=replace(
+                header, notes=synthetic_notes(op.event_type.value, op.value)
+            ),
             reference=reference,
             title_value=Decimal("100000.00"),
             guarantors=(GuaranteeCommitment(party=party, amount=Decimal("0.00")),),
@@ -107,11 +110,13 @@ def radian_event_factory() -> Callable[[str], RadianEvent]:
 
     def _rights_transfer(op: RadianOperationType) -> RadianEvent:
         return EconomicRightsTransferEvent(
-            header=header,
+            header=replace(
+                header, notes=synthetic_notes(op.event_type.value, op.value)
+            ),
             operation_type=op,
             reference=reference,
             transferors=endorsers,
-            transferees=endorsees,
+            transferees=tuple(replace(p, factor_type=None) for p in endorsees),
             debtors=(debtor,),
             terms=EconomicRightsTransferTerms(
                 transferred_value=Decimal("100000.00"),
@@ -123,7 +128,9 @@ def radian_event_factory() -> Callable[[str], RadianEvent]:
 
     def _rights_notification(op: RadianOperationType) -> RadianEvent:
         return EconomicRightsNotificationEvent(
-            header=header,
+            header=replace(
+                header, notes=synthetic_notes(op.event_type.value, op.value)
+            ),
             sender_party=party,
             receiver_party=debtor,
             reference=reference,
@@ -132,7 +139,9 @@ def radian_event_factory() -> Callable[[str], RadianEvent]:
 
     def _rights_payment(op: RadianOperationType) -> RadianEvent:
         return EconomicRightsPaymentEvent(
-            header=header,
+            header=replace(
+                header, notes=synthetic_notes(op.event_type.value, op.value)
+            ),
             operation_type=op,
             reference=reference,
             payer=RadianParticipation(
@@ -157,62 +166,88 @@ def radian_event_factory() -> Callable[[str], RadianEvent]:
         )
         if code == "041":
             return CirculationRestrictionEvent(
-                header=header,
+                header=replace(
+                    header, notes=synthetic_notes(op.event_type.value, op.value)
+                ),
                 operation_type=op,
-                reference=reference,
                 authorities=(party, buyer),
-                officials=(debtor, debtor),
-                attachment=evidence,
                 measure_value=Decimal("200000.00"),
+                responses=(
+                    CirculationRestrictionResponse(
+                        references=(
+                            RestrictionDocumentReference(
+                                reference=reference,
+                                officials=(debtor, debtor),
+                                attachment=evidence,
+                            ),
+                        )
+                    ),
+                ),
             )
         return CirculationRestrictionTerminationEvent(
-            header=header,
-            operation_type=op,
-            reference=RadianEventReference(
-                document_number="RESTRICTION-1", uuid="d" * 96
+            header=replace(
+                header, notes=synthetic_notes(op.event_type.value, op.value)
             ),
+            operation_type=op,
             authorities=(party, buyer),
-            officials=(debtor, debtor),
-            attachment=evidence,
             debt_value=Decimal("200000.00"),
             restriction_value=Decimal("100000.00"),
+            responses=(
+                CirculationRestrictionTerminationResponse(
+                    reference=RestrictionDocumentReference(
+                        reference=RadianEventReference(
+                            document_number="RESTRICTION-1", uuid="d" * 96
+                        ),
+                        officials=(debtor, debtor),
+                        attachment=evidence,
+                    )
+                ),
+            ),
         )
 
     def _protest(op: RadianOperationType) -> RadianEvent:
         from radiankore.catalogs import AcceptanceFailureType
 
         return ProtestEvent(
-            header=header,
+            header=replace(
+                header, notes=synthetic_notes(op.event_type.value, op.value)
+            ),
             operation_type=op,
             sender_party=party,
             receiver_party=debtor,
-            reference=reference,
             title_value=Decimal("100000.00"),
-            act=ProtestAct(
-                notary_number="5",
-                effective_date=date(2026, 10, 21),
-                notaries=(
-                    ProtestNotary(
-                        first_name="Synthetic",
-                        family_name="Notary",
-                        job_title="Notario",
-                    ),
-                ),
-                attachment=RadianPdfAttachment(
-                    filename="Acta de protesto, PDF",
-                    content_bytes=b"%PDF-1.7\nSynthetic protest act.\n%%EOF",
-                ),
-            ),
             acceptance_failure=AcceptanceFailureType.PARTIAL
             if op.value == "481"
             else None,
             accepted_value=Decimal("40000.00") if op.value == "481" else None,
             pending_value=Decimal("60000.00") if op.value == "481" else None,
+            responses=(
+                ProtestDocumentResponse(
+                    references=(reference,),
+                    act=ProtestAct(
+                        notary_number="5",
+                        effective_date=date(2026, 10, 21),
+                        notaries=(
+                            ProtestNotary(
+                                first_name="Synthetic",
+                                family_name="Notary",
+                                job_title="Notario",
+                            ),
+                        ),
+                        attachment=RadianPdfAttachment(
+                            filename="Acta de protesto, PDF",
+                            content_bytes=b"%PDF-1.7\nSynthetic protest act.\n%%EOF",
+                        ),
+                    ),
+                ),
+            ),
         )
 
     def _mandate_termination(op: RadianOperationType) -> RadianEvent:
         return MandateTerminationEvent(
-            header=header,
+            header=replace(
+                header, notes=synthetic_notes(op.event_type.value, op.value)
+            ),
             operation_type=op,
             sender_party=party,
             representatives=(person,),
@@ -223,7 +258,9 @@ def radian_event_factory() -> Callable[[str], RadianEvent]:
 
     def _registration(op: RadianOperationType) -> RadianEvent:
         return RadianRegistrationEvent(
-            header=header,
+            header=replace(
+                header, notes=synthetic_notes(op.event_type.value, op.value)
+            ),
             operation_type=op,
             sender_party=party,
             reference=reference,
@@ -237,7 +274,9 @@ def radian_event_factory() -> Callable[[str], RadianEvent]:
 
     def _invoice_payment(op: RadianOperationType) -> RadianEvent:
         return InvoicePaymentEvent(
-            header=header,
+            header=replace(
+                header, notes=synthetic_notes(op.event_type.value, op.value)
+            ),
             operation_type=op,
             reference=reference,
             payer=RadianParticipation(
@@ -256,7 +295,9 @@ def radian_event_factory() -> Callable[[str], RadianEvent]:
 
     def _payment_report(op: RadianOperationType) -> RadianEvent:
         return PaymentReportEvent(
-            header=header,
+            header=replace(
+                header, notes=synthetic_notes(op.event_type.value, op.value)
+            ),
             sender_party=party,
             receiver_party=debtor,
             reference=reference,
@@ -265,7 +306,9 @@ def radian_event_factory() -> Callable[[str], RadianEvent]:
 
     def _endorsement_cancellation(op: RadianOperationType) -> RadianEvent:
         return EndorsementCancellationEvent(
-            header=header,
+            header=replace(
+                header, notes=synthetic_notes(op.event_type.value, op.value)
+            ),
             operation_type=op,
             sender_party=party,
             receiver_party=buyer,
@@ -285,7 +328,9 @@ def radian_event_factory() -> Callable[[str], RadianEvent]:
             payment_means=PaymentMeans.CASH if sale else None,
         )
         return EndorsementEvent(
-            header=header,
+            header=replace(
+                header, notes=synthetic_notes(op.event_type.value, op.value)
+            ),
             operation_type=op,
             reference=replace(reference, due_date=date(2026, 10, 21))
             if code == "047"
@@ -294,7 +339,9 @@ def radian_event_factory() -> Callable[[str], RadianEvent]:
             endorsers=tuple(replace(p, party=None) for p in endorsers)
             if blank
             else endorsers,
-            endorsees=endorsees,
+            endorsees=endorsees
+            if code in ("037", "047")
+            else tuple(replace(p, factor_type=None) for p in endorsees),
             negotiation=terms,
             debtors=(debtor,),
         )

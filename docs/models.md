@@ -132,6 +132,13 @@ rangos en una tupla, incluyendo orden, duplicados y entradas nulas.
 y clave técnica excluida de `repr`. Consulte el
 [contrato de GetNumberingRange](operations/numbering-range.md).
 
+## Cobertura completa de entradas (0.7.2)
+
+La [matriz de entradas](technical/event-input-matrix.md) enumera todas las clases,
+campos, grupos XML, cardinalidades, constantes y valores calculados. Las
+[notas tipadas](operations/event-notes.md) incluyen los propósitos obligatorios y
+opcionales; su migración desde cadenas es incompatible con 0.7.1.
+
 ## Mandato y contratos compartidos
 
 El [mandato 043](operations/mandate.md) usa `MandateEvent` y sus componentes de
@@ -141,7 +148,7 @@ La guía documenta sus campos y variantes. `RadianSoftware.pin` y los bytes de
 los artefactos preparados se excluyen de `repr`.
 
 `MandateParty` añade `organization_type=OrganizationType.LEGAL_PERSON` y
-`tax_scheme=PartyTaxScheme.VAT`. Permiten declarar la condición del mandante
+`tax_scheme=PartyTaxScheme.VAT` o `RadianTaxDetails` para hijos opcionales. Permiten declarar la condición del mandante
 sin inferirla de su identificación; los valores predeterminados conservan el
 XML anterior para personas jurídicas responsables de IVA.
 
@@ -157,8 +164,8 @@ Importa desde `radiankore.models.events`:
 
 | Modelo | Campos |
 | --- | --- |
-| `InvoiceResponseEvent` | `code`, `event_number`, `issue_date`, `issue_time`, `sender_party`, `document_reference`; opcionales `receiver_party`, `issuer_person`, `claim_reason`, `notes=()` |
-| `InvoiceEventParty` | `name`, `tax_number`, `identification_type`, `organization_type`; `verification_digit=None`, `tax_scheme=PartyTaxScheme.VAT` |
+| `InvoiceResponseEvent` | `code`, `event_number`, `issue_date`, `issue_time`, `sender_party`, `document_reference`; opcionales `receiver_party`, `issuer_person`, `claim_reason`, `notes: tuple[EventNote, ...] = ()` |
+| `InvoiceEventParty` | `name`, `tax_number`, `identification_type`, `organization_type`; `verification_digit=None`, `tax_scheme=PartyTaxScheme.VAT` o `RadianTaxDetails` para hijos opcionales |
 | `InvoiceEventPerson` | `identification_number`, `identification_type`, `first_name`, `family_name`; `verification_digit=None`, `job_title=None`, `organization_department=None` |
 | `InvoiceEventDocumentReference` | `document_number`, `uuid`; `document_type=DocumentType.SALES_INVOICE` |
 
@@ -179,8 +186,8 @@ con slots y argumentos por nombre, sin XML ni HTTP en sus validaciones.
 
 | Modelo | Campos principales |
 | --- | --- |
-| `RadianEventHeader` | `event_number`, `issue_date`, `issue_time`, `notes=()` |
-| `RadianParty` | `tax_number`, `identification_type`, `organization_type`, `name=None`, `verification_digit=None`, `tax_scheme=PartyTaxScheme.VAT` |
+| `RadianEventHeader` | `event_number`, `issue_date`, `issue_time`, `notes: tuple[EventNote, ...] = ()` |
+| `RadianParty` | `tax_number`, `identification_type`, `organization_type`, `name=None`, `verification_digit=None`, `tax_scheme=PartyTaxScheme.VAT` o `RadianTaxDetails` para hijos opcionales |
 | `RadianPerson` | Identificación, nombres/apellidos; DV, cargo, nacionalidad y departamento opcionales |
 | `RadianInvoiceReference` | `document_number`, `uuid`, `due_date=None`; tipo derivado `01` |
 | `RadianEventReference` | `document_number`, `uuid`; tipo derivado `96` |
@@ -193,6 +200,13 @@ con slots y argumentos por nombre, sin XML ni HTTP en sus validaciones.
 | `EconomicRightsTransferTerms` | `transferred_value`, `price`, `discount_factor`, `payment_means`, `currency=CurrencyCode.COP` |
 | `RadianPdfAttachment` | `filename`, `content_bytes`; bytes inmutables de PDF, ocultos en `repr` |
 | `ProtestNotary` | `first_name`, `family_name`, `job_title`; no inventa identificación |
+| `ProtestDocumentResponse` | `references: tuple[RadianInvoiceReference, ...]`, `act: ProtestAct` |
+| `RestrictionDocumentReference` | `reference`, `officials`, `attachment`, propios por referencia |
+| `CirculationRestrictionResponse` | `references: tuple[RestrictionDocumentReference, ...]` |
+| `CirculationRestrictionTerminationResponse` | `reference: RestrictionDocumentReference`, con CUDE |
+| `EventNote` | `kind: EventNoteKind`, `text: str`; no acepta cadenas directamente |
+| `MandateRepresentation` | `mandatee_name`, `mandator_name`; `as_note()` genera la declaración |
+| `RadianTaxDetails` | `code=None`, `name=None`, sin omitir el grupo TaxScheme obligatorio |
 | `ProtestAct` | `notary_number`, `effective_date`, `notaries`, `attachment` |
 | `PreparedRadianEvent` | `code`, `event_number`, `cude`, `environment`, `xml_bytes`, `zip_bytes` |
 

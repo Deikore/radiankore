@@ -76,8 +76,17 @@ def test_invalid_compositions_fail_before_xml(
     change: dict[str, object],
     error: type[Exception],
 ) -> None:
+    event = radian_event_factory(variant)
     with pytest.raises(error):
-        replace(radian_event_factory(variant), **change)  # type: ignore[arg-type]
+        if isinstance(event, CirculationRestrictionEvent) and set(change) & {
+            "officials",
+            "attachment",
+        }:
+            replace(event.responses[0].references[0], **change)  # type: ignore[arg-type]
+        elif isinstance(event, ProtestEvent) and "act" in change:
+            replace(event.responses[0], **change)  # type: ignore[arg-type]
+        else:
+            replace(event, **change)  # type: ignore[arg-type]
 
 
 @pytest.mark.parametrize("variant", ["411", "421", "481", "491", "511"])
@@ -151,7 +160,13 @@ def test_due_date_required_by_new_profiles(
     event = radian_event_factory(variant)
     assert not isinstance(event, (InvoiceResponseEvent, MandateEvent))
     with pytest.raises(ValueError, match="due_date"):
-        replace(event, reference=replace(event.reference, due_date=None))  # type: ignore[arg-type]
+        if isinstance(event, ProtestEvent):
+            replace(
+                event.responses[0],
+                references=(replace(event.reference, due_date=None),),
+            )
+        else:
+            replace(event, reference=replace(event.reference, due_date=None))  # type: ignore[arg-type]
 
 
 def test_invoice_and_event_references_are_not_interchangeable(
@@ -162,9 +177,22 @@ def test_invoice_and_event_references_are_not_interchangeable(
     assert isinstance(restriction, CirculationRestrictionEvent)
     assert isinstance(termination, CirculationRestrictionTerminationEvent)
     with pytest.raises(TypeError):
-        replace(restriction, reference=termination.reference)  # type: ignore[arg-type]
+        replace(
+            restriction.responses[0],
+            references=(
+                replace(
+                    restriction.responses[0].references[0],
+                    reference=termination.reference,
+                ),
+            ),
+        )
     with pytest.raises(TypeError):
-        replace(termination, reference=restriction.reference)  # type: ignore[arg-type]
+        replace(
+            termination.responses[0],
+            reference=replace(
+                termination.responses[0].reference, reference=restriction.reference
+            ),
+        )
     notification = radian_event_factory("050")
     assert isinstance(notification, EconomicRightsNotificationEvent)
     with pytest.raises(TypeError):
@@ -209,7 +237,7 @@ def test_pdf_metadata_and_protest_contracts(
     restriction = radian_event_factory("411")
     assert isinstance(restriction, CirculationRestrictionEvent)
     with pytest.raises(ValueError, match="filename"):
-        replace(restriction, attachment=evidence)
+        replace(restriction.responses[0].references[0], attachment=evidence)
     event = radian_event_factory("481")
     assert isinstance(event, ProtestEvent)
     changes_to_try: tuple[dict[str, object], ...] = (
@@ -221,11 +249,11 @@ def test_pdf_metadata_and_protest_contracts(
     )
     for changes in changes_to_try:
         with pytest.raises((TypeError, ValueError)):
-            replace(event.act, **changes)  # type: ignore[arg-type]
+            replace(event.responses[0].act, **changes)  # type: ignore[arg-type]
     with pytest.raises(ValueError):
         ProtestNotary(first_name="", family_name="Synthetic", job_title="Notario")
-    assert isinstance(event.act, ProtestAct)
-    assert not hasattr(event.act.notaries[0], "identification_number")
+    assert isinstance(event.responses[0].act, ProtestAct)
+    assert not hasattr(event.responses[0].act.notaries[0], "identification_number")
     total = replace(
         event,
         acceptance_failure=AcceptanceFailureType.TOTAL,

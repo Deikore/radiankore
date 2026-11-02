@@ -121,14 +121,25 @@ def test_mandate_party_name_boundaries(mandate_event: MandateEvent, size: int) -
 
 
 def test_mandate_note_reference_and_person_bounds(mandate_event: MandateEvent) -> None:
-    assert len(replace(mandate_event, notes=("X" * 5000,)).notes[0]) == 5000
+    assert (
+        len(
+            replace(
+                mandate_event, notes=(replace(mandate_event.notes[0], text="X" * 5000),)
+            )
+            .notes[0]
+            .text
+        )
+        == 5000
+    )
     with pytest.raises(ValueError, match="5000"):
-        replace(mandate_event, notes=("X" * 5001,))
+        replace(
+            mandate_event, notes=(replace(mandate_event.notes[0], text="X" * 5001),)
+        )
     ref = mandate_event.document_references[0]
     assert len(replace(ref, document_number="X" * 50).document_number) == 50
     with pytest.raises(ValueError, match="50"):
         replace(ref, document_number="X" * 51)
-    person = mandate_event.sender_party.representative
+    person = mandate_event.sender_party.representatives[0]
     for name, maximum in (
         ("first_name", 100),
         ("family_name", 100),
@@ -146,13 +157,13 @@ def test_mandate_note_reference_and_person_bounds(mandate_event: MandateEvent) -
         replace(
             mandate_event,
             sender_party=replace(
-                mandate_event.sender_party, representative=long_person
+                mandate_event.sender_party, representatives=(long_person,)
             ),
         )
     replace(
         mandate_event,
         mandatee_party=replace(
-            mandate_event.mandatee_party, representative=long_person
+            mandate_event.mandatee_party, representatives=(long_person,)
         ),
     )
 

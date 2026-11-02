@@ -11,11 +11,13 @@ from radiankore.catalogs import (
     RadianOperationType,
 )
 from radiankore.models.events._payment import payment_values as payment_values
+from radiankore.models.events.notes import validate_event_notes
 from radiankore.models.events.radian_common import (
     RadianEventHeader,
     RadianInvoiceReference,
     RadianParticipation,
     RadianParty,
+    additional_senders,
     currency,
     decimal_value,
     event_inputs,
@@ -40,9 +42,15 @@ class InvoicePaymentEvent:
     remaining_value: Decimal
     currency: CurrencyCode = CurrencyCode.COP
 
+    additional_sender_parties: tuple[RadianParty, ...] = ()
+
     def __post_init__(self) -> None:
         operation(self.operation_type, ("451", "452"))
         event_inputs(self.header, self.reference, RadianInvoiceReference)
+        additional_senders(self.additional_sender_parties)
+        validate_event_notes(
+            self.header.notes, code=self.code.value, operation=self.operation_type.value
+        )
         maturity(self.reference)
         participations((self.payer,), sender=True)
         payment_values(
@@ -72,8 +80,14 @@ class PaymentReportEvent:
     reference: RadianInvoiceReference
     title_value: Decimal
 
+    additional_sender_parties: tuple[RadianParty, ...] = ()
+
     def __post_init__(self) -> None:
         event_inputs(self.header, self.reference, RadianInvoiceReference)
+        additional_senders(self.additional_sender_parties)
+        validate_event_notes(
+            self.header.notes, code=self.code.value, operation=self.operation_type.value
+        )
         maturity(self.reference)
         named_party(self.sender_party, sender=True)
         named_party(self.receiver_party)

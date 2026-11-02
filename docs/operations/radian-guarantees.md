@@ -18,7 +18,15 @@ from radiankore.models.events import (
 
 # Cobertura total; la ausencia de avalados cubre a todas las partes del título.
 event = GuaranteeEvent(
-    header=header,
+    header=replace(
+        header,
+        notes=(
+            EventNote(
+                kind=EventNoteKind.GUARANTEE_LEGAL_PERSON,
+                text="Declaración sintética del representante legal: actúo por aval de las partes de la factura FE1; sustituir por los datos reales y la declaración completa de RADIAN §7.2.5.3.",
+            ),
+        ),
+    ),
     reference=invoice,
     title_value=Decimal("100000.00"),
     guarantors=(GuaranteeCommitment(party=holder, amount=Decimal("0.00")),),

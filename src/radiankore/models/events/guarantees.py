@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 
 from radiankore.catalogs import CurrencyCode, EventType, RadianOperationType
+from radiankore.models.events.notes import validate_event_notes
 from radiankore.models.events.radian_common import (
     RadianEventHeader,
     RadianInvoiceReference,
@@ -53,6 +54,9 @@ class GuaranteeEvent:
 
     def __post_init__(self) -> None:
         event_inputs(self.header, self.reference, RadianInvoiceReference)
+        validate_event_notes(
+            self.header.notes, code=self.code.value, operation=self.operation_type.value
+        )
         decimal_value(self.title_value, "title_value", positive=True)
         currency(self.currency)
         if not isinstance(self.guarantors, tuple) or not self.guarantors:

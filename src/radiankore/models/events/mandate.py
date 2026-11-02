@@ -19,6 +19,8 @@ from radiankore.catalogs import (
 )
 from radiankore.models.events._validation import identity as _identity
 from radiankore.models.events._validation import text as _text
+from radiankore.models.events.notes import EventNote, note_inputs, validate_event_notes
+from radiankore.models.events.tax_details import RadianTaxDetails
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -65,10 +67,10 @@ class MandateParty:
     tax_number: str
     identification_type: IdentificationType
     role: MandatorType | MandateeType
-    representative: MandatePerson
+    representatives: tuple[MandatePerson, ...]
     verification_digit: str | None = None
     organization_type: OrganizationType = OrganizationType.LEGAL_PERSON
-    tax_scheme: PartyTaxScheme = PartyTaxScheme.VAT
+    tax_scheme: PartyTaxScheme | RadianTaxDetails = PartyTaxScheme.VAT
 
     def __post_init__(self) -> None:
         _text(self.name, "name", minimum=5, maximum=450)
@@ -81,12 +83,16 @@ class MandateParty:
         )
         if not isinstance(self.organization_type, OrganizationType):
             raise TypeError("organization_type must be an OrganizationType.")
-        if not isinstance(self.tax_scheme, PartyTaxScheme):
-            raise TypeError("tax_scheme must be a PartyTaxScheme.")
+        if not isinstance(self.tax_scheme, (PartyTaxScheme, RadianTaxDetails)):
+            raise TypeError("tax_scheme must be a PartyTaxScheme or RadianTaxDetails.")
         if not isinstance(self.role, (MandatorType, MandateeType)):
             raise TypeError("role must be a MandatorType or MandateeType.")
-        if not isinstance(self.representative, MandatePerson):
-            raise TypeError("representative must be a MandatePerson.")
+        if not isinstance(self.representatives, tuple) or not self.representatives:
+            raise ValueError("representatives must be a nonempty tuple.")
+        if not all(
+            isinstance(person, MandatePerson) for person in self.representatives
+        ):
+            raise TypeError("representatives must contain MandatePerson instances.")
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -173,7 +179,7 @@ class MandateAttachedDocument:
 
     document_id: str
     embedded_bytes: bytes = field(repr=False)
-    issuer: MandatePerson | None = None
+    issuers: tuple[MandatePerson, ...] = ()
     effective_date: dt.date | None = None
 
     def __post_init__(self) -> None:
@@ -182,8 +188,10 @@ class MandateAttachedDocument:
             raise TypeError("embedded_bytes must be bytes.")
         if not self.embedded_bytes.startswith(b"%PDF-"):
             raise ValueError("Attachment must contain PDF bytes.")
-        if self.issuer is not None and not isinstance(self.issuer, MandatePerson):
-            raise TypeError("issuer must be a MandatePerson.")
+        if not isinstance(self.issuers, tuple):
+            raise TypeError("issuers must be a tuple.")
+        if not all(isinstance(person, MandatePerson) for person in self.issuers):
+            raise TypeError("issuers must contain MandatePerson instances.")
         if self.effective_date is not None and type(self.effective_date) is not dt.date:
             raise TypeError("effective_date must be a native date.")
 
@@ -198,7 +206,7 @@ class MandateEvent:
     event_number: str
     issue_date: dt.date
     issue_time: dt.time
-    notes: tuple[str, ...]
+    notes: tuple[EventNote, ...]
     sender_party: MandateParty
     mandatee_party: MandateParty
     effective_date: dt.date
@@ -228,10 +236,7 @@ class MandateEvent:
             raise TypeError("issue_date and effective_date must be native dates.")
         if not isinstance(self.issue_time, dt.time):
             raise TypeError("issue_time must be a native time.")
-        if not isinstance(self.notes, tuple) or not self.notes:
-            raise ValueError("notes must be a nonempty tuple of declarations.")
-        for note in self.notes:
-            _text(note, "declaration", maximum=5000)
+        note_inputs(self.notes)
         if not isinstance(self.sender_party, MandateParty) or not isinstance(
             self.mandatee_party, MandateParty
         ):
@@ -240,10 +245,17 @@ class MandateEvent:
             raise ValueError("sender_party must have a MandatorType role.")
         if not isinstance(self.mandatee_party.role, MandateeType):
             raise ValueError("mandatee_party must have a MandateeType role.")
-        _text(
-            self.sender_party.representative.identification_number,
-            "sender representative identification number",
-            maximum=14,
+        for representative in self.sender_party.representatives:
+            _text(
+                representative.identification_number,
+                "sender representative identification number",
+                maximum=14,
+            )
+        validate_event_notes(
+            self.notes,
+            code="043",
+            operation=self.operation_type.value,
+            mandatee_organization=self.mandatee_party.organization_type,
         )
         if self.acceptance is not True:
             raise ValueError("Mandatee acceptance must be explicitly True.")
@@ -301,9 +313,8 @@ class MandateEvent:
             if self.attached_contract.effective_date is None:
                 raise ValueError("General powers require the public deed date.")
             for attachment in (self.attached_contract, self.attached_validity_note):
-                if (
-                    attachment.issuer is None
-                    or not attachment.issuer.organization_department
+                if not attachment.issuers or any(
+                    not issuer.organization_department for issuer in attachment.issuers
                 ):
                     raise ValueError(
                         "General powers require notary identity and office number."

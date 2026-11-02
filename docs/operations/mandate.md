@@ -20,6 +20,9 @@ los de su operación. La declaración debe corresponder a las partes y al contra
 la librería no redacta ni verifica declaraciones jurídicas.
 
 ```python
+from radiankore.catalogs import EventNoteKind
+from radiankore.models.events import EventNote
+
 from datetime import date, time
 from pathlib import Path
 
@@ -58,7 +61,7 @@ mandator = MandateParty(
     verification_digit="1",
     identification_type=IdentificationType.NIT,
     role=MandatorType.INVOICE_ISSUER,
-    representative=representative,
+    representatives=(representative,),
 )
 mandatee = MandateParty(
     name="Mandatario de ejemplo",
@@ -66,7 +69,7 @@ mandatee = MandateParty(
     verification_digit="2",
     identification_type=IdentificationType.NIT,
     role=MandateeType.ELECTRONIC_NEGOTIATION_SYSTEM,
-    representative=representative,
+    representatives=(representative,),
 )
 event = MandateEvent(
     operation_type=MandateOperationType.LIMITED_LIMITED_TIME,
@@ -76,8 +79,11 @@ event = MandateEvent(
     issue_date=date(2026, 10, 22),
     issue_time=time(10, 30),
     notes=(
-        "Declaración de ejemplo: confiero las facultades descritas en el contrato "
-        "sintético. Este texto de demostración no constituye un mandato real.",
+        EventNote(
+            kind=EventNoteKind.MANDATE_LEGAL_PERSON,
+            text="Declaración de ejemplo: confiero las facultades descritas en el contrato "
+            "sintético. Este texto de demostración no constituye un mandato real.",
+        ),
     ),
     sender_party=mandator,
     mandatee_party=mandatee,
@@ -126,6 +132,10 @@ if result is not None:
 
 ## Variantes y restricciones
 
+Desde 0.7.2 las personas se aportan en `representatives=(...)` y los emisores
+de cada soporte en `issuers=(...)`, conservando orden y repeticiones. Las notas
+usan `EventNote`; consulte las [declaraciones particulares de 043](event-notes.md).
+
 - `MandateParty.organization_type` permite indicar persona jurídica o natural;
   su valor predeterminado conserva `OrganizationType.LEGAL_PERSON`.
   `tax_scheme` conserva `PartyTaxScheme.VAT` como predeterminado y admite los
@@ -150,7 +160,7 @@ if result is not None:
   el orden de sus referencias. El bloque principal conserva todas las referencias
   en el orden suministrado, incluidas repeticiones.
 - Tanto SPECIAL como GENERAL requieren el contrato PDF. GENERAL requiere además
-  `attached_validity_note`. En ambos soportes indica `issuer=MandatePerson(...)`
+  `attached_validity_note`. En ambos soportes indica `issuers=(MandatePerson(...),)`
   con identidad, nombre y `organization_department` (número de notaría).
   En el contrato indica `effective_date=date(...)` con la fecha de escritura pública.
   SPECIAL no incluye nota notarial de vigencia.

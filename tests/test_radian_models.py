@@ -98,7 +98,7 @@ def test_wrong_operation_family_is_rejected(
 def test_required_declarations_and_maturity(
     radian_event_factory: Callable[[str], RadianEvent],
 ) -> None:
-    for variant in ("441", "442", "443", "401", "402", "403", "372"):
+    for variant in ("441", "442", "443", "402", "372", "038", "039"):
         event = radian_event_factory(variant)
         assert not isinstance(event, (InvoiceResponseEvent, MandateEvent))
         with pytest.raises(ValueError, match="declaration"):
@@ -108,7 +108,7 @@ def test_required_declarations_and_maturity(
         assert not isinstance(event, (InvoiceResponseEvent, MandateEvent))
         assert isinstance(event.reference, RadianInvoiceReference)
         with pytest.raises(ValueError, match="due_date"):
-            replace(event, reference=replace(event.reference, due_date=None))
+            replace(event, reference=replace(event.reference, due_date=None))  # type: ignore[arg-type]
 
 
 def test_endorsement_specific_financial_and_date_rules(

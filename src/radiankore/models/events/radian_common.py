@@ -14,6 +14,8 @@ from radiankore.catalogs import (
     RadianOperationType,
 )
 from radiankore.models.events._validation import digest, identity, text
+from radiankore.models.events.notes import EventNote, note_inputs
+from radiankore.models.events.tax_details import RadianTaxDetails
 
 
 def native_date(value: dt.date, name: str) -> None:
@@ -61,17 +63,14 @@ class RadianEventHeader:
     event_number: str
     issue_date: dt.date
     issue_time: dt.time
-    notes: tuple[str, ...] = ()
+    notes: tuple[EventNote, ...] = ()
 
     def __post_init__(self) -> None:
         text(self.event_number, "event_number", maximum=50)
         native_date(self.issue_date, "issue_date")
         if not isinstance(self.issue_time, dt.time):
             raise TypeError("issue_time must be a native time.")
-        if not isinstance(self.notes, tuple):
-            raise TypeError("notes must be a tuple.")
-        for note in self.notes:
-            text(note, "note", maximum=5000)
+        note_inputs(self.notes)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -83,7 +82,7 @@ class RadianParty:
     organization_type: OrganizationType
     name: str | None = None
     verification_digit: str | None = None
-    tax_scheme: PartyTaxScheme = PartyTaxScheme.VAT
+    tax_scheme: PartyTaxScheme | RadianTaxDetails = PartyTaxScheme.VAT
 
     def __post_init__(self) -> None:
         identity(
@@ -97,8 +96,8 @@ class RadianParty:
             text(self.name, "name", minimum=5, maximum=450)
         if not isinstance(self.organization_type, OrganizationType):
             raise TypeError("organization_type must be an OrganizationType.")
-        if not isinstance(self.tax_scheme, PartyTaxScheme):
-            raise TypeError("tax_scheme must be a PartyTaxScheme.")
+        if not isinstance(self.tax_scheme, (PartyTaxScheme, RadianTaxDetails)):
+            raise TypeError("tax_scheme must be a PartyTaxScheme or RadianTaxDetails.")
 
 
 def named_party(value: RadianParty, *, sender: bool = False) -> None:
@@ -208,6 +207,7 @@ def participations(
     blank: bool = False,
     sender: bool = False,
     anonymous: bool = False,
+    factor: bool = False,
 ) -> None:
     """Validate ordered participants without deduplicating or reordering them."""
     if not isinstance(values, tuple) or not values:
@@ -215,6 +215,8 @@ def participations(
     for value in values:
         if not isinstance(value, RadianParticipation):
             raise TypeError("Expected RadianParticipation members.")
+        if value.factor_type is not None and not factor:
+            raise ValueError("factor_type is only applicable to 037/047 endorsees.")
         if value.party is None:
             if not anonymous:
                 raise ValueError("Participant identity is required.")
@@ -251,3 +253,11 @@ def maturity(reference: RadianInvoiceReference) -> None:
     """Require the original due date only where this event profile requires it."""
     if reference.due_date is None:
         raise ValueError("This event requires the invoice due_date.")
+
+
+def additional_senders(values: tuple[RadianParty, ...]) -> None:
+    """Validate extra tax identities without inventing financial participations."""
+    if not isinstance(values, tuple):
+        raise TypeError("additional_sender_parties must be a tuple.")
+    for party in values:
+        named_party(party, sender=True)

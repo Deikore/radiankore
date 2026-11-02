@@ -7,10 +7,12 @@ from decimal import Decimal, localcontext
 from radiankore.catalogs import AcceptanceFailureType, EventType, RadianOperationType
 from radiankore.models.events._validation import text
 from radiankore.models.events.attachments import RadianPdfAttachment, pdf_attachment
+from radiankore.models.events.notes import validate_event_notes
 from radiankore.models.events.radian_common import (
     RadianEventHeader,
     RadianInvoiceReference,
     RadianParty,
+    additional_senders,
     decimal_value,
     event_inputs,
     maturity,
@@ -55,6 +57,24 @@ class ProtestAct:
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
+class ProtestDocumentResponse:
+    """One 048 response with all invoice references and its own notarial act."""
+
+    references: tuple[RadianInvoiceReference, ...]
+    act: ProtestAct
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.references, tuple) or not self.references:
+            raise ValueError("references must be a nonempty tuple.")
+        for reference in self.references:
+            if not isinstance(reference, RadianInvoiceReference):
+                raise TypeError("references must contain RadianInvoiceReference.")
+            maturity(reference)
+        if not isinstance(self.act, ProtestAct):
+            raise TypeError("act must be a ProtestAct.")
+
+
+@dataclass(frozen=True, slots=True, kw_only=True)
 class ProtestEvent:
     """Acceptance/payment protest; acceptance amounts are exclusive to 481."""
 
@@ -62,22 +82,31 @@ class ProtestEvent:
     operation_type: RadianOperationType
     sender_party: RadianParty
     receiver_party: RadianParty
-    reference: RadianInvoiceReference
+    responses: tuple[ProtestDocumentResponse, ...]
     title_value: Decimal
-    act: ProtestAct
     acceptance_failure: AcceptanceFailureType | None = None
     accepted_value: Decimal | None = None
     pending_value: Decimal | None = None
 
+    additional_sender_parties: tuple[RadianParty, ...] = ()
+
     def __post_init__(self) -> None:
         operation(self.operation_type, ("481", "482"))
+        if not isinstance(self.responses, tuple) or not self.responses:
+            raise ValueError("responses must be a nonempty tuple.")
+        if any(
+            not isinstance(item, ProtestDocumentResponse) for item in self.responses
+        ):
+            raise TypeError("responses must contain ProtestDocumentResponse instances.")
         event_inputs(self.header, self.reference, RadianInvoiceReference)
+        additional_senders(self.additional_sender_parties)
+        validate_event_notes(
+            self.header.notes, code=self.code.value, operation=self.operation_type.value
+        )
         maturity(self.reference)
         named_party(self.sender_party, sender=True)
         named_party(self.receiver_party)
         decimal_value(self.title_value, "title_value", positive=True)
-        if not isinstance(self.act, ProtestAct):
-            raise TypeError("act must be a ProtestAct.")
         if self.operation_type is RadianOperationType.PROTEST_NON_ACCEPTANCE:
             if not isinstance(self.acceptance_failure, AcceptanceFailureType):
                 raise TypeError("481 requires an AcceptanceFailureType.")
@@ -100,6 +129,11 @@ class ProtestEvent:
             for v in (self.acceptance_failure, self.accepted_value, self.pending_value)
         ):
             raise ValueError("Acceptance failure data is only applicable to 481.")
+
+    @property
+    def reference(self) -> RadianInvoiceReference:
+        """Return the first reference used by the CUDE and QR XPath."""
+        return self.responses[0].references[0]
 
     @property
     def code(self) -> EventType:

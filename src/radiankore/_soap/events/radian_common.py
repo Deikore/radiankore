@@ -118,7 +118,7 @@ def event_root(
     _sub_element(root, CBC, "IssueDate", stamp.date().isoformat())
     _sub_element(root, CBC, "IssueTime", stamp.timetz().isoformat(timespec="seconds"))
     for note in header.notes:
-        _sub_element(root, CBC, "Note", note)
+        _sub_element(root, CBC, "Note", note.text)
     return root
 
 
@@ -136,11 +136,17 @@ def party_tax(parent: etree._Element, party: RadianParty) -> None:
 
 
 def named_xml_party(
-    root: etree._Element, tag: str, party: RadianParty
+    root: etree._Element,
+    tag: str,
+    party: RadianParty,
+    *,
+    additional_parties: tuple[RadianParty, ...] = (),
 ) -> etree._Element:
     """Add a named participant without inventing legal-entity participation."""
     node = _sub_element(root, CAC, tag)
     party_tax(node, party)
+    for additional in additional_parties:
+        party_tax(node, additional)
     return node
 
 
@@ -183,12 +189,16 @@ def financial_party(
     tag: str,
     participants: tuple[RadianParticipation, ...],
     currency: CurrencyCode,
+    *,
+    additional_tax_parties: tuple[RadianParty, ...] = (),
 ) -> None:
     """Emit tax identities before legal entities, preserving each tuple's order."""
     node = _sub_element(root, CAC, tag)
     for participant in participants:
         if participant.party is not None:
             party_tax(node, participant.party)
+    for party in additional_tax_parties:
+        party_tax(node, party)
     for participant in participants:
         legal_entity(
             node, participant.party, participation=participant, currency=currency

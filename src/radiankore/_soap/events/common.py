@@ -4,6 +4,7 @@ from lxml import etree
 
 from radiankore._soap.namespaces import AR, CAC, CBC, DS, EXT, STS, XADES, XADES141, XSI
 from radiankore.catalogs import IdentificationType, OrganizationType, PartyTaxScheme
+from radiankore.models.events.tax_details import RadianTaxDetails
 
 _DIAN_AGENCY_ID = "195"
 _DIAN_AGENCY_NAME = "CO, DIAN (Dirección de Impuestos y Aduanas Nacionales)"
@@ -78,7 +79,7 @@ def _party_tax_scheme(
     kind: IdentificationType,
     digit: str | None,
     organization_type: OrganizationType = OrganizationType.LEGAL_PERSON,
-    tax_scheme: PartyTaxScheme = PartyTaxScheme.VAT,
+    tax_scheme: PartyTaxScheme | RadianTaxDetails = PartyTaxScheme.VAT,
 ) -> None:
     node = _sub_element(parent, CAC, "PartyTaxScheme")
     if name is not None:
@@ -88,8 +89,14 @@ def _party_tax_scheme(
     company.set("schemeAgencyName", _DIAN_AGENCY_NAME)
     company.set("schemeVersionID", organization_type.value)
     tax = _sub_element(node, CAC, "TaxScheme")
-    _sub_element(tax, CBC, "ID", tax_scheme.value)
-    _sub_element(tax, CBC, "Name", tax_scheme.label)
+    code = tax_scheme if isinstance(tax_scheme, PartyTaxScheme) else tax_scheme.code
+    name_value = (
+        tax_scheme.label if isinstance(tax_scheme, PartyTaxScheme) else tax_scheme.name
+    )
+    if code is not None:
+        _sub_element(tax, CBC, "ID", code.value)
+    if name_value is not None:
+        _sub_element(tax, CBC, "Name", name_value)
 
 
 def _build_dian_extensions(

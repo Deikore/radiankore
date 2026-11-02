@@ -57,7 +57,8 @@ def _party(parent: etree._Element, tag: str, party: MandateParty) -> None:
             organization_type=party.organization_type,
             tax_scheme=party.tax_scheme,
         )
-        _person(node, party.representative)
+        for representative in party.representatives:
+            _person(node, representative)
     poa = _sub_element(node, CAC, "PowerOfAttorney")
     _identified(
         poa, "ID", party.tax_number, party.identification_type, party.verification_digit
@@ -71,7 +72,8 @@ def _party(parent: etree._Element, tag: str, party: MandateParty) -> None:
         "mandatarioTipo_radian.gc" if mandatee else "mandanteTipo_radian.gc",
     )
     if mandatee:
-        _person(agent, party.representative)
+        for representative in party.representatives:
+            _person(agent, representative)
 
 
 def _attachment(
@@ -107,8 +109,10 @@ def _attachment(
         ),
     ):
         binary.set(key, value)
-    if attachment.issuer is not None:
-        _person(_sub_element(doc, CAC, "IssuerParty"), attachment.issuer)
+    if attachment.issuers:
+        issuer = _sub_element(doc, CAC, "IssuerParty")
+        for person in attachment.issuers:
+            _person(issuer, person)
     response = _sub_element(line, CAC, "Response")
     _sub_element(
         response,
@@ -208,7 +212,7 @@ def build_mandate_application_response(
     _sub_element(root, CBC, "IssueDate", stamp.date().isoformat())
     _sub_element(root, CBC, "IssueTime", stamp.timetz().isoformat(timespec="seconds"))
     for note in event.notes:
-        _sub_element(root, CBC, "Note", note)
+        _sub_element(root, CBC, "Note", note.text)
     _party(root, "SenderParty", event.sender_party)
     receiver = _sub_element(root, CAC, "ReceiverParty")
     _party_tax_scheme(

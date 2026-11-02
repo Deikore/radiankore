@@ -111,6 +111,12 @@ reenviarse automáticamente. `None` no confirma aceptación.
 Los [ejemplos por familia](https://radiankore.readthedocs.io/en/latest/operations/radian-emission.html)
 describen los modelos de eventos 030–051. La librería no genera facturas.
 
+Desde **0.7.2**, las notas se aportan como `EventNote`, con propósito y texto,
+y los modelos permiten grupos XML repetibles de referencias, evidencias,
+representantes y notarios. Este cambio requiere migrar las entradas de emisión:
+consulte el [inventario y la migración de notas](https://radiankore.readthedocs.io/en/latest/operations/event-notes.html)
+y la [matriz completa de campos XML](https://radiankore.readthedocs.io/en/latest/technical/event-input-matrix.html).
+
 ## Operaciones disponibles
 
 Ambos clientes comparten argumentos y modelos de respuesta; las operaciones de

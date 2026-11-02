@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 
 from radiankore.catalogs import EventType, RadianOperationType
+from radiankore.models.events.notes import validate_event_notes
 from radiankore.models.events.radian_common import (
     RadianEventHeader,
     RadianEventReference,
@@ -27,6 +28,9 @@ class MandateTerminationEvent:
     def __post_init__(self) -> None:
         operation(self.operation_type, ("441", "442", "443"))
         event_inputs(self.header, self.reference, RadianEventReference)
+        validate_event_notes(
+            self.header.notes, code=self.code.value, operation=self.operation_type.value
+        )
         named_party(self.sender_party, sender=True)
         if not isinstance(self.representatives, tuple) or not self.representatives:
             raise ValueError("representatives must be a nonempty tuple.")

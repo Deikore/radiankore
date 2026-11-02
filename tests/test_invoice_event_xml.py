@@ -26,6 +26,7 @@ from radiankore.catalogs import (
     PartyTaxScheme,
 )
 from radiankore.models.events import InvoiceResponseEvent, RadianSoftware
+from tests.event_notes import additional_notes
 
 
 @pytest.fixture(scope="module")
@@ -224,14 +225,16 @@ def test_invoice_reference_types_and_notes(
             event.document_reference,
             document_type=document_type,
         ),
-        notes=("First & <synthetic>", "Repeated", "Repeated"),
+        notes=additional_notes("First & <synthetic>", "Repeated", "Repeated"),
     )
     root = build_invoice_application_response(
         event,
         software=radian_software,
         environment=Environment.PRODUCTION,
     )
-    assert [n.text for n in root.findall(f"{{{CBC}}}Note")] == list(event.notes)
+    assert [n.text for n in root.findall(f"{{{CBC}}}Note")] == [
+        note.text for note in event.notes
+    ]
     assert (
         root.findtext(
             f"{{{CAC}}}DocumentResponse/{{{CAC}}}DocumentReference/{{{CBC}}}DocumentTypeCode"

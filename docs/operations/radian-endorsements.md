@@ -68,15 +68,35 @@ para los ejemplos siguientes. Para garantía y procuración, construya alternati
 guarantee_endorsement = replace(
     event,
     operation_type=RadianOperationType.GUARANTEE_ENDORSEMENT,
+    header=replace(
+        header,
+        notes=(
+            EventNote(kind=EventNoteKind.GUARANTEE_ENDORSEMENT, text="en garantía"),
+        ),
+    ),
     negotiation=NegotiationTerms(total_value=Decimal("100000.00")),
 )
 collection_endorsement = replace(
     guarantee_endorsement,
     operation_type=RadianOperationType.COLLECTION_ENDORSEMENT,
+    header=replace(
+        header,
+        notes=(
+            EventNote(kind=EventNoteKind.COLLECTION_ENDORSEMENT, text="en procuración"),
+        ),
+    ),
 )
 without_recourse = replace(
     event,
     operation_type=RadianOperationType.OWNERSHIP_WITHOUT_RECOURSE,
+    header=replace(
+        header,
+        notes=(
+            EventNote(
+                kind=EventNoteKind.WITHOUT_RECOURSE, text="sin mi responsabilidad"
+            ),
+        ),
+    ),
 )
 ```
 

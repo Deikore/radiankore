@@ -98,7 +98,9 @@ def test_all_operations_and_blank_variants(
     )
     assert root.findtext(f"{{{CBC}}}IssueDate") == "2026-10-22"
     assert root.findtext(f"{{{CBC}}}IssueTime") == "10:30:00-05:00"
-    assert [e.text for e in root.findall(f"{{{CBC}}}Note")] == list(event.header.notes)
+    assert [e.text for e in root.findall(f"{{{CBC}}}Note")] == [
+        note.text for note in event.header.notes
+    ]
     uuid = root.find(f"{{{CBC}}}UUID")
     assert uuid is not None and uuid.get("schemeID") == environment.profile_execution_id
     assert uuid.get("schemeName") == "CUDE-SHA384" and uuid.text == prepared.cude

@@ -1,0 +1,1428 @@
+[
+  {
+    "model": "CirculationRestrictionEvent",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "header",
+        "type": "<class 'radiankore.models.events.radian_common.RadianEventHeader'>",
+        "xml": "cabecera ApplicationResponse / RadianEventHeader"
+      },
+      {
+        "field": "operation_type",
+        "type": "<enum 'RadianOperationType'>",
+        "xml": "cbc:CustomizationID"
+      },
+      {
+        "field": "authorities",
+        "type": "tuple[radiankore.models.events.radian_common.RadianParty, ...]",
+        "xml": "cac:SenderParty/cac:PartyTaxScheme[]"
+      },
+      {
+        "field": "responses",
+        "type": "tuple[radiankore.models.events.restrictions.CirculationRestrictionResponse, ...]",
+        "xml": "cac:DocumentResponse[]"
+      },
+      {
+        "field": "measure_value",
+        "type": "<class 'decimal.Decimal'>",
+        "xml": "InformacionMedidaCautelar / MontoMedidaCautelar"
+      }
+    ]
+  },
+  {
+    "model": "CirculationRestrictionResponse",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "references",
+        "type": "tuple[radiankore.models.events.restrictions.RestrictionDocumentReference, ...]",
+        "xml": "cac:DocumentReference[]"
+      }
+    ]
+  },
+  {
+    "model": "CirculationRestrictionTerminationEvent",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "header",
+        "type": "<class 'radiankore.models.events.radian_common.RadianEventHeader'>",
+        "xml": "cabecera ApplicationResponse / RadianEventHeader"
+      },
+      {
+        "field": "operation_type",
+        "type": "<enum 'RadianOperationType'>",
+        "xml": "cbc:CustomizationID"
+      },
+      {
+        "field": "authorities",
+        "type": "tuple[radiankore.models.events.radian_common.RadianParty, ...]",
+        "xml": "cac:SenderParty/cac:PartyTaxScheme[]"
+      },
+      {
+        "field": "responses",
+        "type": "tuple[radiankore.models.events.restrictions.CirculationRestrictionTerminationResponse, ...]",
+        "xml": "cac:DocumentResponse[]"
+      },
+      {
+        "field": "debt_value",
+        "type": "<class 'decimal.Decimal'>",
+        "xml": "InformacionMedidaCautelar / ValorDeuda"
+      },
+      {
+        "field": "restriction_value",
+        "type": "<class 'decimal.Decimal'>",
+        "xml": "InformacionMedidaCautelar / ValorLimitación"
+      }
+    ]
+  },
+  {
+    "model": "CirculationRestrictionTerminationResponse",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "reference",
+        "type": "<class 'radiankore.models.events.restrictions.RestrictionDocumentReference'>",
+        "xml": "cac:DocumentReference (componente tipado)"
+      }
+    ]
+  },
+  {
+    "model": "EconomicRightsNotificationEvent",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "header",
+        "type": "<class 'radiankore.models.events.radian_common.RadianEventHeader'>",
+        "xml": "cabecera ApplicationResponse / RadianEventHeader"
+      },
+      {
+        "field": "sender_party",
+        "type": "<class 'radiankore.models.events.radian_common.RadianParty'>",
+        "xml": "cac:SenderParty"
+      },
+      {
+        "field": "receiver_party",
+        "type": "<class 'radiankore.models.events.radian_common.RadianParty'>",
+        "xml": "cac:ReceiverParty"
+      },
+      {
+        "field": "reference",
+        "type": "<class 'radiankore.models.events.radian_common.RadianInvoiceReference'>",
+        "xml": "cac:DocumentReference (componente tipado)"
+      },
+      {
+        "field": "current_value",
+        "type": "<class 'decimal.Decimal'>",
+        "xml": "extensión propia / ValorActualTituloValor o ValorFEV-TV (050)"
+      },
+      {
+        "field": "additional_sender_parties",
+        "type": "tuple[radiankore.models.events.radian_common.RadianParty, ...]",
+        "xml": "cac:SenderParty/cac:PartyTaxScheme[] después de la primera identidad"
+      }
+    ]
+  },
+  {
+    "model": "EconomicRightsPaymentEvent",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "header",
+        "type": "<class 'radiankore.models.events.radian_common.RadianEventHeader'>",
+        "xml": "cabecera ApplicationResponse / RadianEventHeader"
+      },
+      {
+        "field": "operation_type",
+        "type": "<enum 'RadianOperationType'>",
+        "xml": "cbc:CustomizationID"
+      },
+      {
+        "field": "reference",
+        "type": "<class 'radiankore.models.events.radian_common.RadianInvoiceReference'>",
+        "xml": "cac:DocumentReference (componente tipado)"
+      },
+      {
+        "field": "payer",
+        "type": "<class 'radiankore.models.events.radian_common.RadianParticipation'>",
+        "xml": "cac:SenderParty/cac:PartyLegalEntity (único)"
+      },
+      {
+        "field": "restriction",
+        "type": "<enum 'PaymentRestriction'>",
+        "xml": "cac:Response/cbc:ResponseCode/@listID"
+      },
+      {
+        "field": "effective_date",
+        "type": "<class 'datetime.date'>",
+        "xml": "cac:Response/cbc:EffectiveDate (contexto del componente)"
+      },
+      {
+        "field": "current_value",
+        "type": "<class 'decimal.Decimal'>",
+        "xml": "extensión propia / ValorActualTituloValor o ValorFEV-TV (050)"
+      },
+      {
+        "field": "remaining_value",
+        "type": "<class 'decimal.Decimal'>",
+        "xml": "extensión propia / ValorPendienteTituloValor"
+      },
+      {
+        "field": "currency",
+        "type": "<enum 'CurrencyCode'>",
+        "xml": "cbc:CorporateStockAmount/@currencyID y valores de extensión"
+      },
+      {
+        "field": "additional_sender_parties",
+        "type": "tuple[radiankore.models.events.radian_common.RadianParty, ...]",
+        "xml": "cac:SenderParty/cac:PartyTaxScheme[] después de la primera identidad"
+      }
+    ]
+  },
+  {
+    "model": "EconomicRightsTransferEvent",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "header",
+        "type": "<class 'radiankore.models.events.radian_common.RadianEventHeader'>",
+        "xml": "cabecera ApplicationResponse / RadianEventHeader"
+      },
+      {
+        "field": "operation_type",
+        "type": "<enum 'RadianOperationType'>",
+        "xml": "cbc:CustomizationID"
+      },
+      {
+        "field": "reference",
+        "type": "<class 'radiankore.models.events.radian_common.RadianInvoiceReference'>",
+        "xml": "cac:DocumentReference (componente tipado)"
+      },
+      {
+        "field": "transferors",
+        "type": "tuple[radiankore.models.events.radian_common.RadianParticipation, ...]",
+        "xml": "cac:SenderParty: identidades y participaciones"
+      },
+      {
+        "field": "transferees",
+        "type": "tuple[radiankore.models.events.radian_common.RadianParticipation, ...]",
+        "xml": "cac:ReceiverParty: identidades y participaciones"
+      },
+      {
+        "field": "debtors",
+        "type": "tuple[radiankore.models.events.radian_common.RadianParty, ...]",
+        "xml": "cac:DocumentReference/cac:IssuerParty/cac:PartyTaxScheme[]"
+      },
+      {
+        "field": "terms",
+        "type": "<class 'radiankore.models.events.economic_rights.EconomicRightsTransferTerms'>",
+        "xml": "InformacionTransferenciaDerechos / EconomicRightsTransferTerms"
+      }
+    ]
+  },
+  {
+    "model": "EconomicRightsTransferTerms",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "transferred_value",
+        "type": "<class 'decimal.Decimal'>",
+        "xml": "ValorTransferenciaDerechos"
+      },
+      {
+        "field": "price",
+        "type": "<class 'decimal.Decimal'>",
+        "xml": "PrecioPagarseFEV"
+      },
+      {
+        "field": "discount_factor",
+        "type": "<class 'decimal.Decimal'>",
+        "xml": "FactordeDescuento"
+      },
+      {
+        "field": "payment_means",
+        "type": "<enum 'PaymentMeans'>",
+        "xml": "MedioPago"
+      },
+      {
+        "field": "currency",
+        "type": "<enum 'CurrencyCode'>",
+        "xml": "cbc:CorporateStockAmount/@currencyID y valores de extensión"
+      }
+    ]
+  },
+  {
+    "model": "EndorsementCancellationEvent",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "header",
+        "type": "<class 'radiankore.models.events.radian_common.RadianEventHeader'>",
+        "xml": "cabecera ApplicationResponse / RadianEventHeader"
+      },
+      {
+        "field": "operation_type",
+        "type": "<enum 'RadianOperationType'>",
+        "xml": "cbc:CustomizationID"
+      },
+      {
+        "field": "sender_party",
+        "type": "<class 'radiankore.models.events.radian_common.RadianParty'>",
+        "xml": "cac:SenderParty"
+      },
+      {
+        "field": "receiver_party",
+        "type": "<class 'radiankore.models.events.radian_common.RadianParty'>",
+        "xml": "cac:ReceiverParty"
+      },
+      {
+        "field": "reference",
+        "type": "<class 'radiankore.models.events.radian_common.RadianEventReference'>",
+        "xml": "cac:DocumentReference (componente tipado)"
+      },
+      {
+        "field": "additional_sender_parties",
+        "type": "tuple[radiankore.models.events.radian_common.RadianParty, ...]",
+        "xml": "cac:SenderParty/cac:PartyTaxScheme[] después de la primera identidad"
+      }
+    ]
+  },
+  {
+    "model": "EndorsementEvent",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "header",
+        "type": "<class 'radiankore.models.events.radian_common.RadianEventHeader'>",
+        "xml": "cabecera ApplicationResponse / RadianEventHeader"
+      },
+      {
+        "field": "operation_type",
+        "type": "<enum 'RadianOperationType'>",
+        "xml": "cbc:CustomizationID"
+      },
+      {
+        "field": "reference",
+        "type": "<class 'radiankore.models.events.radian_common.RadianInvoiceReference'>",
+        "xml": "cac:DocumentReference (componente tipado)"
+      },
+      {
+        "field": "form",
+        "type": "<enum 'EndorsementForm'>",
+        "xml": "cac:Response/cbc:ResponseCode/@listID (completo/en blanco)"
+      },
+      {
+        "field": "endorsers",
+        "type": "tuple[radiankore.models.events.radian_common.RadianParticipation, ...]",
+        "xml": "cac:SenderParty: identidades y participaciones"
+      },
+      {
+        "field": "endorsees",
+        "type": "tuple[radiankore.models.events.radian_common.RadianParticipation, ...]",
+        "xml": "cac:ReceiverParty: identidades y participaciones"
+      },
+      {
+        "field": "negotiation",
+        "type": "<class 'radiankore.models.events.endorsements.NegotiationTerms'>",
+        "xml": "InformacionNegociacion / NegotiationTerms"
+      },
+      {
+        "field": "debtors",
+        "type": "tuple[radiankore.models.events.radian_common.RadianParty, ...]",
+        "xml": "cac:DocumentReference/cac:IssuerParty/cac:PartyTaxScheme[]"
+      }
+    ]
+  },
+  {
+    "model": "EventNote",
+    "context": "ApplicationResponse/Note / AAD11 y variantes",
+    "fields": [
+      {
+        "field": "kind",
+        "type": "<enum 'EventNoteKind'>",
+        "xml": "propósito de dominio: selecciona condición/posición; no es atributo XML"
+      },
+      {
+        "field": "text",
+        "type": "<class 'str'>",
+        "xml": "cbc:Note/text()"
+      }
+    ]
+  },
+  {
+    "model": "GuaranteeBeneficiary",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "party",
+        "type": "<class 'radiankore.models.events.radian_common.RadianParty'>",
+        "xml": "PartyLegalEntity del avalado"
+      },
+      {
+        "field": "amount",
+        "type": "decimal.Decimal | None",
+        "xml": "cbc:CorporateStockAmount (obligatorio para varios avalados)"
+      }
+    ]
+  },
+  {
+    "model": "GuaranteeCommitment",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "party",
+        "type": "<class 'radiankore.models.events.radian_common.RadianParty'>",
+        "xml": "PartyTaxScheme y PartyLegalEntity del avalista"
+      },
+      {
+        "field": "amount",
+        "type": "<class 'decimal.Decimal'>",
+        "xml": "cbc:CorporateStockAmount (0.00 significa total)"
+      }
+    ]
+  },
+  {
+    "model": "GuaranteeEvent",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "header",
+        "type": "<class 'radiankore.models.events.radian_common.RadianEventHeader'>",
+        "xml": "cabecera ApplicationResponse / RadianEventHeader"
+      },
+      {
+        "field": "reference",
+        "type": "<class 'radiankore.models.events.radian_common.RadianInvoiceReference'>",
+        "xml": "cac:DocumentReference (componente tipado)"
+      },
+      {
+        "field": "title_value",
+        "type": "<class 'decimal.Decimal'>",
+        "xml": "extensión propia / ValorFEV-TV o ValorFEVavala"
+      },
+      {
+        "field": "guarantors",
+        "type": "tuple[radiankore.models.events.guarantees.GuaranteeCommitment, ...]",
+        "xml": "cac:SenderParty: identidades y participaciones"
+      },
+      {
+        "field": "beneficiaries",
+        "type": "tuple[radiankore.models.events.guarantees.GuaranteeBeneficiary, ...]",
+        "xml": "cac:DocumentResponse/cac:IssuerParty/cac:PartyLegalEntity[]"
+      },
+      {
+        "field": "currency",
+        "type": "<enum 'CurrencyCode'>",
+        "xml": "cbc:CorporateStockAmount/@currencyID y valores de extensión"
+      }
+    ]
+  },
+  {
+    "model": "InvoiceEventDocumentReference",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "document_number",
+        "type": "<class 'str'>",
+        "xml": "cbc:ID"
+      },
+      {
+        "field": "uuid",
+        "type": "<class 'str'>",
+        "xml": "cbc:UUID"
+      },
+      {
+        "field": "document_type",
+        "type": "<enum 'DocumentType'>",
+        "xml": "cbc:DocumentTypeCode"
+      }
+    ]
+  },
+  {
+    "model": "InvoiceEventParty",
+    "context": "PartyTaxScheme / FE AAF02–11 y AAG02–11",
+    "fields": [
+      {
+        "field": "name",
+        "type": "<class 'str'>",
+        "xml": "cbc:RegistrationName"
+      },
+      {
+        "field": "tax_number",
+        "type": "<class 'str'>",
+        "xml": "cbc:CompanyID"
+      },
+      {
+        "field": "identification_type",
+        "type": "<enum 'IdentificationType'>",
+        "xml": "cbc:CompanyID/@schemeName"
+      },
+      {
+        "field": "organization_type",
+        "type": "<enum 'OrganizationType'>",
+        "xml": "cbc:CompanyID/@schemeVersionID"
+      },
+      {
+        "field": "verification_digit",
+        "type": "str | None",
+        "xml": "cbc:CompanyID/@schemeID"
+      },
+      {
+        "field": "tax_scheme",
+        "type": "radiankore.catalogs.parties.PartyTaxScheme | radiankore.models.events.tax_details.RadianTaxDetails",
+        "xml": "cac:TaxScheme (RadianTaxDetails o par de catálogo)"
+      }
+    ]
+  },
+  {
+    "model": "InvoiceEventPerson",
+    "context": "IssuerParty/Person / FE 030 y 032",
+    "fields": [
+      {
+        "field": "identification_number",
+        "type": "<class 'str'>",
+        "xml": "cbc:ID"
+      },
+      {
+        "field": "identification_type",
+        "type": "<enum 'IdentificationType'>",
+        "xml": "cbc:ID/@schemeName"
+      },
+      {
+        "field": "first_name",
+        "type": "<class 'str'>",
+        "xml": "cbc:FirstName"
+      },
+      {
+        "field": "family_name",
+        "type": "<class 'str'>",
+        "xml": "cbc:FamilyName"
+      },
+      {
+        "field": "verification_digit",
+        "type": "str | None",
+        "xml": "cbc:ID/@schemeID"
+      },
+      {
+        "field": "job_title",
+        "type": "str | None",
+        "xml": "cbc:JobTitle"
+      },
+      {
+        "field": "organization_department",
+        "type": "str | None",
+        "xml": "cbc:OrganizationDepartment"
+      }
+    ]
+  },
+  {
+    "model": "InvoicePaymentEvent",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "header",
+        "type": "<class 'radiankore.models.events.radian_common.RadianEventHeader'>",
+        "xml": "cabecera ApplicationResponse / RadianEventHeader"
+      },
+      {
+        "field": "operation_type",
+        "type": "<enum 'RadianOperationType'>",
+        "xml": "cbc:CustomizationID"
+      },
+      {
+        "field": "reference",
+        "type": "<class 'radiankore.models.events.radian_common.RadianInvoiceReference'>",
+        "xml": "cac:DocumentReference (componente tipado)"
+      },
+      {
+        "field": "payer",
+        "type": "<class 'radiankore.models.events.radian_common.RadianParticipation'>",
+        "xml": "cac:SenderParty/cac:PartyLegalEntity (único)"
+      },
+      {
+        "field": "restriction",
+        "type": "<enum 'PaymentRestriction'>",
+        "xml": "cac:Response/cbc:ResponseCode/@listID"
+      },
+      {
+        "field": "effective_date",
+        "type": "<class 'datetime.date'>",
+        "xml": "cac:Response/cbc:EffectiveDate (contexto del componente)"
+      },
+      {
+        "field": "current_value",
+        "type": "<class 'decimal.Decimal'>",
+        "xml": "extensión propia / ValorActualTituloValor o ValorFEV-TV (050)"
+      },
+      {
+        "field": "remaining_value",
+        "type": "<class 'decimal.Decimal'>",
+        "xml": "extensión propia / ValorPendienteTituloValor"
+      },
+      {
+        "field": "currency",
+        "type": "<enum 'CurrencyCode'>",
+        "xml": "cbc:CorporateStockAmount/@currencyID y valores de extensión"
+      },
+      {
+        "field": "additional_sender_parties",
+        "type": "tuple[radiankore.models.events.radian_common.RadianParty, ...]",
+        "xml": "cac:SenderParty/cac:PartyTaxScheme[] después de la primera identidad"
+      }
+    ]
+  },
+  {
+    "model": "InvoiceResponseEvent",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "code",
+        "type": "<enum 'EventType'>",
+        "xml": "cac:DocumentResponse/cac:Response/cbc:ResponseCode"
+      },
+      {
+        "field": "event_number",
+        "type": "<class 'str'>",
+        "xml": "cbc:ID"
+      },
+      {
+        "field": "issue_date",
+        "type": "<class 'datetime.date'>",
+        "xml": "cbc:IssueDate"
+      },
+      {
+        "field": "issue_time",
+        "type": "<class 'datetime.time'>",
+        "xml": "cbc:IssueTime"
+      },
+      {
+        "field": "sender_party",
+        "type": "<class 'radiankore.models.events.invoice.InvoiceEventParty'>",
+        "xml": "cac:SenderParty"
+      },
+      {
+        "field": "document_reference",
+        "type": "<class 'radiankore.models.events.invoice.InvoiceEventDocumentReference'>",
+        "xml": "cac:DocumentResponse/cac:DocumentReference"
+      },
+      {
+        "field": "receiver_party",
+        "type": "radiankore.models.events.invoice.InvoiceEventParty | None",
+        "xml": "cac:ReceiverParty"
+      },
+      {
+        "field": "issuer_person",
+        "type": "radiankore.models.events.invoice.InvoiceEventPerson | None",
+        "xml": "cac:DocumentResponse/cac:IssuerParty/cac:Person (030/032)"
+      },
+      {
+        "field": "claim_reason",
+        "type": "radiankore.catalogs.invoice_events.InvoiceClaimReason | None",
+        "xml": "cac:Response/cbc:ResponseCode/@listID y @name (031)"
+      },
+      {
+        "field": "notes",
+        "type": "tuple[radiankore.models.events.notes.EventNote, ...]",
+        "xml": "cbc:Note[] / EventNote"
+      }
+    ]
+  },
+  {
+    "model": "MandateAttachedDocument",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "document_id",
+        "type": "<class 'str'>",
+        "xml": "cac:LineReference/cac:DocumentReference/cbc:ID"
+      },
+      {
+        "field": "embedded_bytes",
+        "type": "<class 'bytes'>",
+        "xml": "cbc:EmbeddedDocumentBinaryObject/text() codificado Base64"
+      },
+      {
+        "field": "issuers",
+        "type": "tuple[radiankore.models.events.mandate.MandatePerson, ...]",
+        "xml": "cac:LineReference/cac:DocumentReference/cac:IssuerParty/cac:Person[]"
+      },
+      {
+        "field": "effective_date",
+        "type": "datetime.date | None",
+        "xml": "cac:LineResponse/cac:Response/cbc:EffectiveDate (contrato)"
+      }
+    ]
+  },
+  {
+    "model": "MandateDocumentReference",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "document_number",
+        "type": "<class 'str'>",
+        "xml": "cbc:ID"
+      },
+      {
+        "field": "uuid",
+        "type": "<class 'str'>",
+        "xml": "cbc:UUID"
+      },
+      {
+        "field": "document_type",
+        "type": "<enum 'DocumentType'>",
+        "xml": "cbc:DocumentTypeCode (01, derivado)"
+      },
+      {
+        "field": "scope",
+        "type": "radiankore.models.events.mandate.MandateScope | None",
+        "xml": "selecciona DocumentResponse adicional por facultades"
+      }
+    ]
+  },
+  {
+    "model": "MandateEvent",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "operation_type",
+        "type": "<enum 'MandateOperationType'>",
+        "xml": "cbc:CustomizationID"
+      },
+      {
+        "field": "nature",
+        "type": "<enum 'MandateNature'>",
+        "xml": "cbc:CustomizationID/@schemeID"
+      },
+      {
+        "field": "reference_type",
+        "type": "<enum 'MandateReferenceType'>",
+        "xml": "cac:Response/cbc:ResponseCode/@listID"
+      },
+      {
+        "field": "event_number",
+        "type": "<class 'str'>",
+        "xml": "cbc:ID"
+      },
+      {
+        "field": "issue_date",
+        "type": "<class 'datetime.date'>",
+        "xml": "cbc:IssueDate"
+      },
+      {
+        "field": "issue_time",
+        "type": "<class 'datetime.time'>",
+        "xml": "cbc:IssueTime"
+      },
+      {
+        "field": "notes",
+        "type": "tuple[radiankore.models.events.notes.EventNote, ...]",
+        "xml": "cbc:Note[] / EventNote"
+      },
+      {
+        "field": "sender_party",
+        "type": "<class 'radiankore.models.events.mandate.MandateParty'>",
+        "xml": "cac:SenderParty"
+      },
+      {
+        "field": "mandatee_party",
+        "type": "<class 'radiankore.models.events.mandate.MandateParty'>",
+        "xml": "cac:DocumentResponse/cac:IssuerParty/cac:PowerOfAttorney"
+      },
+      {
+        "field": "effective_date",
+        "type": "<class 'datetime.date'>",
+        "xml": "cac:Response/cbc:EffectiveDate (contexto del componente)"
+      },
+      {
+        "field": "document_references",
+        "type": "tuple[radiankore.models.events.mandate.MandateDocumentReference, ...]",
+        "xml": "cac:DocumentReference[] en bloque principal y bloques de facultades"
+      },
+      {
+        "field": "validity_period",
+        "type": "<class 'radiankore.models.events.mandate.MandateValidityPeriod'>",
+        "xml": "cac:DocumentReference/cac:ValidityPeriod"
+      },
+      {
+        "field": "scope",
+        "type": "<class 'radiankore.models.events.mandate.MandateScope'>",
+        "xml": "cac:DocumentResponse[] de facultades"
+      },
+      {
+        "field": "attached_contract",
+        "type": "<class 'radiankore.models.events.mandate.MandateAttachedDocument'>",
+        "xml": "cac:LineResponse con LineID=1"
+      },
+      {
+        "field": "acceptance",
+        "type": "<class 'bool'>",
+        "xml": "cac:LineResponse/cac:Response/cbc:ResponseCode=ACEPTA"
+      },
+      {
+        "field": "attached_validity_note",
+        "type": "radiankore.models.events.mandate.MandateAttachedDocument | None",
+        "xml": "cac:LineResponse con LineID=2 (poder general)"
+      }
+    ]
+  },
+  {
+    "model": "MandateParty",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "name",
+        "type": "<class 'str'>",
+        "xml": "cbc:RegistrationName del mandante; la declaración del mandatario se aporta en notes"
+      },
+      {
+        "field": "tax_number",
+        "type": "<class 'str'>",
+        "xml": "cac:PowerOfAttorney/cbc:ID y CompanyID del mandante"
+      },
+      {
+        "field": "identification_type",
+        "type": "<enum 'IdentificationType'>",
+        "xml": "ID/CompanyID/@schemeName"
+      },
+      {
+        "field": "role",
+        "type": "radiankore.catalogs.mandates.MandatorType | radiankore.catalogs.mandates.MandateeType",
+        "xml": "cac:PowerOfAttorney/cac:AgentParty/cac:PartyIdentification/cbc:ID y Description derivada"
+      },
+      {
+        "field": "representatives",
+        "type": "tuple[radiankore.models.events.mandate.MandatePerson, ...]",
+        "xml": "cac:SenderParty/cac:Person[] o cac:PowerOfAttorney/cac:AgentParty/cac:Person[]"
+      },
+      {
+        "field": "verification_digit",
+        "type": "str | None",
+        "xml": "ID/CompanyID/@schemeID"
+      },
+      {
+        "field": "organization_type",
+        "type": "<enum 'OrganizationType'>",
+        "xml": "CompanyID/@schemeVersionID del mandante; selecciona declaración del mandatario"
+      },
+      {
+        "field": "tax_scheme",
+        "type": "radiankore.catalogs.parties.PartyTaxScheme | radiankore.models.events.tax_details.RadianTaxDetails",
+        "xml": "cac:PartyTaxScheme/cac:TaxScheme del mandante"
+      }
+    ]
+  },
+  {
+    "model": "MandatePerson",
+    "context": "Person del mandante, agente o notario / AAF22–30, AAH69–77, AAH95–ABH27",
+    "fields": [
+      {
+        "field": "identification_number",
+        "type": "<class 'str'>",
+        "xml": "cbc:ID"
+      },
+      {
+        "field": "identification_type",
+        "type": "<enum 'IdentificationType'>",
+        "xml": "cbc:ID/@schemeName"
+      },
+      {
+        "field": "first_name",
+        "type": "<class 'str'>",
+        "xml": "cbc:FirstName"
+      },
+      {
+        "field": "family_name",
+        "type": "<class 'str'>",
+        "xml": "cbc:FamilyName"
+      },
+      {
+        "field": "verification_digit",
+        "type": "str | None",
+        "xml": "cbc:ID/@schemeID"
+      },
+      {
+        "field": "job_title",
+        "type": "str | None",
+        "xml": "cbc:JobTitle"
+      },
+      {
+        "field": "nationality_id",
+        "type": "str | None",
+        "xml": "cbc:NationalityID"
+      },
+      {
+        "field": "organization_department",
+        "type": "str | None",
+        "xml": "cbc:OrganizationDepartment"
+      }
+    ]
+  },
+  {
+    "model": "MandateRepresentation",
+    "context": "AAD11 de representación, salvo 043",
+    "fields": [
+      {
+        "field": "mandatee_name",
+        "type": "<class 'str'>",
+        "xml": "cbc:Note: nombre anterior a la frase fija"
+      },
+      {
+        "field": "mandator_name",
+        "type": "<class 'str'>",
+        "xml": "cbc:Note: nombre posterior a la frase fija"
+      }
+    ]
+  },
+  {
+    "model": "MandateScope",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "powers",
+        "type": "tuple[tuple[radiankore.catalogs.mandates.MandatePower, radiankore.catalogs.mandates.MandateChannel], ...]",
+        "xml": "cac:Response/cbc:ResponseCode; Description derivada de catálogo"
+      }
+    ]
+  },
+  {
+    "model": "MandateTerminationEvent",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "header",
+        "type": "<class 'radiankore.models.events.radian_common.RadianEventHeader'>",
+        "xml": "cabecera ApplicationResponse / RadianEventHeader"
+      },
+      {
+        "field": "operation_type",
+        "type": "<enum 'RadianOperationType'>",
+        "xml": "cbc:CustomizationID"
+      },
+      {
+        "field": "sender_party",
+        "type": "<class 'radiankore.models.events.radian_common.RadianParty'>",
+        "xml": "cac:SenderParty"
+      },
+      {
+        "field": "representatives",
+        "type": "tuple[radiankore.models.events.radian_common.RadianPerson, ...]",
+        "xml": "cac:Person[]"
+      },
+      {
+        "field": "reference",
+        "type": "<class 'radiankore.models.events.radian_common.RadianEventReference'>",
+        "xml": "cac:DocumentReference (componente tipado)"
+      }
+    ]
+  },
+  {
+    "model": "MandateValidityPeriod",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "start_date",
+        "type": "datetime.date | None",
+        "xml": "cbc:StartDate"
+      },
+      {
+        "field": "end_date",
+        "type": "datetime.date | None",
+        "xml": "cbc:EndDate"
+      }
+    ]
+  },
+  {
+    "model": "NegotiationTerms",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "total_value",
+        "type": "<class 'decimal.Decimal'>",
+        "xml": "ValorTotalEndoso"
+      },
+      {
+        "field": "price",
+        "type": "decimal.Decimal | None",
+        "xml": "PrecioPagarseFEV (037/047)"
+      },
+      {
+        "field": "discount_rate",
+        "type": "decimal.Decimal | None",
+        "xml": "TasaDescuento (037/047)"
+      },
+      {
+        "field": "payment_means",
+        "type": "radiankore.catalogs.radian.PaymentMeans | None",
+        "xml": "MedioPago (037/047)"
+      },
+      {
+        "field": "currency",
+        "type": "<enum 'CurrencyCode'>",
+        "xml": "cbc:CorporateStockAmount/@currencyID y valores de extensión"
+      }
+    ]
+  },
+  {
+    "model": "PaymentReportEvent",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "header",
+        "type": "<class 'radiankore.models.events.radian_common.RadianEventHeader'>",
+        "xml": "cabecera ApplicationResponse / RadianEventHeader"
+      },
+      {
+        "field": "sender_party",
+        "type": "<class 'radiankore.models.events.radian_common.RadianParty'>",
+        "xml": "cac:SenderParty"
+      },
+      {
+        "field": "receiver_party",
+        "type": "<class 'radiankore.models.events.radian_common.RadianParty'>",
+        "xml": "cac:ReceiverParty"
+      },
+      {
+        "field": "reference",
+        "type": "<class 'radiankore.models.events.radian_common.RadianInvoiceReference'>",
+        "xml": "cac:DocumentReference (componente tipado)"
+      },
+      {
+        "field": "title_value",
+        "type": "<class 'decimal.Decimal'>",
+        "xml": "extensión propia / ValorFEV-TV o ValorFEVavala"
+      },
+      {
+        "field": "additional_sender_parties",
+        "type": "tuple[radiankore.models.events.radian_common.RadianParty, ...]",
+        "xml": "cac:SenderParty/cac:PartyTaxScheme[] después de la primera identidad"
+      }
+    ]
+  },
+  {
+    "model": "ProtestAct",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "notary_number",
+        "type": "<class 'str'>",
+        "xml": "cac:LineReference/cac:DocumentReference/cbc:ID"
+      },
+      {
+        "field": "effective_date",
+        "type": "<class 'datetime.date'>",
+        "xml": "cac:LineResponse/cac:Response/cbc:EffectiveDate"
+      },
+      {
+        "field": "notaries",
+        "type": "tuple[radiankore.models.events.protests.ProtestNotary, ...]",
+        "xml": "cac:LineReference/cac:DocumentReference/cac:IssuerParty/cac:Person[]"
+      },
+      {
+        "field": "attachment",
+        "type": "<class 'radiankore.models.events.attachments.RadianPdfAttachment'>",
+        "xml": "cac:Attachment / RadianPdfAttachment"
+      }
+    ]
+  },
+  {
+    "model": "ProtestDocumentResponse",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "references",
+        "type": "tuple[radiankore.models.events.radian_common.RadianInvoiceReference, ...]",
+        "xml": "cac:DocumentReference[]"
+      },
+      {
+        "field": "act",
+        "type": "<class 'radiankore.models.events.protests.ProtestAct'>",
+        "xml": "cac:LineResponse / ProtestAct"
+      }
+    ]
+  },
+  {
+    "model": "ProtestEvent",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "header",
+        "type": "<class 'radiankore.models.events.radian_common.RadianEventHeader'>",
+        "xml": "cabecera ApplicationResponse / RadianEventHeader"
+      },
+      {
+        "field": "operation_type",
+        "type": "<enum 'RadianOperationType'>",
+        "xml": "cbc:CustomizationID"
+      },
+      {
+        "field": "sender_party",
+        "type": "<class 'radiankore.models.events.radian_common.RadianParty'>",
+        "xml": "cac:SenderParty"
+      },
+      {
+        "field": "receiver_party",
+        "type": "<class 'radiankore.models.events.radian_common.RadianParty'>",
+        "xml": "cac:ReceiverParty"
+      },
+      {
+        "field": "responses",
+        "type": "tuple[radiankore.models.events.protests.ProtestDocumentResponse, ...]",
+        "xml": "cac:DocumentResponse[]"
+      },
+      {
+        "field": "title_value",
+        "type": "<class 'decimal.Decimal'>",
+        "xml": "extensión propia / ValorFEV-TV o ValorFEVavala"
+      },
+      {
+        "field": "acceptance_failure",
+        "type": "radiankore.catalogs.radian.AcceptanceFailureType | None",
+        "xml": "cbc:CustomizationID/@schemeID (solo 481)"
+      },
+      {
+        "field": "accepted_value",
+        "type": "decimal.Decimal | None",
+        "xml": "InformacionProtesto / ValorAceptado (solo 481)"
+      },
+      {
+        "field": "pending_value",
+        "type": "decimal.Decimal | None",
+        "xml": "InformacionProtesto / ValorPendiente (solo 481)"
+      },
+      {
+        "field": "additional_sender_parties",
+        "type": "tuple[radiankore.models.events.radian_common.RadianParty, ...]",
+        "xml": "cac:SenderParty/cac:PartyTaxScheme[] después de la primera identidad"
+      }
+    ]
+  },
+  {
+    "model": "ProtestNotary",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "first_name",
+        "type": "<class 'str'>",
+        "xml": "cbc:FirstName"
+      },
+      {
+        "field": "family_name",
+        "type": "<class 'str'>",
+        "xml": "cbc:FamilyName"
+      },
+      {
+        "field": "job_title",
+        "type": "<class 'str'>",
+        "xml": "cbc:JobTitle"
+      }
+    ]
+  },
+  {
+    "model": "RadianEventHeader",
+    "context": "ApplicationResponse / AAD05, AAD09–11",
+    "fields": [
+      {
+        "field": "event_number",
+        "type": "<class 'str'>",
+        "xml": "cbc:ID"
+      },
+      {
+        "field": "issue_date",
+        "type": "<class 'datetime.date'>",
+        "xml": "cbc:IssueDate"
+      },
+      {
+        "field": "issue_time",
+        "type": "<class 'datetime.time'>",
+        "xml": "cbc:IssueTime"
+      },
+      {
+        "field": "notes",
+        "type": "tuple[radiankore.models.events.notes.EventNote, ...]",
+        "xml": "cbc:Note[] / EventNote"
+      }
+    ]
+  },
+  {
+    "model": "RadianEventReference",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "document_number",
+        "type": "<class 'str'>",
+        "xml": "cbc:ID"
+      },
+      {
+        "field": "uuid",
+        "type": "<class 'str'>",
+        "xml": "cbc:UUID"
+      }
+    ]
+  },
+  {
+    "model": "RadianInvoiceReference",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "document_number",
+        "type": "<class 'str'>",
+        "xml": "cbc:ID"
+      },
+      {
+        "field": "uuid",
+        "type": "<class 'str'>",
+        "xml": "cbc:UUID"
+      },
+      {
+        "field": "due_date",
+        "type": "datetime.date | None",
+        "xml": "cac:ValidityPeriod/cbc:EndDate"
+      }
+    ]
+  },
+  {
+    "model": "RadianParticipation",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "amount",
+        "type": "<class 'decimal.Decimal'>",
+        "xml": "cbc:CorporateStockAmount"
+      },
+      {
+        "field": "party",
+        "type": "radiankore.models.events.radian_common.RadianParty | None",
+        "xml": "identidad en PartyTaxScheme y PartyLegalEntity; ausente en endosante en blanco"
+      },
+      {
+        "field": "factor_type",
+        "type": "radiankore.catalogs.radian.FactorType | None",
+        "xml": "cbc:CompanyLegalFormCode (solo endosatarios 037/047)"
+      }
+    ]
+  },
+  {
+    "model": "RadianParty",
+    "context": "PartyTaxScheme / AAF02–11, AAG02–11, AAH22–44",
+    "fields": [
+      {
+        "field": "tax_number",
+        "type": "<class 'str'>",
+        "xml": "cbc:CompanyID"
+      },
+      {
+        "field": "identification_type",
+        "type": "<enum 'IdentificationType'>",
+        "xml": "cbc:CompanyID/@schemeName"
+      },
+      {
+        "field": "organization_type",
+        "type": "<enum 'OrganizationType'>",
+        "xml": "cbc:CompanyID/@schemeVersionID"
+      },
+      {
+        "field": "name",
+        "type": "str | None",
+        "xml": "cbc:RegistrationName"
+      },
+      {
+        "field": "verification_digit",
+        "type": "str | None",
+        "xml": "cbc:CompanyID/@schemeID"
+      },
+      {
+        "field": "tax_scheme",
+        "type": "radiankore.catalogs.parties.PartyTaxScheme | radiankore.models.events.tax_details.RadianTaxDetails",
+        "xml": "cac:TaxScheme (RadianTaxDetails o par de catálogo)"
+      }
+    ]
+  },
+  {
+    "model": "RadianPdfAttachment",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "filename",
+        "type": "<class 'str'>",
+        "xml": "cbc:EmbeddedDocumentBinaryObject/@filename"
+      },
+      {
+        "field": "content_bytes",
+        "type": "<class 'bytes'>",
+        "xml": "cbc:EmbeddedDocumentBinaryObject/text() codificado Base64"
+      }
+    ]
+  },
+  {
+    "model": "RadianPerson",
+    "context": "Person / 044 AAF40–48",
+    "fields": [
+      {
+        "field": "identification_number",
+        "type": "<class 'str'>",
+        "xml": "cbc:ID"
+      },
+      {
+        "field": "identification_type",
+        "type": "<enum 'IdentificationType'>",
+        "xml": "cbc:ID/@schemeName"
+      },
+      {
+        "field": "first_name",
+        "type": "<class 'str'>",
+        "xml": "cbc:FirstName"
+      },
+      {
+        "field": "family_name",
+        "type": "<class 'str'>",
+        "xml": "cbc:FamilyName"
+      },
+      {
+        "field": "verification_digit",
+        "type": "str | None",
+        "xml": "cbc:ID/@schemeID"
+      },
+      {
+        "field": "job_title",
+        "type": "str | None",
+        "xml": "cbc:JobTitle"
+      },
+      {
+        "field": "nationality_id",
+        "type": "str | None",
+        "xml": "cbc:NationalityID"
+      },
+      {
+        "field": "organization_department",
+        "type": "str | None",
+        "xml": "cbc:OrganizationDepartment"
+      }
+    ]
+  },
+  {
+    "model": "RadianRegistrationEvent",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "header",
+        "type": "<class 'radiankore.models.events.radian_common.RadianEventHeader'>",
+        "xml": "cabecera ApplicationResponse / RadianEventHeader"
+      },
+      {
+        "field": "operation_type",
+        "type": "<enum 'RadianOperationType'>",
+        "xml": "cbc:CustomizationID"
+      },
+      {
+        "field": "sender_party",
+        "type": "<class 'radiankore.models.events.radian_common.RadianParty'>",
+        "xml": "cac:SenderParty"
+      },
+      {
+        "field": "reference",
+        "type": "<class 'radiankore.models.events.radian_common.RadianInvoiceReference'>",
+        "xml": "cac:DocumentReference (componente tipado)"
+      },
+      {
+        "field": "payment_state",
+        "type": "<class 'radiankore.models.events.registration.RegistrationPaymentState'>",
+        "xml": "ConstanciadePagos / RegistrationPaymentState"
+      },
+      {
+        "field": "direct_buyer",
+        "type": "radiankore.models.events.radian_common.RadianParty | None",
+        "xml": "cac:DocumentResponse/cac:IssuerParty/cac:PartyLegalEntity"
+      }
+    ]
+  },
+  {
+    "model": "RadianSoftware",
+    "context": "DianExtensions y firma / AAB19–28, DC56",
+    "fields": [
+      {
+        "field": "software_id",
+        "type": "<class 'str'>",
+        "xml": "sts:SoftwareProvider/sts:SoftwareID"
+      },
+      {
+        "field": "pin",
+        "type": "<class 'str'>",
+        "xml": "solo entrada de hash CUDE y SoftwareSecurityCode; no se serializa"
+      },
+      {
+        "field": "provider_tax_number",
+        "type": "<class 'str'>",
+        "xml": "sts:SoftwareProvider/sts:ProviderID"
+      },
+      {
+        "field": "provider_verification_digit",
+        "type": "<class 'str'>",
+        "xml": "sts:ProviderID/@schemeID"
+      },
+      {
+        "field": "signer_role",
+        "type": "typing.Literal['supplier', 'thirdparty']",
+        "xml": "xades:SignerRole/xades:ClaimedRoles/xades:ClaimedRole"
+      }
+    ]
+  },
+  {
+    "model": "RadianTaxDetails",
+    "context": "TaxScheme / AAF09–11 y equivalentes por participante",
+    "fields": [
+      {
+        "field": "code",
+        "type": "radiankore.catalogs.parties.PartyTaxScheme | None",
+        "xml": "cbc:ID (opcional)"
+      },
+      {
+        "field": "name",
+        "type": "str | None",
+        "xml": "cbc:Name (opcional)"
+      }
+    ]
+  },
+  {
+    "model": "RegistrationPaymentState",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "invoice_value",
+        "type": "<class 'decimal.Decimal'>",
+        "xml": "ValorFEV-TV"
+      },
+      {
+        "field": "paid_value",
+        "type": "<class 'decimal.Decimal'>",
+        "xml": "ValorPagado"
+      },
+      {
+        "field": "remaining_value",
+        "type": "<class 'decimal.Decimal'>",
+        "xml": "NuevoValorTV"
+      }
+    ]
+  },
+  {
+    "model": "RestrictionDocumentReference",
+    "context": "Perfil de su familia; véase la tabla de eventos",
+    "fields": [
+      {
+        "field": "reference",
+        "type": "radiankore.models.events.radian_common.RadianInvoiceReference | radiankore.models.events.radian_common.RadianEventReference",
+        "xml": "cac:DocumentReference (componente tipado)"
+      },
+      {
+        "field": "officials",
+        "type": "tuple[radiankore.models.events.radian_common.RadianParty, ...]",
+        "xml": "cac:IssuerParty/cac:PartyTaxScheme[]"
+      },
+      {
+        "field": "attachment",
+        "type": "<class 'radiankore.models.events.attachments.RadianPdfAttachment'>",
+        "xml": "cac:Attachment / RadianPdfAttachment"
+      }
+    ]
+  }
+]

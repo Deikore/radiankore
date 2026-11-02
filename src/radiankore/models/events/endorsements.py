@@ -11,12 +11,14 @@ from radiankore.catalogs import (
     PaymentMeans,
     RadianOperationType,
 )
+from radiankore.models.events.notes import validate_event_notes
 from radiankore.models.events.radian_common import (
     RadianEventHeader,
     RadianEventReference,
     RadianInvoiceReference,
     RadianParticipation,
     RadianParty,
+    additional_senders,
     currency,
     decimal_value,
     event_inputs,
@@ -73,11 +75,18 @@ class EndorsementEvent:
     def __post_init__(self) -> None:
         operation(self.operation_type, ("371", "372", "038", "039", "047"))
         event_inputs(self.header, self.reference, RadianInvoiceReference)
+        validate_event_notes(
+            self.header.notes, code=self.code.value, operation=self.operation_type.value
+        )
         if not isinstance(self.form, EndorsementForm):
             raise TypeError("form must be an EndorsementForm.")
         blank = self.form is EndorsementForm.BLANK
         participations(self.endorsers, blank=blank, sender=True, anonymous=blank)
-        participations(self.endorsees, blank=blank)
+        participations(
+            self.endorsees,
+            blank=blank,
+            factor=self.operation_type.value in ("371", "372", "047"),
+        )
         for participant in self.endorsers + self.endorsees:
             decimal_value(participant.amount, "endorsement amount", positive=True)
         if not isinstance(self.negotiation, NegotiationTerms):
@@ -113,13 +122,6 @@ class EndorsementEvent:
             raise ValueError(
                 "Guarantee/collection uses total_value without sale terms."
             )
-        if (
-            self.operation_type is RadianOperationType.OWNERSHIP_WITHOUT_RECOURSE
-            and not self.header.notes
-        ):
-            raise ValueError(
-                "Without-recourse endorsements require an explicit declaration."
-            )
         issue_date = colombian_issue_datetime(
             self.header.issue_date, self.header.issue_time
         ).date()
@@ -152,15 +154,17 @@ class EndorsementCancellationEvent:
     receiver_party: RadianParty
     reference: RadianEventReference
 
+    additional_sender_parties: tuple[RadianParty, ...] = ()
+
     def __post_init__(self) -> None:
         operation(self.operation_type, ("401", "402", "403"))
         event_inputs(self.header, self.reference, RadianEventReference)
+        additional_senders(self.additional_sender_parties)
+        validate_event_notes(
+            self.header.notes, code=self.code.value, operation=self.operation_type.value
+        )
         named_party(self.sender_party, sender=True)
         named_party(self.receiver_party)
-        if not self.header.notes:
-            raise ValueError(
-                "Endorsement cancellation requires an explicit declaration."
-            )
 
     @property
     def code(self) -> EventType:

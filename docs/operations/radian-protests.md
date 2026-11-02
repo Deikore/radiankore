@@ -15,6 +15,7 @@ from radiankore.catalogs import AcceptanceFailureType, RadianOperationType
 from radiankore.models.events import (
     ProtestAct,
     ProtestEvent,
+    ProtestDocumentResponse,
     ProtestNotary,
     RadianPdfAttachment,
 )
@@ -35,16 +36,22 @@ act = ProtestAct(
     ),
 )
 event = ProtestEvent(
-    header=header,
+    header=replace(
+        header, notes=(EventNote(kind=EventNoteKind.PROTEST, text="Con protesto"),)
+    ),
     operation_type=RadianOperationType.PROTEST_NON_ACCEPTANCE,
     sender_party=holder,
     receiver_party=debtor,
-    reference=replace(invoice, due_date=stamp.date() - timedelta(days=1)),
     title_value=Decimal("100000.00"),
-    act=act,
     acceptance_failure=AcceptanceFailureType.PARTIAL,
     accepted_value=Decimal("40000.00"),
     pending_value=Decimal("60000.00"),
+    responses=(
+        ProtestDocumentResponse(
+            references=(replace(invoice, due_date=stamp.date() - timedelta(days=1)),),
+            act=act,
+        ),
+    ),
 )
 ```
 
@@ -77,10 +84,10 @@ non_payment = replace(
 | `acceptance_failure` | `CustomizationID/@schemeID` | Obligatorio para 481; `PARTIAL=1`, `TOTAL=2` |
 | `title_value` | `InformacionProtesto/ValorFEV-TV` | Positivo, hasta 20 caracteres |
 | `accepted_value`, `pending_value` | `InformacionProtesto/ValorAceptado`, `ValorPendiente` | Solo 481; suma igual a valor del título, sin redondeo |
-| `act.notary_number` | `LineResponse/LineReference/DocumentReference/ID` | Número de notaría, texto de dígitos |
-| `act.notaries` | `LineReference/DocumentReference/IssuerParty/Person` | Tupla no vacía, nombres, apellidos y cargo obligatorios |
-| `act.attachment` | `LineReference/DocumentReference/Attachment` | PDF obligatorio |
-| `act.effective_date` | `LineResponse/Response/EffectiveDate` | Fecha nativa del acta, independiente de fecha de emisión |
+| `responses[].act.notary_number` | `LineResponse/LineReference/DocumentReference/ID` | Número de notaría, texto de dígitos |
+| `responses[].act.notaries` | `LineReference/DocumentReference/IssuerParty/Person` | Tupla no vacía, nombres, apellidos y cargo obligatorios |
+| `responses[].act.attachment` | `LineReference/DocumentReference/Attachment` | PDF obligatorio |
+| `responses[].act.effective_date` | `LineResponse/Response/EffectiveDate` | Fecha nativa del acta, independiente de fecha de emisión |
 
 El acta se incorpora dentro de `DocumentResponse/LineResponse`, con `LineID=1`,
 `DocumentDescription="Acta de Protesto"` y la descripción de respuesta requerida.
@@ -104,3 +111,8 @@ propia, independiente del contexto Decimal del consumidor.
 
 Fuentes: §§7.2.1.9, 7.2.4.10, 7.2.5.16, 9.2.3.10, 9.2.17 y tabla 14.2.20;
 `Falta de aceptacion.gc` y las dos ejemplificaciones de `048-Protesto`.
+
+`responses` es una tupla no vacía de `ProtestDocumentResponse`. Cada respuesta
+contiene `references` no vacías y su `act`; se conserva un acta por bloque y
+cada factura mantiene su vencimiento. La nota `PROTEST` es obligatoria, además
+de la representación cuando corresponda. Véase el [inventario](event-notes.md).

@@ -46,29 +46,41 @@ def build_protest(
             )
         )
     custom_extension(root, "InformacionProtesto", tuple(values))
-    named_xml_party(root, "SenderParty", event.sender_party)
-    named_xml_party(root, "ReceiverParty", event.receiver_party)
-    block, _ = document_response(root, event.code, "Protesto")
-    document_reference(block, event.reference)
-    line = _sub_element(block, CAC, "LineResponse")
-    line_reference = _sub_element(line, CAC, "LineReference")
-    _sub_element(line_reference, CBC, "LineID", "1")
-    act_reference = _sub_element(line_reference, CAC, "DocumentReference")
-    _sub_element(act_reference, CBC, "ID", event.act.notary_number)
-    _sub_element(act_reference, CBC, "DocumentDescription", "Acta de Protesto")
-    attach_pdf(act_reference, event.act.attachment, protest=True)
-    issuer = _sub_element(act_reference, CAC, "IssuerParty")
-    for notary in event.act.notaries:
-        person = _sub_element(issuer, CAC, "Person")
-        for tag, value in (
-            ("FirstName", notary.first_name),
-            ("FamilyName", notary.family_name),
-            ("JobTitle", notary.job_title),
-        ):
-            _sub_element(person, CBC, tag, value)
-    response = _sub_element(line, CAC, "Response")
-    _sub_element(
-        response, CBC, "Description", "Este documento corresponde al Acta de Protesto"
+    named_xml_party(
+        root,
+        "SenderParty",
+        event.sender_party,
+        additional_parties=event.additional_sender_parties,
     )
-    _sub_element(response, CBC, "EffectiveDate", event.act.effective_date.isoformat())
+    named_xml_party(root, "ReceiverParty", event.receiver_party)
+    for item in event.responses:
+        block, _ = document_response(root, event.code, "Protesto")
+        for reference in item.references:
+            document_reference(block, reference)
+        line = _sub_element(block, CAC, "LineResponse")
+        line_reference = _sub_element(line, CAC, "LineReference")
+        _sub_element(line_reference, CBC, "LineID", "1")
+        act_reference = _sub_element(line_reference, CAC, "DocumentReference")
+        _sub_element(act_reference, CBC, "ID", item.act.notary_number)
+        _sub_element(act_reference, CBC, "DocumentDescription", "Acta de Protesto")
+        attach_pdf(act_reference, item.act.attachment, protest=True)
+        issuer = _sub_element(act_reference, CAC, "IssuerParty")
+        for notary in item.act.notaries:
+            person = _sub_element(issuer, CAC, "Person")
+            for tag, value in (
+                ("FirstName", notary.first_name),
+                ("FamilyName", notary.family_name),
+                ("JobTitle", notary.job_title),
+            ):
+                _sub_element(person, CBC, tag, value)
+        response = _sub_element(line, CAC, "Response")
+        _sub_element(
+            response,
+            CBC,
+            "Description",
+            "Este documento corresponde al Acta de Protesto",
+        )
+        _sub_element(
+            response, CBC, "EffectiveDate", item.act.effective_date.isoformat()
+        )
     return root

@@ -12,6 +12,8 @@ from radiankore.catalogs import (
     PartyTaxScheme,
 )
 from radiankore.models.events._validation import digest, identity, text
+from radiankore.models.events.notes import EventNote, validate_event_notes
+from radiankore.models.events.tax_details import RadianTaxDetails
 
 INVOICE_EVENT_TYPES = frozenset(
     (
@@ -41,7 +43,7 @@ class InvoiceEventParty:
     identification_type: IdentificationType
     organization_type: OrganizationType
     verification_digit: str | None = None
-    tax_scheme: PartyTaxScheme = PartyTaxScheme.VAT
+    tax_scheme: PartyTaxScheme | RadianTaxDetails = PartyTaxScheme.VAT
 
     def __post_init__(self) -> None:
         text(self.name, "name", maximum=450)
@@ -54,8 +56,8 @@ class InvoiceEventParty:
         )
         if not isinstance(self.organization_type, OrganizationType):
             raise TypeError("organization_type must be an OrganizationType.")
-        if not isinstance(self.tax_scheme, PartyTaxScheme):
-            raise TypeError("tax_scheme must be a PartyTaxScheme.")
+        if not isinstance(self.tax_scheme, (PartyTaxScheme, RadianTaxDetails)):
+            raise TypeError("tax_scheme must be a PartyTaxScheme or RadianTaxDetails.")
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -129,7 +131,7 @@ class InvoiceResponseEvent:
     receiver_party: InvoiceEventParty | None = None
     issuer_person: InvoiceEventPerson | None = None
     claim_reason: InvoiceClaimReason | None = None
-    notes: tuple[str, ...] = ()
+    notes: tuple[EventNote, ...] = ()
 
     def __post_init__(self) -> None:
         invoice_event_code(self.code)
@@ -168,9 +170,6 @@ class InvoiceResponseEvent:
                 raise TypeError("Event 031 requires an InvoiceClaimReason.")
         elif self.claim_reason is not None:
             raise ValueError("claim_reason is only applicable to event 031.")
-        if not isinstance(self.notes, tuple):
-            raise TypeError("notes must be a tuple.")
-        for note in self.notes:
-            text(note, "note", maximum=10_000)
-        if self.code is EventType.TACIT_ACCEPTANCE and not self.notes:
-            raise ValueError("Event 034 requires an explicit sworn statement in notes.")
+        validate_event_notes(
+            self.notes, code=self.code.value, operation=self.code.value
+        )

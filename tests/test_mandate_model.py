@@ -31,7 +31,6 @@ from radiankore.models.events import (
         {"acceptance": False},
         {"acceptance": 1},
         {"notes": ()},
-        {"notes": (" ",)},
         {"event_number": ""},
         {"document_references": ()},
         {"reference_type": MandateReferenceType.ALL},
@@ -75,7 +74,7 @@ def test_role_and_representative_validation(mandate_event: MandateEvent) -> None
     with pytest.raises(ValueError, match="MandateeType"):
         replace(mandate_event, mandatee_party=mandate_event.sender_party)
     with pytest.raises(TypeError):
-        replace(mandate_event.sender_party, representative=None)  # type: ignore[arg-type]
+        replace(mandate_event.sender_party, representatives=(None,))  # type: ignore[arg-type]
     with pytest.raises(TypeError):
         replace(mandate_event.sender_party, role="Mandante-FE")  # type: ignore[arg-type]
     with pytest.raises(FrozenInstanceError):
@@ -116,13 +115,13 @@ def test_identity_constraints(mandate_event: MandateEvent) -> None:
     ):
         with pytest.raises((TypeError, ValueError)):
             replace(party, **changes)
-    person = party.representative
+    person = party.representatives[0]
     with pytest.raises(ValueError):
         replace(person, verification_digit="1")
     with pytest.raises(ValueError):
         replace(person, first_name=" ")
     with pytest.raises(TypeError):
-        replace(party, representative="person")  # type: ignore[arg-type]
+        replace(party, representatives=("person",))  # type: ignore[arg-type]
 
 
 def test_reference_constraints() -> None:
@@ -229,7 +228,7 @@ def test_general_evidence_requirements(mandate_event: MandateEvent) -> None:
     with pytest.raises(TypeError):
         replace(contract, embedded_bytes="PDF")  # type: ignore[arg-type]
     with pytest.raises(TypeError):
-        replace(contract, issuer="notary")  # type: ignore[arg-type]
+        replace(contract, issuers=("notary",))  # type: ignore[arg-type]
     with pytest.raises(TypeError):
         replace(contract, effective_date="2026-10-21")  # type: ignore[arg-type]
     with pytest.raises(TypeError):
