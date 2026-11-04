@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "radiankore"
-version = "0.7.2"
+version = "0.7.3"
 description = "Python library for RADIAN events and invoice queries through DIAN."
 readme = "README.md"
 requires-python = ">=3.13"
@@ -70,5 +70,6 @@ source = ["radiankore"]
 relative_files = true
 
 [tool.coverage.report]
+fail_under = 100
 show_missing = true
 skip_covered = true

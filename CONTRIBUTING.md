@@ -16,6 +16,22 @@ uv run pytest --cov --cov-report=term-missing
 uv build
 ```
 
+La suite debe mantener **100% de líneas y ramas** de `radiankore`; el comando
+con `--cov` y CI fallan si queda alguna sin cubrir. No añadas exclusiones ni
+reduzcas el alcance para alcanzar ese porcentaje. Durante la iteración ejecuta
+las pruebas específicas sin cobertura global, por ejemplo
+`uv run pytest tests/test_async_resources.py`, y cierra con la suite completa
+con cobertura.
+
+Organiza los casos por contrato observable: datos válidos, límites, errores y
+recursos liberados. Parametriza entradas equivalentes y comparte infraestructura
+en módulos de soporte de `tests`, sin importar helpers desde otros archivos
+`test_*.py`. Elimina un caso solo si otro conserva sus entradas relevantes y sus
+aserciones. Mantén las matrices de variantes/ambientes y las comprobaciones
+independientes de perfiles, XSD y firmas serializadas aunque compartan cobertura.
+Fija el reloj cuando una regla dependa de la fecha y coordina concurrencia con
+barreras o eventos y tiempos máximos de espera.
+
 Si `lxml` y `xmlsec` usan versiones incompatibles de `libxml2`, consulta las
 instrucciones de compilación conjunta en [instalación](docs/installation.md).
 

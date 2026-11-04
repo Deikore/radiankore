@@ -1,5 +1,19 @@
 # Historial de cambios
 
+## 0.7.3 — 2026-11-04
+
+- Alcanza el 100% de cobertura de líneas y ramas en Python 3.13–3.15, sin
+  exclusiones, y exige ese umbral en CI y en las ejecuciones con cobertura.
+- Amplía las regresiones de configuración, validaciones de eventos, Retry-After,
+  fallos de inicialización y descarga, cierre y cancelación de recursos asíncronos,
+  y renovación de sobres SOAP vencidos antes del envío.
+- Compacta los errores comunes de envío y comparte helpers de respuestas,
+  verificación de firmas, perfiles XML y ejemplos documentales. Conserva las
+  matrices de eventos y ambientes, las comprobaciones XSD y los bytes originales.
+- Fija el reloj de las pruebas de emisión dependientes de la fecha y elimina
+  validaciones y envolturas internas redundantes. La API pública se mantiene
+  compatible con 0.7.2 y no requiere migraciones.
+
 ## 0.7.2 — 2026-11-01
 
 - Completa las entradas Python de eventos 030–051 con notas tipadas por propósito,

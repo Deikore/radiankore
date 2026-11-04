@@ -22,6 +22,7 @@ from radiankore.models.events import (
     InvoicePaymentEvent,
     InvoiceResponseEvent,
     MandateEvent,
+    MandateTerminationEvent,
     NegotiationTerms,
     PreparedRadianEvent,
     RadianEvent,
@@ -50,6 +51,11 @@ def test_event_code_is_derived_and_inputs_are_frozen(
     "variant,change,error",
     [
         ("441", {"representatives": ()}, ValueError),
+        ("441", {"header": None}, TypeError),
+        ("035", {"beneficiaries": (None,)}, TypeError),
+        ("451", {"additional_sender_parties": []}, TypeError),
+        ("451", {"currency": "COP"}, TypeError),
+        ("371", {"endorsers": (None,)}, TypeError),
         ("441", {"representatives": (None,)}, TypeError),
         ("441", {"reference": None}, TypeError),
         ("441", {"sender_party": None}, TypeError),
@@ -269,3 +275,94 @@ def test_prepared_event_accepts_only_emittable_codes(code: EventType) -> None:
             prepare()
     else:
         assert prepare().code is code
+
+
+@pytest.mark.parametrize(
+    "field,value,error,message",
+    [
+        ("organization_type", "1", TypeError, "OrganizationType"),
+        ("tax_scheme", "01", TypeError, "PartyTaxScheme"),
+        ("name", None, ValueError, "named party"),
+    ],
+)
+def test_radian_sender_requires_typed_named_party(
+    radian_event_factory: Callable[[str], RadianEvent],
+    field: str,
+    value: object,
+    error: type[Exception],
+    message: str,
+) -> None:
+    event = radian_event_factory("441")
+    assert isinstance(event, MandateTerminationEvent)
+    with pytest.raises(error, match=message):
+        replace(event, sender_party=replace(event.sender_party, **{field: value}))  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize(
+    "changes,message",
+    [
+        ({"discount_rate": Decimal("100.01")}, "percentage"),
+        ({"payment_means": "1"}, "PaymentMeans"),
+    ],
+)
+def test_negotiation_rejects_invalid_percentage_and_payment_means(
+    changes: dict[str, object], message: str
+) -> None:
+    with pytest.raises((TypeError, ValueError), match=message):
+        NegotiationTerms(total_value=Decimal("1"), **changes)  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize("field,value", [("party", "invalid"), ("factor_type", "1")])
+def test_participation_fields_are_typed(field: str, value: object) -> None:
+    with pytest.raises(TypeError, match=field):
+        RadianParticipation(amount=Decimal("1"), **{field: value})  # type: ignore[arg-type]
+
+
+def test_event_generator_requires_nit(
+    radian_event_factory: Callable[[str], RadianEvent],
+) -> None:
+    from radiankore.catalogs import IdentificationType
+
+    mandate = radian_event_factory("441")
+    assert isinstance(mandate, MandateTerminationEvent)
+    with pytest.raises(ValueError, match=r"generator.*NIT"):
+        replace(
+            mandate,
+            sender_party=replace(
+                mandate.sender_party,
+                identification_type=IdentificationType.CITIZENSHIP_CARD,
+                verification_digit=None,
+            ),
+        )
+
+
+def test_endorsement_factor_is_contextual(
+    radian_event_factory: Callable[[str], RadianEvent],
+) -> None:
+    endorsement = radian_event_factory("038")
+    assert isinstance(endorsement, EndorsementEvent)
+    with pytest.raises(ValueError, match="factor_type"):
+        replace(
+            endorsement,
+            endorsees=(
+                replace(endorsement.endorsees[0], factor_type=next(iter(FactorType))),
+            ),
+        )
+
+
+def test_blank_endorsee_may_omit_name_but_not_identity(
+    radian_event_factory: Callable[[str], RadianEvent],
+) -> None:
+    event = radian_event_factory("371-blank")
+    assert isinstance(event, EndorsementEvent)
+    assert event.endorsees[0].party is not None
+    updated = replace(
+        event,
+        endorsees=(
+            replace(
+                event.endorsees[0], party=replace(event.endorsees[0].party, name=None)
+            ),
+        ),
+    )
+    assert updated.endorsees[0].party is not None
+    assert updated.endorsees[0].party.name is None

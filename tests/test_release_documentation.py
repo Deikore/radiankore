@@ -5,11 +5,10 @@ import json
 from base64 import b64decode
 from collections.abc import Callable
 from dataclasses import replace
-from datetime import datetime
+from datetime import date
 from pathlib import Path
 from statistics import median
 from typing import Any
-from zoneinfo import ZoneInfo
 
 import httpx
 import pytest
@@ -21,25 +20,16 @@ from radiankore._soap.namespaces import WCF
 from radiankore.catalogs import EventType
 from radiankore.models.events import InvoiceResponseEvent, RadianSoftware
 from tests.async_support import install_http
-from tests.test_documentation_examples import python_blocks
-from tests.test_send_radian_event import result_xml
-from tests.test_signing import _verify
+from tests.documentation_support import namespace
+from tests.event_support import result_xml
+from tests.signature_support import verify_signature
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def namespace(path: Path) -> dict[str, Any]:
-    """Load real Markdown examples without running command-line entry points."""
-    if not path.is_file():
-        pytest.skip("Documentation is excluded from this distribution.")
-    values: dict[str, Any] = {"__name__": "published_examples"}
-    for number, block in enumerate(python_blocks(path)):
-        exec(compile(block, f"{path}:block-{number}", "exec"), values)
-    return values
-
-
 def test_readme_queries_and_send_use_public_contracts(
     encrypted_pfx_path: Path,
+    event_clock: None,
     digital_certificate: DigitalCertificate,
     soap_response: bytes,
     invoice_event_factory: Callable[[EventType], InvoiceResponseEvent],
@@ -54,7 +44,7 @@ def test_readme_queries_and_send_use_public_contracts(
 
     def response(request: httpx.Request) -> httpx.Response:
         requests.append(request)
-        _verify(request.content, digital_certificate)
+        verify_signature(request.content, digital_certificate)
         sending = "SendEventUpdateStatus" in request.headers["content-type"]
         return httpx.Response(
             200, content=result_xml(wrap_soap) if sending else soap_response
@@ -82,7 +72,7 @@ def test_readme_queries_and_send_use_public_contracts(
         assert len(result.events) == 9
         event = replace(
             invoice_event_factory(EventType.INVOICE_ACKNOWLEDGEMENT),
-            issue_date=datetime.now(ZoneInfo("America/Bogota")).date(),
+            issue_date=date(2026, 10, 22),
         )
         prepared, sent = await values["send_event"](
             pfx, "test-password", event, radian_software
@@ -114,7 +104,7 @@ def test_guide_batch_bridge_and_complete_acknowledgement(
     sends: list[httpx.Request] = []
 
     async def handle(request: httpx.Request) -> httpx.Response:
-        _verify(request.content, digital_certificate)
+        verify_signature(request.content, digital_certificate)
         root = etree.fromstring(request.content)
         if "SendEventUpdateStatus" in request.headers["content-type"]:
             sends.append(request)

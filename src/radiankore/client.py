@@ -5,8 +5,6 @@ from math import isfinite
 from os import PathLike
 from typing import Self
 
-from lxml import etree
-
 from radiankore._soap import transport
 from radiankore._soap.acquirer_response import parse_acquirer_response
 from radiankore._soap.document_info_response import parse_document_info_response
@@ -24,7 +22,6 @@ from radiankore._soap.operations import (
     event_parameters,
     numbering_parameters,
     prepare_event,
-    serialize_event,
     text,
 )
 from radiankore._soap.reference_notes_response import parse_reference_notes_response
@@ -353,10 +350,6 @@ class DianClient:
                 "SendEventUpdateStatus", event_parameters(prepared, self._environment)
             )
         )
-
-    def _serialize_event(self, root: etree._Element) -> tuple[str, bytes, bytes]:
-        """Serialize the signed tree once, enforce ZA01 and package its exact bytes."""
-        return serialize_event(root)
 
     def _request(
         self, operation: str, parameters: tuple[tuple[str, str], ...]

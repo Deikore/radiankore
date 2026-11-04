@@ -1,27 +1,21 @@
 """Explicit preparation and submission, independent of any live DIAN service."""
 
-from base64 import b64decode, b64encode
+from base64 import b64encode
 from collections.abc import Callable
 from dataclasses import replace
-from io import BytesIO
 from pathlib import Path
-from zipfile import ZipFile
 
 import httpx
 import pytest
-import xmlsec
-from cryptography.hazmat.primitives.serialization import Encoding
 from lxml import etree
 
 from radiankore import DianClient, DigitalCertificate, Environment
 from radiankore._soap import transport
 from radiankore._soap.events import parse_send_event_response
-from radiankore._soap.namespaces import ARRAY, CBC, DS, RESPONSE, WCF, XSI
+from radiankore._soap.namespaces import ARRAY, CBC, RESPONSE, WCF, XSI
 from radiankore.catalogs import MandateChannel, MandateOperationType, MandatePower
 from radiankore.exceptions import (
     DianResponseError,
-    DianSoapFaultError,
-    DianTransportError,
 )
 from radiankore.models.events import (
     MandateEvent,
@@ -30,6 +24,7 @@ from radiankore.models.events import (
     RadianSoftware,
 )
 from radiankore.models.responses import SendEventResult
+from tests.event_support import assert_submitted_event, install_sync_http
 
 
 def result_xml(
@@ -65,7 +60,6 @@ def test_prepare_and_send_exact_bytes(
     environment: Environment,
     operation: MandateOperationType,
 ) -> None:
-    clients: list[httpx.Client] = []
     requests: list[httpx.Request] = []
 
     def handle(request: httpx.Request) -> httpx.Response:
@@ -88,12 +82,8 @@ def test_prepare_and_send_exact_bytes(
             ),
         )
 
-    def factory(timeout: float) -> httpx.Client:
-        client = httpx.Client(transport=httpx.MockTransport(handle), timeout=timeout)
-        clients.append(client)
-        return client
+    clients = install_sync_http(monkeypatch, handle)
 
-    monkeypatch.setattr(transport, "create_http_client", factory)
     client = DianClient(
         encrypted_pfx_path, password="test-password", environment=environment
     )
@@ -143,9 +133,6 @@ def test_prepare_and_send_exact_bytes(
         )
     assert not clients
     assert "xml_bytes=" not in repr(prepared) and "zip_bytes=" not in repr(prepared)
-    with ZipFile(BytesIO(prepared.zip_bytes)) as archive:
-        assert archive.namelist() == [f"ar_{prepared.cude}.xml"]
-        assert archive.read(archive.namelist()[0]) == prepared.xml_bytes
     assert (
         etree.fromstring(prepared.xml_bytes).findtext(f"{{{CBC}}}UUID") == prepared.cude
     )
@@ -161,22 +148,7 @@ def test_prepare_and_send_exact_bytes(
         xml_base64_bytes=b"first",
         xml_bytes=b"second",
     )
-    assert len(clients) == len(requests) == 1 and clients[0].is_closed
-    envelope = etree.fromstring(requests[0].content)
-    assert requests[0].url == environment.endpoint
-    assert "SendEventUpdateStatus" in requests[0].headers["Content-Type"]
-    content = envelope.findtext(f".//{{{WCF}}}contentFile")
-    assert content is not None and b64decode(content) == prepared.zip_bytes
-    signature = envelope.find(f".//{{{DS}}}Signature")
-    assert signature is not None
-    xmlsec.tree.add_ids(envelope, ["Id"])
-    context = xmlsec.SignatureContext()
-    context.key = xmlsec.Key.from_memory(
-        digital_certificate.certificate.public_bytes(Encoding.PEM),
-        xmlsec.constants.KeyDataFormatCertPem,
-        None,
-    )
-    context.verify(signature)
+    assert_submitted_event(prepared, requests, clients, digital_certificate)
 
 
 def test_environment_mismatch_prevents_network(
@@ -285,40 +257,3 @@ def test_invalid_response_fields(
 def test_safe_parser(raw: bytes) -> None:
     with pytest.raises(DianResponseError):
         parse_send_event_response(raw)
-
-
-@pytest.mark.parametrize("failure", ["http", "timeout", "fault"])
-def test_failures_close_connections_without_retry(
-    encrypted_pfx_path: Path,
-    mandate_event: MandateEvent,
-    radian_software: RadianSoftware,
-    monkeypatch: pytest.MonkeyPatch,
-    soap_fault: bytes,
-    failure: str,
-) -> None:
-    clients: list[httpx.Client] = []
-    calls: list[httpx.Request] = []
-
-    def handler(request: httpx.Request) -> httpx.Response:
-        calls.append(request)
-        if failure == "timeout":
-            raise httpx.ReadTimeout("synthetic timeout", request=request)
-        return httpx.Response(
-            500 if failure == "http" else 200,
-            content=b"unavailable" if failure == "http" else soap_fault,
-        )
-
-    def factory(timeout: float) -> httpx.Client:
-        client = httpx.Client(transport=httpx.MockTransport(handler), timeout=timeout)
-        clients.append(client)
-        return client
-
-    monkeypatch.setattr(transport, "create_http_client", factory)
-    client = DianClient(encrypted_pfx_path, password="test-password")
-    prepared = client.prepare_radian_event(
-        event=mandate_event, software=radian_software
-    )
-    error = DianSoapFaultError if failure == "fault" else DianTransportError
-    with pytest.raises(error):
-        client.send_radian_event(prepared)
-    assert len(calls) == 1 and clients[0].is_closed

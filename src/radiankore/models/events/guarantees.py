@@ -70,8 +70,6 @@ class GuaranteeEvent:
                 raise TypeError("Expected GuaranteeBeneficiary members.")
             if len(self.beneficiaries) > 1 and beneficiary.amount is None:
                 raise ValueError("Multiple beneficiaries require individual amounts.")
-        if not self.header.notes:
-            raise ValueError("Guarantees require an explicit declaration.")
 
     @property
     def code(self) -> EventType:

@@ -74,8 +74,9 @@ No uses enums de eventos para notas ni conviertas estados de negocio en excepcio
 
 Usa pytest, archivos `test_*.py`, certificados sintéticos y MockTransport.
 No contactes DIAN desde tests ni CI. Añade regresiones;
-verifica firmas serializadas, errores y cierre de conexiones. Sin umbral mínimo de
-cobertura. CI contempla Python 3.13–3.15 y pruebas del wheel instalado.
+verifica firmas serializadas, errores y cierre de conexiones. Mantén el 100% de
+cobertura de líneas y ramas, sin exclusiones para alcanzar el umbral.
+CI contempla Python 3.13–3.15 y pruebas del wheel instalado.
 
 Usa commits imperativos y pull requests con propósito, issues y validaciones.
 Sigue [CONTRIBUTING](CONTRIBUTING.md); nunca incluyas secretos ni documentos reales.

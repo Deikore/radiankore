@@ -8,21 +8,19 @@ from pathlib import Path
 import httpx
 import lxml.etree as etree  # Initialize libxml2 before xmlsec's native callbacks.
 import pytest
-import xmlsec
 from _pytest.terminal import TerminalReporter
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.serialization import (
     BestAvailableEncryption,
-    Encoding,
     pkcs12,
 )
 from cryptography.x509.oid import NameOID
 
 from radiankore import DigitalCertificate
 from radiankore._soap import transport
-from radiankore._soap.namespaces import ACQUIRER, ARRAY, DS, RESPONSE, SOAP, WCF
+from radiankore._soap.namespaces import ACQUIRER, ARRAY, RESPONSE, SOAP, WCF
 from radiankore.catalogs import (
     EventType,
     IdentificationType,
@@ -52,6 +50,7 @@ from radiankore.models.events import (
 )
 from tests.event_factories import radian_event_factory as make_radian_event_factory
 from tests.event_notes import synthetic_notes
+from tests.signature_support import verify_signature
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[1]
 _RADIAN_XSD = _PROJECT_ROOT / (
@@ -416,20 +415,6 @@ def invoice_event_factory() -> Callable[[EventType], InvoiceResponseEvent]:
 def verify_event_signature() -> Callable[[bytes, DigitalCertificate], None]:
     """Provide independent verification for serialized UBL and SOAP signatures."""
 
-    def verify_signature(xml: bytes, certificate: DigitalCertificate) -> None:
-        """Verify signed, serialized bytes using only the public certificate."""
-        root = etree.fromstring(xml)
-        xmlsec.tree.add_ids(root, ["Id"])
-        signature = root.find(f".//{{{DS}}}Signature")
-        assert signature is not None
-        ctx = xmlsec.SignatureContext()
-        ctx.key = xmlsec.Key.from_memory(
-            certificate.certificate.public_bytes(Encoding.PEM),
-            xmlsec.constants.KeyDataFormatCertPem,
-            None,
-        )
-        ctx.verify(signature)
-
     return verify_signature
 
 
@@ -444,3 +429,17 @@ def radian_schema() -> etree.XMLSchema | None:
     return (
         etree.XMLSchema(etree.parse(str(_RADIAN_XSD))) if _RADIAN_XSD.exists() else None
     )
+
+
+@pytest.fixture
+def event_clock(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Fix signing dates independently of the host calendar."""
+    from radiankore._soap import operations
+
+    class Clock:
+        @staticmethod
+        def now(tz: object) -> datetime:
+            assert tz is UTC
+            return datetime(2026, 10, 22, 18, tzinfo=UTC)
+
+    monkeypatch.setattr(operations, "datetime", Clock)

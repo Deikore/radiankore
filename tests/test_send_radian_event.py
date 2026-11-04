@@ -1,6 +1,5 @@
 """Explicit RADIAN preparation/submission, exact bytes and connection ownership."""
 
-from base64 import b64decode
 from collections.abc import Callable
 from dataclasses import replace
 from pathlib import Path
@@ -11,7 +10,6 @@ from lxml import etree
 
 from radiankore import DianClient, DigitalCertificate, Environment
 from radiankore._soap import transport
-from radiankore._soap.namespaces import RESPONSE, WCF, XSI
 from radiankore.catalogs import EventType, RadianOperationType
 from radiankore.exceptions import (
     DianResponseError,
@@ -26,19 +24,7 @@ from radiankore.models.events import (
     RadianSoftware,
 )
 from tests.event_notes import additional_notes
-
-
-def result_xml(
-    wrap: Callable[[etree._Element], bytes], kind: str = "rejection"
-) -> bytes:
-    response = etree.Element(f"{{{WCF}}}SendEventUpdateStatusResponse")
-    result = etree.SubElement(response, f"{{{WCF}}}SendEventUpdateStatusResult")
-    if kind == "nil":
-        result.set(f"{{{XSI}}}nil", "true")
-    elif kind == "rejection":
-        for name, value in (("IsValid", "false"), ("StatusCode", "99")):
-            etree.SubElement(result, f"{{{RESPONSE}}}{name}").text = value
-    return wrap(response)
+from tests.event_support import assert_submitted_event, install_sync_http, result_xml
 
 
 @pytest.mark.parametrize(
@@ -52,25 +38,19 @@ def test_all_event_codes_submit_the_original_archive_once(
     encrypted_pfx_path: Path,
     radian_software: RadianSoftware,
     wrap_soap: Callable[[etree._Element], bytes],
-    verify_event_signature: Callable[[bytes, DigitalCertificate], None],
     digital_certificate: DigitalCertificate,
     monkeypatch: pytest.MonkeyPatch,
     variant: str,
     environment: Environment,
 ) -> None:
-    clients: list[httpx.Client] = []
     requests: list[httpx.Request] = []
 
     def handler(request: httpx.Request) -> httpx.Response:
         requests.append(request)
         return httpx.Response(200, content=result_xml(wrap_soap))
 
-    def factory(timeout: float) -> httpx.Client:
-        http = httpx.Client(transport=httpx.MockTransport(handler), timeout=timeout)
-        clients.append(http)
-        return http
+    clients = install_sync_http(monkeypatch, handler)
 
-    monkeypatch.setattr(transport, "create_http_client", factory)
     client = DianClient(
         encrypted_pfx_path, password="test-password", environment=environment
     )
@@ -91,13 +71,7 @@ def test_all_event_codes_submit_the_original_archive_once(
     assert (
         result is not None and result.is_valid is False and result.status_code == "99"
     )
-    assert len(clients) == len(requests) == 1 and clients[0].is_closed
-    assert requests[0].url == environment.endpoint
-    assert "SendEventUpdateStatus" in requests[0].headers["Content-Type"]
-    payload = etree.fromstring(requests[0].content).findtext(f".//{{{WCF}}}contentFile")
-    assert payload is not None and b64decode(payload) == prepared.zip_bytes
-    verify_event_signature(prepared.xml_bytes, digital_certificate)
-    verify_event_signature(requests[0].content, digital_certificate)
+    assert_submitted_event(prepared, requests, clients, digital_certificate)
 
 
 def test_artifact_types_environments_and_invalid_inputs_prevent_network(
@@ -141,7 +115,9 @@ def test_artifact_types_environments_and_invalid_inputs_prevent_network(
     assert isinstance(prepared, PreparedRadianEvent)
 
 
-@pytest.mark.parametrize("failure", ["network", "http", "soap", "parsing"])
+@pytest.mark.parametrize(
+    "failure", ["network", "connect", "http", "soap", "soap200", "parsing"]
+)
 def test_failures_are_not_retried_and_connections_close(
     radian_event_factory: Callable[[str], RadianEvent],
     encrypted_pfx_path: Path,
@@ -150,30 +126,29 @@ def test_failures_are_not_retried_and_connections_close(
     monkeypatch: pytest.MonkeyPatch,
     failure: str,
 ) -> None:
-    clients: list[httpx.Client] = []
     requests: list[httpx.Request] = []
 
     def handle(request: httpx.Request) -> httpx.Response:
         requests.append(request)
         if failure == "network":
             raise httpx.ReadTimeout("synthetic timeout", request=request)
-        if failure == "soap":
-            return httpx.Response(500, content=soap_fault)
+        if failure == "connect":
+            raise httpx.ConnectError("synthetic connect failure", request=request)
+        if failure in {"soap", "soap200"}:
+            return httpx.Response(
+                200 if failure == "soap200" else 500, content=soap_fault
+            )
         return httpx.Response(200 if failure == "parsing" else 500, content=b"invalid")
 
-    def factory(timeout: float) -> httpx.Client:
-        http = httpx.Client(transport=httpx.MockTransport(handle), timeout=timeout)
-        clients.append(http)
-        return http
+    clients = install_sync_http(monkeypatch, handle)
 
-    monkeypatch.setattr(transport, "create_http_client", factory)
     client = DianClient(encrypted_pfx_path, password="test-password")
     prepared = client.prepare_radian_event(
         event=radian_event_factory("371-blank"), software=radian_software
     )
     error = (
         DianSoapFaultError
-        if failure == "soap"
+        if failure in {"soap", "soap200"}
         else (DianResponseError if failure == "parsing" else DianTransportError)
     )
     with pytest.raises(error):

@@ -22,20 +22,7 @@ from radiankore._soap.namespaces import (
     WSSE,
     WSU,
 )
-
-
-def _verify(data: bytes, certificate: DigitalCertificate) -> None:
-    root = etree.fromstring(data)
-    xmlsec.tree.add_ids(root, ["Id"])
-    signature = root.find(f".//{{{DS}}}Signature")
-    assert signature is not None
-    context = xmlsec.SignatureContext()
-    context.key = xmlsec.Key.from_memory(
-        certificate.certificate.public_bytes(Encoding.PEM),
-        xmlsec.constants.KeyDataFormatCertPem,
-        None,
-    )
-    context.verify(signature)
+from tests.signature_support import verify_signature
 
 
 @pytest.mark.parametrize(
@@ -75,7 +62,7 @@ def test_serialized_signature_and_signed_destination(
         certificate=digital_certificate,
         environment=environment,
     )
-    _verify(payload, digital_certificate)
+    verify_signature(payload, digital_certificate)
     root = etree.fromstring(payload)
     to = root.find(f"{{{SOAP}}}Header/{{{WSA}}}To")
     assert to is not None and to.text == environment.addressing_to
@@ -125,7 +112,7 @@ def test_serialized_signature_and_signed_destination(
     )
     to.text = "https://example.invalid/tampered"
     with pytest.raises(xmlsec.VerificationError):
-        _verify(etree.tostring(root), digital_certificate)
+        verify_signature(etree.tostring(root), digital_certificate)
 
 
 def test_each_request_has_fresh_ids(digital_certificate: DigitalCertificate) -> None:
@@ -151,7 +138,10 @@ def test_each_request_has_fresh_ids(digital_certificate: DigitalCertificate) -> 
     assert ids[0] and ids[1] and ids[0].isdisjoint(ids[1])
 
 
-def test_reject_non_rsa_key(digital_certificate: DigitalCertificate) -> None:
+@pytest.mark.parametrize("target", ["soap", "ubl-key-info"])
+def test_reject_non_rsa_key(
+    digital_certificate: DigitalCertificate, target: str
+) -> None:
     key = ec.generate_private_key(ec.SECP256R1())
     base = digital_certificate.certificate
     certificate = (
@@ -164,14 +154,20 @@ def test_reject_non_rsa_key(digital_certificate: DigitalCertificate) -> None:
         .not_valid_after(base.not_valid_after_utc)
         .sign(key, hashes.SHA256())
     )
+    material = DigitalCertificate(key, certificate)
     with pytest.raises(DianSignatureError, match="RSA"):
-        build_signed_request(
-            "GetStatusEvent",
-            (("trackId", "CUFE"),),
-            action=f"{WCF}/IWcfDianCustomerServices/GetStatusEvent",
-            certificate=DigitalCertificate(key, certificate),
-            environment=Environment.PRODUCTION,
-        )
+        if target == "ubl-key-info":
+            from radiankore._soap.events.ubl_signing import _build_key_info
+
+            _build_key_info(material, "synthetic-key-info")
+        else:
+            build_signed_request(
+                "GetStatusEvent",
+                (("trackId", "CUFE"),),
+                action=f"{WCF}/IWcfDianCustomerServices/GetStatusEvent",
+                certificate=material,
+                environment=Environment.PRODUCTION,
+            )
 
 
 def test_native_signing_error_preserves_cause(

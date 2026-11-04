@@ -32,7 +32,7 @@ from radiankore.models.events import (
     MandateValidityPeriod,
     RadianSoftware,
 )
-from tests.test_event_conformance import assert_profile
+from tests.profile_support import assert_profile
 
 
 @pytest.fixture(scope="module")

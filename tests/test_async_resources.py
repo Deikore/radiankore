@@ -20,7 +20,7 @@ from radiankore import (
 from radiankore._async_runtime import BoundedProcessor
 from radiankore._soap import async_transport
 from tests.async_support import install_http
-from tests.test_signing import _verify
+from tests.signature_support import verify_signature
 
 
 def test_concurrency_and_cookie_isolation(
@@ -33,7 +33,7 @@ def test_concurrency_and_cookie_isolation(
     async def handle(request: httpx.Request) -> httpx.Response:
         nonlocal active, maximum, calls
         assert "cookie" not in request.headers
-        _verify(request.content, digital_certificate)
+        verify_signature(request.content, digital_certificate)
         active += 1
         calls += 1
         maximum = max(active, maximum)

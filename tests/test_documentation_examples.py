@@ -1,6 +1,5 @@
 """Execute the real emission guides against synthetic certificates and MockTransport."""
 
-import re
 from collections.abc import Callable, Iterator, Mapping
 from pathlib import Path
 from typing import Any, cast, get_args
@@ -18,11 +17,7 @@ from radiankore.models.events import (
     RadianEvent,
     RadianSoftware,
 )
-
-
-def python_blocks(path: Path) -> list[str]:
-    """Read the Python code actually published, without duplicating its examples."""
-    return re.findall(r"```python\n(.*?)```", path.read_text(), re.DOTALL)
+from tests.documentation_support import python_blocks
 
 
 def example_events(value: object) -> Iterator[RadianEvent]:

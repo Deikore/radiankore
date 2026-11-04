@@ -4,10 +4,9 @@ import asyncio
 from base64 import b64decode
 from collections.abc import Callable
 from dataclasses import replace
-from datetime import datetime
+from datetime import date
 from io import BytesIO
 from zipfile import ZipFile
-from zoneinfo import ZoneInfo
 
 import httpx
 import pytest
@@ -28,9 +27,9 @@ from radiankore.models.events import (
     RadianSoftware,
 )
 from tests.async_support import install_http
-from tests.test_event_conformance import assert_profile
-from tests.test_send_radian_event import result_xml
-from tests.test_signing import _verify
+from tests.event_support import result_xml
+from tests.profile_support import assert_profile
+from tests.signature_support import verify_signature
 
 
 @pytest.mark.parametrize(
@@ -41,6 +40,7 @@ from tests.test_signing import _verify
 )
 @pytest.mark.parametrize("environment", list(Environment))
 def test_async_prepare_and_single_send(
+    event_clock: None,
     digital_certificate: DigitalCertificate,
     monkeypatch: pytest.MonkeyPatch,
     radian_event_factory: Callable[[str], RadianEvent],
@@ -56,7 +56,7 @@ def test_async_prepare_and_single_send(
 
     async def handle(request: httpx.Request) -> httpx.Response:
         requests.append(request)
-        _verify(request.content, digital_certificate)
+        verify_signature(request.content, digital_certificate)
         return httpx.Response(200, content=result_xml(wrap_soap))
 
     clients = install_http(monkeypatch, handle)
@@ -64,7 +64,7 @@ def test_async_prepare_and_single_send(
     if variant.startswith("invoice:"):
         event = replace(
             invoice_event_factory(EventType(variant.split(":")[1])),
-            issue_date=datetime.now(ZoneInfo("America/Bogota")).date(),
+            issue_date=date(2026, 10, 22),
         )
     elif variant == "mandate":
         event = mandate_event

@@ -25,8 +25,8 @@ from radiankore._soap.events import (
 from radiankore.catalogs import EventType
 from radiankore.models.events import InvoiceResponseEvent, RadianEvent, RadianSoftware
 from tests.async_support import install_http
-from tests.test_send_radian_event import result_xml
-from tests.test_signing import _verify
+from tests.event_support import result_xml
+from tests.signature_support import verify_signature
 
 
 async def thread_started(event: threading.Event) -> None:
@@ -72,7 +72,7 @@ def test_event_build_and_zip_do_not_block_other_soap_signatures(
         monkeypatch.setattr(operations, "pack_event", pack)
 
     async def handle(request: httpx.Request) -> httpx.Response:
-        _verify(request.content, digital_certificate)
+        verify_signature(request.content, digital_certificate)
         return httpx.Response(200, content=soap_response)
 
     clients = install_http(monkeypatch, handle)
@@ -295,7 +295,7 @@ def test_cancelled_event_response_closes_stream_without_automatic_resubmission(
 
         async def handle(request: httpx.Request) -> httpx.Response:
             requests.append(request.content)
-            _verify(request.content, digital_certificate)
+            verify_signature(request.content, digital_certificate)
             if len(requests) == 1:
                 return httpx.Response(200, stream=SlowBody())
             return httpx.Response(200, content=result_xml(wrap_soap))
@@ -337,7 +337,7 @@ def test_concurrent_event_posts_are_bounded_and_close_drains_them(
 
         async def handle(request: httpx.Request) -> httpx.Response:
             nonlocal active, maximum, calls
-            _verify(request.content, digital_certificate)
+            verify_signature(request.content, digital_certificate)
             active += 1
             calls += 1
             maximum = max(maximum, active)

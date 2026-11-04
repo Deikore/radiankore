@@ -447,7 +447,7 @@ def test_documented_limit_configuration_executes(
     soap_response: bytes,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    from tests.test_release_documentation import namespace
+    from tests.documentation_support import namespace
 
     guide = Path(__file__).resolve().parents[1] / "docs/guides/response-limits.md"
     values = namespace(guide)

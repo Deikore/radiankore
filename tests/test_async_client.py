@@ -24,7 +24,7 @@ from radiankore import (
 from radiankore._soap.namespaces import EXCHANGE_EMAIL_RESPONSE, WCF
 from radiankore.catalogs import IdentificationType
 from tests.async_support import install_http
-from tests.test_signing import _verify
+from tests.signature_support import verify_signature
 
 
 def test_eight_queries_and_isolated_download(
@@ -67,7 +67,7 @@ def test_eight_queries_and_isolated_download(
             assert str(request.url) == url
             assert b"BinarySecurityToken" not in request.content
             return httpx.Response(200, content=buffer.getvalue())
-        _verify(request.content, digital_certificate)
+        verify_signature(request.content, digital_certificate)
         operation = request.headers["content-type"].split("/")[-1].rstrip('"')
         return httpx.Response(
             200, content=responses[operation], headers={"Set-Cookie": "secret=test"}
@@ -292,7 +292,7 @@ def test_documented_async_examples_execute(
 ) -> None:
     from typing import Any
 
-    from tests.test_documentation_examples import python_blocks
+    from tests.documentation_support import python_blocks
 
     guide = Path(__file__).resolve().parents[1] / "docs/guides/async.md"
     if not guide.is_file():

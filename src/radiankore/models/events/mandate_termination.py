@@ -36,8 +36,6 @@ class MandateTerminationEvent:
             raise ValueError("representatives must be a nonempty tuple.")
         if not all(isinstance(p, RadianPerson) for p in self.representatives):
             raise TypeError("representatives must contain RadianPerson instances.")
-        if not self.header.notes:
-            raise ValueError("Mandate termination requires an explicit declaration.")
 
     @property
     def code(self) -> EventType:

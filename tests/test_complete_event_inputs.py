@@ -616,3 +616,87 @@ def test_tax_detail_invalid_values(
 ) -> None:
     with pytest.raises(error):
         RadianTaxDetails(code=code, name=name)  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize(
+    "kind,text,message",
+    [
+        (K.MANDATE_REPRESENTATION, "Missing official declaration", "official"),
+        (K.PROTEST, "con protesto", "literal"),
+    ],
+)
+def test_note_literals_are_exact(kind: K, text: str, message: str) -> None:
+    with pytest.raises(ValueError, match=message):
+        EventNote(kind=kind, text=text)
+
+
+@pytest.mark.parametrize(
+    "code,operation,kinds,message",
+    [
+        ("034", "034", (K.TACIT_ACCEPTANCE_LEGAL_MANDATE,), "sworn statement"),
+        ("044", "442", (K.MANDATE_RATIFICATION,), "Ratification"),
+        ("044", "441", (K.MANDATE_NO_PENDING_ACTS,), "No-pending-acts"),
+        ("040", "401", (K.COLLECTION_REVOCATION,), "Collection revocation"),
+        ("037", "371", (K.WITHOUT_RECOURSE,), "Without-recourse"),
+        ("035", "035", (K.ADDITIONAL, K.GUARANTEE_LEGAL_PERSON), "position"),
+    ],
+)
+def test_note_purposes_match_operation_and_position(
+    code: str, operation: str, kinds: tuple[K, ...], message: str
+) -> None:
+    from radiankore.models.events.notes import validate_event_notes
+
+    notes = tuple(EventNote(kind=kind, text="Synthetic declaration") for kind in kinds)
+    with pytest.raises(ValueError, match=message):
+        validate_event_notes(notes, code=code, operation=operation)
+
+
+def test_common_components_reject_invalid_reference_and_accept_person_details(
+    radian_event_factory: Callable[[str], RadianEvent],
+) -> None:
+    from radiankore.models.events import (
+        CirculationRestrictionEvent,
+        MandateTerminationEvent,
+    )
+
+    event = radian_event_factory("411")
+    assert isinstance(event, CirculationRestrictionEvent)
+    with pytest.raises(TypeError, match="invoice or prior event"):
+        replace(event.responses[0].references[0], reference=None)  # type: ignore[arg-type]
+    mandate = radian_event_factory("441")
+    assert isinstance(mandate, MandateTerminationEvent)
+    person = replace(
+        mandate.representatives[0],
+        job_title="Agent",
+        nationality_id="CO",
+        organization_department="Legal",
+    )
+    assert person.job_title == "Agent"
+    with pytest.raises(ValueError, match="job_title"):
+        replace(person, job_title="")
+
+
+def test_mandate_ratification_requires_its_paired_position() -> None:
+    from radiankore.models.events.notes import validate_event_notes
+
+    notes = tuple(
+        EventNote(kind=kind, text="Synthetic declaration")
+        for kind in (K.MANDATE_RATIFICATION, K.MANDATE_TERMINATION)
+    )
+    with pytest.raises(ValueError, match="invalid note position"):
+        validate_event_notes(notes, code="044", operation="441")
+
+
+def test_multiple_guarantee_declarations_preserve_each_guarantors_statement(
+    radian_event_factory: Callable[[str], RadianEvent],
+) -> None:
+    from radiankore.models.events import GuaranteeEvent
+
+    event = radian_event_factory("035")
+    assert isinstance(event, GuaranteeEvent)
+    notes = (
+        EventNote(kind=K.GUARANTEE_LEGAL_PERSON, text="Synthetic legal guarantor"),
+        EventNote(kind=K.GUARANTEE_NATURAL_PERSON, text="Synthetic natural guarantor"),
+    )
+    updated = replace(event, header=replace(event.header, notes=notes))
+    assert updated.header.notes == notes

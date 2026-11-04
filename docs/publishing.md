@@ -47,7 +47,7 @@ fuente; CI también ejecuta la suite completa contra el wheel instalado.
 ## Crear la release
 
 Cree una etiqueta `v<VERSION>` que coincida exactamente con `project.version`
-(por ejemplo, `v0.7.2` para `0.7.2`) y publique una release de GitHub desde esa
+(por ejemplo, `v0.7.3` para `0.7.3`) y publique una release de GitHub desde esa
 etiqueta. El workflow:
 
 1. Verifica la correspondencia de etiqueta y versión.
@@ -61,7 +61,31 @@ la página del proyecto en PyPI antes de anunciar la versión. Los números de v
 publicados no se reutilizan; las correcciones se publican como una versión nueva.
 La integración real con DIAN requiere comprobaciones autorizadas aparte de CI.
 
-## Release 0.7.2
+## Release 0.7.3
+
+El manifiesto, el lockfile y el changelog deben identificar `0.7.3`; la etiqueta
+debe ser `v0.7.3`. Esta versión de mantenimiento conserva la API pública de
+0.7.2 y no requiere migraciones.
+
+Las notas de release deben destacar:
+
+- Cobertura del 100% de líneas y ramas en Python 3.13–3.15, sin exclusiones,
+  con umbral obligatorio en CI y en las ejecuciones con `--cov`.
+- Regresiones de validaciones y recursos asíncronos, errores HTTP y descargas,
+  Retry-After y renovación de sobres SOAP vencidos antes de transmitirlos.
+- Pruebas de envío compactadas, helpers compartidos y fechas de emisión fijas;
+  se conservan las matrices de eventos y ambientes, XSD y firmas serializadas.
+- Eliminación de código interno redundante sin cambios en los contratos públicos.
+
+Compruebe las 2852 pruebas, la cobertura completa y los ejemplos documentales con
+datos sintéticos. Ejecute la suite contra el wheel instalado fuera del árbol
+fuente y revise los metadatos de ambos artefactos con Twine.
+
+El tag debe apuntar al mismo commit que pasó CI. Después de publicar la release,
+revise el workflow y verifique una instalación de `radiankore==0.7.3` desde PyPI
+en un entorno limpio. No reutilice ni modifique las etiquetas anteriores.
+
+## Antecedente: release 0.7.2
 
 El manifiesto, el lockfile y el changelog deben identificar `0.7.2`; la etiqueta
 debe ser `v0.7.2`. Esta versión completa los modelos de eventos 030–051 y su
@@ -125,7 +149,7 @@ publicados contra transporte simulado y la documentación con advertencias como
 errores. Los scripts de benchmark son herramientas del checkout, no comandos
 instalados con el wheel. No ejecute mediciones remotas en CI.
 
-Un commit local no publica el paquete. La etiqueta `v0.7.2` y la release de
+Un commit local no publica el paquete. La etiqueta `v0.7.3` y la release de
 GitHub se crean después de revisar las validaciones; publicar esa release activa
 el workflow. Mantenga los artefactos de construcción y los registros de pruebas
 fuera del commit.

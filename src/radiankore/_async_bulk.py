@@ -92,16 +92,12 @@ async def iter_queries[T, R](
 
     def completed(task: asyncio.Task[None]) -> None:
         registry.discard(task)
+        # coordinate delivers failures through _Finished; only cancellation of
+        # its final Queue.put can bypass that delivery.
         if task.cancelled():
             if outputs.full():
                 outputs.get_nowait()
             outputs.put_nowait(_Finished(asyncio.CancelledError()))
-        else:
-            error = task.exception()
-            if error is not None:
-                if outputs.full():
-                    outputs.get_nowait()
-                outputs.put_nowait(_Finished(error))
 
     coordinator.add_done_callback(completed)
     try:

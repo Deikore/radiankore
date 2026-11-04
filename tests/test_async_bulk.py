@@ -184,3 +184,22 @@ def test_cancelled_source_propagates(digital_certificate: DigitalCertificate) ->
             assert not client._batches
 
     asyncio.run(exercise())
+
+
+def test_empty_async_source_finishes_without_querying(
+    digital_certificate: DigitalCertificate,
+) -> None:
+    async def source() -> AsyncIterator[int]:
+        items: tuple[int, ...] = ()
+        for item in items:
+            yield item
+
+    async def query(item: int) -> int:
+        pytest.fail("Empty source must not query")
+
+    async def exercise() -> None:
+        async with AsyncDianClient(digital_certificate) as client:
+            assert [r async for r in client.iter_queries(source(), query)] == []
+            assert not client._batches
+
+    asyncio.run(exercise())

@@ -1,12 +1,9 @@
 """Local preparation, exact-byte submission and failures without any live service."""
 
-from base64 import b64decode
 from collections.abc import Callable
 from dataclasses import replace
 from datetime import UTC, date, datetime, time
-from io import BytesIO
 from pathlib import Path
-from zipfile import ZipFile
 
 import httpx
 import pytest
@@ -17,12 +14,12 @@ from radiankore import DianClient, DigitalCertificate, Environment
 from radiankore._soap import transport
 from radiankore._soap.namespaces import CBC, RESPONSE, WCF, XADES
 from radiankore.catalogs import EventType
-from radiankore.exceptions import DianSoapFaultError, DianTransportError
 from radiankore.models.events import (
     InvoiceResponseEvent,
     RadianSoftware,
 )
 from tests.event_notes import additional_notes
+from tests.event_support import assert_submitted_event, install_sync_http
 
 
 @pytest.fixture
@@ -54,26 +51,20 @@ def test_prepare_and_send_original_bytes(
     encrypted_pfx_path: Path,
     radian_software: RadianSoftware,
     digital_certificate: DigitalCertificate,
-    verify_event_signature: Callable[[bytes, DigitalCertificate], None],
     invoice_clock: None,
     monkeypatch: pytest.MonkeyPatch,
     wrap_soap: Callable[[etree._Element], bytes],
     code: str,
     environment: Environment,
 ) -> None:
-    clients: list[httpx.Client] = []
     requests: list[httpx.Request] = []
 
     def handler(request: httpx.Request) -> httpx.Response:
         requests.append(request)
         return httpx.Response(200, content=send_result(wrap_soap))
 
-    def factory(timeout: float) -> httpx.Client:
-        http = httpx.Client(transport=httpx.MockTransport(handler), timeout=timeout)
-        clients.append(http)
-        return http
+    clients = install_sync_http(monkeypatch, handler)
 
-    monkeypatch.setattr(transport, "create_http_client", factory)
     client = DianClient(
         encrypted_pfx_path, password="test-password", environment=environment
     )
@@ -92,10 +83,6 @@ def test_prepare_and_send_original_bytes(
     assert prepared.code is event.code and prepared.environment is environment
     assert "xml_bytes=" not in repr(prepared) and "zip_bytes=" not in repr(prepared)
     assert "synthetic-pin" not in repr(radian_software)
-    with ZipFile(BytesIO(prepared.zip_bytes)) as archive:
-        assert archive.namelist() == [f"ar_{prepared.cude}.xml"]
-        assert archive.read(archive.namelist()[0]) == prepared.xml_bytes
-    verify_event_signature(prepared.xml_bytes, digital_certificate)
     parsed = etree.fromstring(prepared.xml_bytes)
     assert parsed.findtext(f".//{{{XADES}}}SigningTime") == "2026-10-22T18:00:00Z"
     assert parsed.findtext(f"{{{CBC}}}IssueDate") == "2026-10-22"
@@ -103,13 +90,7 @@ def test_prepare_and_send_original_bytes(
     assert (
         result is not None and result.is_valid is False and result.status_code == "99"
     )
-    assert len(requests) == len(clients) == 1 and clients[0].is_closed
-    assert requests[0].url == environment.endpoint
-    assert "SendEventUpdateStatus" in requests[0].headers["Content-Type"]
-    soap = etree.fromstring(requests[0].content)
-    content = soap.findtext(f".//{{{WCF}}}contentFile")
-    assert content is not None and b64decode(content) == prepared.zip_bytes
-    verify_event_signature(requests[0].content, digital_certificate)
+    assert_submitted_event(prepared, requests, clients, digital_certificate)
 
 
 def test_mismatched_environment_and_event_types_prevent_network(
@@ -194,38 +175,3 @@ def test_colombian_signing_date_at_utc_midnight(
     root = etree.fromstring(prepared.xml_bytes)
     assert root.findtext(f"{{{CBC}}}IssueDate") == "2026-10-22"
     assert root.findtext(f".//{{{XADES}}}SigningTime") == "2026-10-23T02:00:00Z"
-
-
-@pytest.mark.parametrize("kind", ["http", "network", "soap"])
-def test_submission_failure_closes_connections_without_retry(
-    invoice_event_factory: Callable[[EventType], InvoiceResponseEvent],
-    encrypted_pfx_path: Path,
-    radian_software: RadianSoftware,
-    invoice_clock: None,
-    monkeypatch: pytest.MonkeyPatch,
-    soap_fault: bytes,
-    kind: str,
-) -> None:
-    clients: list[httpx.Client] = []
-    requests: list[httpx.Request] = []
-
-    def handle(request: httpx.Request) -> httpx.Response:
-        requests.append(request)
-        if kind == "network":
-            raise httpx.ConnectError("synthetic error", request=request)
-        return httpx.Response(500, content=soap_fault if kind == "soap" else b"failure")
-
-    def factory(timeout: float) -> httpx.Client:
-        http = httpx.Client(transport=httpx.MockTransport(handle), timeout=timeout)
-        clients.append(http)
-        return http
-
-    monkeypatch.setattr(transport, "create_http_client", factory)
-    client = DianClient(encrypted_pfx_path, password="test-password")
-    prepared = client.prepare_radian_event(
-        event=invoice_event_factory(EventType.EXPRESS_ACCEPTANCE),
-        software=radian_software,
-    )
-    with pytest.raises(DianSoapFaultError if kind == "soap" else DianTransportError):
-        client.send_radian_event(prepared)
-    assert len(clients) == len(requests) == 1 and clients[0].is_closed

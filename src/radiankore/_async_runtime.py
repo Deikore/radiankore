@@ -93,10 +93,9 @@ class BoundedProcessor(LoopBound):
                 *(asyncio.shield(future) for future in pending),
                 return_exceptions=True,
             )
-            # gather(done futures) can complete without yielding to their callbacks.
+            # gather has settled every future, but callbacks may not have run yet.
             for future in pending:
-                if future.done():
-                    self._finished(future)
+                self._finished(future)
         if self._executor is not None:
             # All physical jobs have finished; never join worker threads on the loop.
             self._executor.shutdown(wait=False, cancel_futures=True)
