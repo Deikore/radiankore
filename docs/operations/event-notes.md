@@ -1,15 +1,28 @@
 # Notas y declaraciones de los eventos
 
-Esta API está disponible desde **0.7.2** y sustituye el contrato de notas de
-0.7.1. Las clases actuales se amplían; no se requiere
+La API de notas tipadas está disponible desde **0.7.2** y sustituye el contrato
+de notas de 0.7.1. Las declaraciones estructuradas de 043/044 descritas aquí
+se incorporan en **0.7.4**. Las clases actuales se amplían; no se requiere
 construir XML ni importar fragmentos para emitir un evento.
+
+## Declaraciones estructuradas de mandato
+
+Los eventos 043 y 044 requieren `MandateDeclaration` y
+`MandateTerminationDeclaration`, respectivamente. El SDK compone sus notas y
+su orden; no se aportan declaraciones manuales mediante EventNote.
+`additional_notes` acepta únicamente observaciones ADDITIONAL y conserva
+repeticiones. En 044, `header.notes` debe estar vacío. La tabla de propósitos
+siguiente describe el resultado generado para estos dos eventos; para las demás
+familias se conserva la entrada de notas tipadas.
 
 ## Contrato y orden
 
 `EventNote(kind: EventNoteKind, text: str)` recibe un propósito y el texto original.
 Se importa desde `radiankore.models.events`; `EventNoteKind`, desde
-`radiankore.catalogs`. Todos los eventos reciben `notes: tuple[EventNote, ...]`:
-030–034 y 043 directamente, y los demás en `RadianEventHeader.notes`.
+`radiankore.catalogs`. Los eventos 030–034 reciben
+`notes: tuple[EventNote, ...]` directamente y las
+demás familias utilizan `RadianEventHeader.notes`, excepto 043/044: estos generan
+`event.notes` desde declaraciones estructuradas; 044 exige `header.notes=()`.
 Las cadenas, listas, propósitos ajenos al evento, textos vacíos y excesos se
 rechazan antes de construir o firmar. FE admite 10.000 caracteres por nota;
 RADIAN admite 5.000. No se recorta, completa, ordena ni deduplica el texto.
@@ -34,11 +47,13 @@ fechas y circunstancias reales. No envía las instrucciones editoriales del anex
 La tabla describe condiciones, no una instrucción para incluir todas las notas.
 `ADDITIONAL` admite texto adicional en todos los perfiles. La representación es
 condicional a una actuación por mandato y se declara con
-`MANDATE_REPRESENTATION`, salvo en 043, que usa sus declaraciones particulares.
+`MANDATE_REPRESENTATION`. En 043 se genera siempre primero, seguida de la
+declaración particular
+obligatoria. En 044 se genera cuando se aporta `declaration.representation`.
 
 | Eventos / operaciones | `EventNoteKind` | Condición y contenido |
 | --- | --- | --- |
-| 030–042 y 044–051 | `MANDATE_REPRESENTATION` | Cuando se actúa como mandatario: nombre del mandatario, frase fija y nombre del mandante. Una sola pareja; primera nota. |
+| 030–051 | `MANDATE_REPRESENTATION` | Cuando se actúa como mandatario: nombre del mandatario, frase fija y nombre del mandante. Una sola pareja; primera nota. En 043 se genera siempre; en 044 se aporta opcionalmente como hecho estructurado. |
 | 037–040/047 | `ACTING_CAPACITY` | Cuando corresponde otra calidad de actuación: declarar la calidad y a quién representa; no sustituye una representación por mandato. |
 | 034 directo | `TACIT_ACCEPTANCE_DIRECT` | Obligatoria sin mandatario: recibo 032 y CUDE; adquirente y NIT; plazo y ausencia de aceptación/reclamo bajo juramento. |
 | 034 por mandatario | `TACIT_ACCEPTANCE_LEGAL_MANDATE` | Alternativa para mandante jurídico: mandatario e identificación, mandante y NIT, adquirente y NIT, hechos y juramento. Requiere además representación. |
@@ -53,7 +68,7 @@ condicional a una actuación por mandato y se declara con
 | 040 / 402 | `COLLECTION_REVOCATION` | Obligatoria al cancelar procuración: manifestación de revocatoria contenida en el endoso. 401/403 no exigen esta nota. |
 | 043 | `MANDATE_NATURAL_PERSON` | Una alternativa para mandatario natural: identificación, representado, contrato, facultades y duración. |
 | 043 | `MANDATE_LEGAL_PERSON` | Una alternativa para mandatario jurídico: representante e identificación, sociedad, acreditación de representación, mandante, contrato, facultades y duración. |
-| 044 / 441–443 | `MANDATE_TERMINATION` | Manifestación de terminación, mandato identificado y fecha efectiva; texto aportado, sin inventar `Response/EffectiveDate`. |
+| 044 / 441–443 | `MANDATE_TERMINATION` | Manifestación generada desde la referencia, partes y fecha efectiva; sin `Response/EffectiveDate`. |
 | 044 / 441 | `MANDATE_RATIFICATION` | Opcional: ratificación de los actos realizados por el mandatario. |
 | 044 / 442 | `MANDATE_NO_PENDING_ACTS` | Obligatoria: constancia de que no queda pendiente ejecutar ningún acto del mandato terminado. |
 | 048 / 481–482 | `PROTEST` | Obligatoria: literal `Con protesto`. |
@@ -102,7 +117,9 @@ guarantee_endorsement_notes = (representation, clauses["038"], additional, addit
 registration_notes = (representation, payment_terms)
 ```
 
-Asigna la tupla a `header.notes` o `event.notes`, según el modelo. Una nota
+Asigna la tupla a `header.notes` o al argumento `notes`, según el modelo.
+Para 043/044 usa declaraciones estructuradas y `additional_notes`, conforme a
+[notas de mandato y migración](mandate/notes.md). Una nota
 juramentada o de aval debe contener la información indicada en la tabla. Las
 plantillas completas para 034 están en FE 1.9 pp. 301–302; las de 035 en RADIAN
 pp. 115–116 y las de 043 en p. 190. Debe elegirse y completar una alternativa
@@ -117,8 +134,8 @@ las cadenas como `ADDITIONAL` no conserva la validez de los eventos que exigen u
 declaración. No hay una conversión automática basada en frases o en `thirdparty`.
 
 `MandateRepresentation.as_note()` sustituye la redacción manual de la declaración
-genérica. Se incluye explícitamente en la tupla; el SDK no la inserta ni modifica
-notas existentes. No mezcles dos declaraciones de representación del mismo evento.
+genérica. En las familias distintas de 043/044 se incluye explícitamente en la tupla;
+043 la genera y 044 la recibe en `declaration.representation`. No mezcles dos declaraciones de representación del mismo evento.
 
 ## Fuentes y discrepancias
 
@@ -126,10 +143,12 @@ Fuentes primarias: [FE 1.9 §6.5.4, AAD11, p. 284 y §6.5.5.7, pp. 301–302](ht
 y [RADIAN 1.1 §§7.2.5.3–19 y 9.2.4–20](https://www.dian.gov.co/normatividad/Normatividad/Anexo%2085%20-%20Resoluci%C3%B3n%20000085%20de%202022.pdf#page=109).
 
 043: p. 190 indica `Note[2]`, cardinalidad `1..1` y dos alternativas; el control de
-cambios elimina AAD11a, y AAD11b/c distinguen mandatario natural/jurídico. Se emite
-la alternativa aplicable en la primera nota, sin nota vacía ni representación
-genérica heredada de RADIAN 1.0. Las observaciones adicionales siguen siendo
-notas UBL repetibles. No se copian ambas alternativas de las ejemplificaciones.
+cambios elimina AAD11a, y AAD11b/c distinguen mandatario natural/jurídico. El
+contrato actual del repositorio genera siempre una representación breve
+como primera nota y la alternativa aplicable como segunda. Las observaciones
+adicionales siguen después. La [guía de mandato](mandate/notes.md) muestra ambos
+textos y su migración desde 0.7.3 a 0.7.4.
+No se copian ambas alternativas de las ejemplificaciones.
 
 044: negocio p. 43 atribuye la constancia a revocatoria, pero generación p. 217 y
 la matriz oficial «Requisitos a los eventos», U88/U89, distinguen constancia en

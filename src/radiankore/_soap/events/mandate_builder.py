@@ -17,7 +17,12 @@ from radiankore._soap.events.common import (
 )
 from radiankore._soap.events.cude import colombian_issue_datetime, compute_mandate_cude
 from radiankore._soap.namespaces import AR, CAC, CBC
-from radiankore.catalogs import IdentificationType, MandateeType
+from radiankore.catalogs import (
+    DocumentType,
+    IdentificationType,
+    MandateeType,
+    MandateTime,
+)
 from radiankore.environment import Environment
 from radiankore.models.events import (
     MandateAttachedDocument,
@@ -28,6 +33,11 @@ from radiankore.models.events import (
     MandateScope,
     RadianSoftware,
 )
+
+_VALIDITY_DESCRIPTIONS = {
+    MandateTime.LIMITED: "Lapso de vigencia del Mandato-Limitado",
+    MandateTime.UNLIMITED: "Lapso de vigencia del Mandato-Ilimitado",
+}
 
 
 def _person(parent: etree._Element, person: MandatePerson) -> None:
@@ -66,11 +76,7 @@ def _party(parent: etree._Element, tag: str, party: MandateParty) -> None:
     _sub_element(poa, CBC, "Description", party.role.label)
     agent = _sub_element(poa, CAC, "AgentParty")
     identification = _sub_element(agent, CAC, "PartyIdentification")
-    role = _sub_element(identification, CBC, "ID", party.role.value)
-    role.set(
-        "schemeDataURI",
-        "mandatarioTipo_radian.gc" if mandatee else "mandanteTipo_radian.gc",
-    )
+    _sub_element(identification, CBC, "ID", party.role.value)
     if mandatee:
         for representative in party.representatives:
             _person(agent, representative)
@@ -112,7 +118,16 @@ def _attachment(
     if attachment.issuers:
         issuer = _sub_element(doc, CAC, "IssuerParty")
         for person in attachment.issuers:
-            _person(issuer, person)
+            _build_person(
+                issuer,
+                identification_number=person.identification_number,
+                identification_type=IdentificationType.NIT,
+                verification_digit=person.verification_digit,
+                first_name=person.first_name,
+                family_name=person.family_name,
+                job_title=person.job_title,
+                organization_department=person.office_number,
+            )
     response = _sub_element(line, CAC, "Response")
     _sub_element(
         response,
@@ -144,9 +159,11 @@ def _reference(
         uuid = _sub_element(node, CBC, "UUID", reference.uuid)
         uuid.set("schemeName", "CUFE-SHA384")
         uuid.set("schemeID", environment_code)
-        if primary:
-            _sub_element(node, CBC, "DocumentTypeCode", reference.document_type.value)
     if primary:
+        if reference is not None:
+            _sub_element(
+                node, CBC, "DocumentTypeCode", DocumentType.SALES_INVOICE.value
+            )
         period = _sub_element(node, CAC, "ValidityPeriod")
         if event.validity_period.start_date is not None:
             _sub_element(
@@ -157,7 +174,9 @@ def _reference(
                 period, CBC, "EndDate", event.validity_period.end_date.isoformat()
             )
         _sub_element(period, CBC, "DescriptionCode", event.time_type.value)
-        _sub_element(period, CBC, "Description", event.time_type.label)
+        _sub_element(
+            period, CBC, "Description", _VALIDITY_DESCRIPTIONS[event.time_type]
+        )
 
 
 def build_mandate_application_response(
@@ -257,7 +276,14 @@ def build_mandate_application_response(
                 f"{power.value}-{channel.value}" for power, channel in scope.powers
             ),
         )
-        _sub_element(response, CBC, "Description", scope.description)
+        _sub_element(
+            response,
+            CBC,
+            "Description",
+            "Mandato por documento General"
+            if event.operation_type.value in {"431", "432"}
+            else "Mandato por documento Limitado",
+        )
         for ref in members:
             _reference(block, ref, event=event, environment_code=code, primary=False)
         line = _sub_element(block, CAC, "LineResponse")

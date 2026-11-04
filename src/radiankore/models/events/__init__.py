@@ -1,5 +1,6 @@
 """Immutable emission payloads for RADIAN events."""
 
+from radiankore.catalogs import MandateContractForm as MandateContractForm
 from radiankore.models.events.attachments import (
     RadianPdfAttachment,
 )
@@ -27,14 +28,19 @@ from radiankore.models.events.invoice import (
 )
 from radiankore.models.events.mandate import (
     MandateAttachedDocument,
+    MandateDeclaration,
     MandateDocumentReference,
     MandateEvent,
+    MandateNotary,
     MandateParty,
     MandatePerson,
     MandateScope,
     MandateValidityPeriod,
 )
-from radiankore.models.events.mandate_termination import MandateTerminationEvent
+from radiankore.models.events.mandate_termination import (
+    MandateTerminationDeclaration,
+    MandateTerminationEvent,
+)
 from radiankore.models.events.notes import EventNote, MandateRepresentation
 from radiankore.models.events.payments import InvoicePaymentEvent, PaymentReportEvent
 from radiankore.models.events.prepared import (
@@ -107,12 +113,16 @@ __all__ = [
     "InvoicePaymentEvent",
     "InvoiceResponseEvent",
     "MandateAttachedDocument",
+    "MandateContractForm",
+    "MandateDeclaration",
     "MandateDocumentReference",
     "MandateEvent",
+    "MandateNotary",
     "MandateParty",
     "MandatePerson",
     "MandateRepresentation",
     "MandateScope",
+    "MandateTerminationDeclaration",
     "MandateTerminationEvent",
     "MandateValidityPeriod",
     "NegotiationTerms",

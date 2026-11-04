@@ -23,7 +23,9 @@ from radiankore.models.events import (
     InvoiceResponseEvent,
     MandateAttachedDocument,
     MandateEvent,
+    MandateNotary,
     MandateRepresentation,
+    MandateTerminationEvent,
     ProtestEvent,
     RadianEvent,
     RadianSoftware,
@@ -36,7 +38,11 @@ NS = {"cac": CAC, "cbc": CBC}
 
 def with_notes(event: RadianEvent, notes: tuple[EventNote, ...]) -> RadianEvent:
     """Apply declarations through public immutable composition boundaries."""
-    if isinstance(event, (InvoiceResponseEvent, MandateEvent)):
+    if isinstance(event, MandateEvent):
+        return replace(event, additional_notes=notes)
+    if isinstance(event, MandateTerminationEvent):
+        return replace(event, additional_notes=notes)
+    if isinstance(event, InvoiceResponseEvent):
         return replace(event, notes=notes)
     return replace(event, header=replace(event.header, notes=notes))
 
@@ -64,6 +70,10 @@ def test_additional_note_cannot_replace_a_required_declaration(
     variant: str, radian_event_factory: Callable[[str], RadianEvent]
 ) -> None:
     event = radian_event_factory(variant)
+    if isinstance(event, MandateTerminationEvent):
+        with pytest.raises(TypeError, match="declaration"):
+            replace(event, declaration=None)  # type: ignore[arg-type]
+        return
     for notes in ((), additional_notes("A nonempty unrelated note")):
         with pytest.raises(ValueError, match="declaration"):
             with_notes(event, notes)
@@ -180,28 +190,79 @@ def test_profiles_without_a_specific_required_note_allow_empty_notes(
 def test_optional_ratification_and_mandate_statement_variants(
     radian_event_factory: Callable[[str], RadianEvent], mandate_event: MandateEvent
 ) -> None:
-    term = EventNote(
-        kind=K.MANDATE_TERMINATION, text="Terminación sintética efectiva el 2026-10-22."
-    )
-    ratification = EventNote(
-        kind=K.MANDATE_RATIFICATION,
-        text="Ratifico los actos realizados por el mandatario.",
-    )
-    assert with_notes(radian_event_factory("441"), (term, ratification))
+    event = radian_event_factory("441")
+    assert isinstance(event, MandateTerminationEvent)
+    assert replace(event, declaration=replace(event.declaration, ratify_acts=True))
+    resignation = radian_event_factory("442")
+    assert isinstance(resignation, MandateTerminationEvent)
     with pytest.raises(ValueError, match="revocation"):
-        with_notes(radian_event_factory("442"), (term, ratification))
-    with pytest.raises(ValueError, match="mandate_no_pending_acts"):
-        with_notes(radian_event_factory("442"), (term,))
+        replace(
+            resignation, declaration=replace(resignation.declaration, ratify_acts=True)
+        )
+    with pytest.raises(ValueError, match="no_pending_acts"):
+        replace(
+            resignation,
+            declaration=replace(resignation.declaration, no_pending_acts=None),
+        )
     natural = replace(
         mandate_event.mandatee_party, organization_type=OrganizationType.NATURAL_PERSON
     )
-    declaration = EventNote(
-        kind=K.MANDATE_NATURAL_PERSON,
-        text="Declaración sintética del mandatario persona natural.",
+    assert replace(
+        mandate_event,
+        mandatee_party=natural,
+        declaration=replace(mandate_event.declaration, chamber_of_commerce_city=None),
     )
-    assert replace(mandate_event, mandatee_party=natural, notes=(declaration,))
-    with pytest.raises(ValueError, match="mandate_natural_person"):
+    with pytest.raises(ValueError, match="chamber"):
         replace(mandate_event, mandatee_party=natural)
+
+
+@pytest.mark.parametrize("environment", list(Environment))
+@pytest.mark.parametrize(
+    "organization,kind",
+    [
+        (OrganizationType.LEGAL_PERSON, K.MANDATE_LEGAL_PERSON),
+        (OrganizationType.NATURAL_PERSON, K.MANDATE_NATURAL_PERSON),
+    ],
+)
+def test_mandate_representation_precedes_required_declaration_in_signed_xml(
+    mandate_event: MandateEvent,
+    radian_software: RadianSoftware,
+    digital_certificate: DigitalCertificate,
+    verify_event_signature: Callable[[bytes, DigitalCertificate], None],
+    radian_schema: etree.XMLSchema | None,
+    environment: Environment,
+    organization: OrganizationType,
+    kind: K,
+) -> None:
+    event = replace(
+        mandate_event,
+        mandatee_party=replace(
+            mandate_event.mandatee_party, organization_type=organization
+        ),
+        declaration=replace(
+            mandate_event.declaration,
+            chamber_of_commerce_city="Bogotá"
+            if organization is OrganizationType.LEGAL_PERSON
+            else None,
+        ),
+        additional_notes=(),
+    )
+    with DianClient.from_certificate(
+        digital_certificate, environment=environment
+    ) as client:
+        prepared = client.prepare_radian_event(event=event, software=radian_software)
+    verify_event_signature(prepared.xml_bytes, digital_certificate)
+    root = etree.fromstring(prepared.xml_bytes)
+    if radian_schema is not None:
+        radian_schema.assertValid(root)
+    assert [node.text for node in root.findall("cbc:Note", NS)] == [
+        note.text for note in event.notes
+    ]
+    assert event.notes[1].kind is kind
+    with ZipFile(BytesIO(prepared.zip_bytes)) as archive:
+        assert archive.read(f"ar_{prepared.cude}.xml") == prepared.xml_bytes
+    with pytest.raises(ValueError, match="ADDITIONAL"):
+        replace(event, additional_notes=(event.notes[0],))
 
 
 @pytest.mark.parametrize("variant", ["411", "421", "481"])
@@ -322,11 +383,21 @@ def test_multiple_mandate_people_and_notaries(
         person,
         identification_number="100000099",
         job_title="Suplente",
-        nationality_id="CO",
-        organization_department="Legal",
+        nationality_id="AR",
+        organization_department="Comercial",
     )
-    notary = replace(person, organization_department="5", job_title="Notario")
-    issuers = (notary, replace(notary, identification_number="100000088"))
+    notary = MandateNotary(
+        identification_number="900000001",
+        verification_digit="2",
+        first_name="Synthetic",
+        family_name="Notary",
+        job_title="Notario",
+        office_number="5",
+    )
+    issuers = (
+        notary,
+        replace(notary, identification_number="100000088", verification_digit="0"),
+    )
     contract = replace(
         mandate_event.attached_contract,
         issuers=issuers,
@@ -365,6 +436,23 @@ def test_multiple_mandate_people_and_notaries(
             NS,
         )
     ] == ["100000099", "100000001"]
+    for path, nationalities, departments in (
+        ("cac:SenderParty/cac:Person", ["CO", "AR"], ["Legal", "Comercial"]),
+        (
+            "cac:DocumentResponse/cac:IssuerParty/cac:PowerOfAttorney/"
+            "cac:AgentParty/cac:Person",
+            ["AR", "CO"],
+            ["Comercial", "Legal"],
+        ),
+    ):
+        assert [
+            node.findtext("cbc:NationalityID", namespaces=NS)
+            for node in root.findall(path, NS)
+        ] == nationalities
+        assert [
+            node.findtext("cbc:OrganizationDepartment", namespaces=NS)
+            for node in root.findall(path, NS)
+        ] == departments
     assert (
         len(
             root.findall(

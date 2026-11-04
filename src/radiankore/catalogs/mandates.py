@@ -362,3 +362,10 @@ class MandateReferenceType(StrEnum):
             self.MULTIPLE: "Varias facturas",
             self.ALL: "Todas las facturas",
         }[self]
+
+
+class MandateContractForm(StrEnum):
+    """Explicit form of the agreement used in the declaration."""
+
+    VERBAL = "verbal"
+    WRITTEN = "escrito"

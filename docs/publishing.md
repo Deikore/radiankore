@@ -47,7 +47,7 @@ fuente; CI también ejecuta la suite completa contra el wheel instalado.
 ## Crear la release
 
 Cree una etiqueta `v<VERSION>` que coincida exactamente con `project.version`
-(por ejemplo, `v0.7.3` para `0.7.3`) y publique una release de GitHub desde esa
+(por ejemplo, `v0.7.4` para `0.7.4`) y publique una release de GitHub desde esa
 etiqueta. El workflow:
 
 1. Verifica la correspondencia de etiqueta y versión.
@@ -61,7 +61,26 @@ la página del proyecto en PyPI antes de anunciar la versión. Los números de v
 publicados no se reutilizan; las correcciones se publican como una versión nueva.
 La integración real con DIAN requiere comprobaciones autorizadas aparte de CI.
 
-## Release 0.7.3
+## Release 0.7.4
+
+El manifiesto, el lockfile y el changelog deben identificar `0.7.4`; la etiqueta
+correspondiente es `v0.7.4`. Esta versión incluye cambios incompatibles en las
+entradas de mandato 043 y terminación 044.
+
+Las notas deben destacar la migración a `MandateDeclaration` y
+`MandateTerminationDeclaration`, el emisor derivado de 044, los campos obligatorios
+de `MandatePerson` y los soportes generales con `MandateNotary`. Enlace la
+[migración detallada](operations/mandate/notes.md#migración), los
+[48 casos de constitución](operations/mandate.md) y los
+[ocho casos de terminación](operations/radian-termination.md).
+
+Compruebe los ejemplos publicados, XSD y firmas serializadas con material
+sintético, la cobertura completa y el wheel instalado fuera del árbol fuente.
+El tag debe apuntar al mismo commit que pasó CI. Después de publicar la release,
+revise el workflow y una instalación de `radiankore==0.7.4` desde PyPI en un
+entorno limpio. No modifique etiquetas ni versiones publicadas anteriormente.
+
+## Antecedente: release 0.7.3
 
 El manifiesto, el lockfile y el changelog deben identificar `0.7.3`; la etiqueta
 debe ser `v0.7.3`. Esta versión de mantenimiento conserva la API pública de
@@ -149,7 +168,7 @@ publicados contra transporte simulado y la documentación con advertencias como
 errores. Los scripts de benchmark son herramientas del checkout, no comandos
 instalados con el wheel. No ejecute mediciones remotas en CI.
 
-Un commit local no publica el paquete. La etiqueta `v0.7.3` y la release de
+Un commit local no publica el paquete. La etiqueta `v0.7.4` y la release de
 GitHub se crean después de revisar las validaciones; publicar esa release activa
 el workflow. Mantenga los artefactos de construcción y los registros de pruebas
 fuera del commit.

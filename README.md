@@ -140,6 +140,11 @@ Los resultados utilizan dataclasses inmutables y campos opcionales cuando
 corresponda. `AsyncDianClient` reutiliza sus pools durante su vida y admite
 consultas concurrentes, con límites configurables y sin reintentos automáticos.
 
+La versión 0.7.4 cambia las entradas de mandato 043 y terminación 044:
+exige declaraciones estructuradas, deriva el emisor de la terminación y separa
+notarios de representantes. Consulte la [migración de mandatos](https://radiankore.readthedocs.io/en/latest/operations/mandate/notes.html#migracion)
+antes de actualizar una integración de 0.7.3.
+
 La revisión XML incorpora correcciones de endosos, pagos y mandato. En 045,
 `InvoicePaymentEvent` recibe ahora `payer` en lugar de `payers`; consulte la
 [migración de pagos](https://radiankore.readthedocs.io/en/latest/operations/radian-payments.html#migracion-de-payers-a-payer)

@@ -644,13 +644,34 @@
       },
       {
         "field": "issuers",
-        "type": "tuple[radiankore.models.events.mandate.MandatePerson, ...]",
+        "type": "tuple[radiankore.models.events.mandate.MandateNotary, ...]",
         "xml": "cac:LineReference/cac:DocumentReference/cac:IssuerParty/cac:Person[]"
       },
       {
         "field": "effective_date",
         "type": "datetime.date | None",
         "xml": "cac:LineResponse/cac:Response/cbc:EffectiveDate (contrato)"
+      }
+    ]
+  },
+  {
+    "model": "MandateDeclaration",
+    "context": "Mandatos 043/044: datos estructurados y notas generadas",
+    "fields": [
+      {
+        "field": "declarant",
+        "type": "<class 'radiankore.models.events.mandate.MandatePerson'>",
+        "xml": "selección explícita de Person del mandatario; Note[2]"
+      },
+      {
+        "field": "contract_form",
+        "type": "<enum 'MandateContractForm'>",
+        "xml": "cbc:Note[2]: verbal o escrito"
+      },
+      {
+        "field": "chamber_of_commerce_city",
+        "type": "str | None",
+        "xml": "cbc:Note[2]: Cámara de Comercio"
       }
     ]
   },
@@ -715,9 +736,9 @@
         "xml": "cbc:IssueTime"
       },
       {
-        "field": "notes",
-        "type": "tuple[radiankore.models.events.notes.EventNote, ...]",
-        "xml": "cbc:Note[] / EventNote"
+        "field": "declaration",
+        "type": "<class 'radiankore.models.events.mandate.MandateDeclaration'>",
+        "xml": "cbc:Note: declaraciones generadas"
       },
       {
         "field": "sender_party",
@@ -763,6 +784,47 @@
         "field": "attached_validity_note",
         "type": "radiankore.models.events.mandate.MandateAttachedDocument | None",
         "xml": "cac:LineResponse con LineID=2 (poder general)"
+      },
+      {
+        "field": "additional_notes",
+        "type": "tuple[radiankore.models.events.notes.EventNote, ...]",
+        "xml": "cbc:Note adicionales después de declaraciones"
+      }
+    ]
+  },
+  {
+    "model": "MandateNotary",
+    "context": "Mandatos 043/044: datos estructurados y notas generadas",
+    "fields": [
+      {
+        "field": "identification_number",
+        "type": "<class 'str'>",
+        "xml": "cbc:ID (NIT, schemeName=31)"
+      },
+      {
+        "field": "verification_digit",
+        "type": "<class 'str'>",
+        "xml": "cbc:ID/@schemeID"
+      },
+      {
+        "field": "first_name",
+        "type": "<class 'str'>",
+        "xml": "cbc:FirstName"
+      },
+      {
+        "field": "family_name",
+        "type": "<class 'str'>",
+        "xml": "cbc:FamilyName"
+      },
+      {
+        "field": "job_title",
+        "type": "<class 'str'>",
+        "xml": "cbc:JobTitle"
+      },
+      {
+        "field": "office_number",
+        "type": "<class 'str'>",
+        "xml": "cbc:OrganizationDepartment (número de notaría)"
       }
     ]
   },
@@ -837,30 +899,30 @@
         "xml": "cbc:FamilyName"
       },
       {
-        "field": "verification_digit",
-        "type": "str | None",
-        "xml": "cbc:ID/@schemeID"
-      },
-      {
-        "field": "job_title",
-        "type": "str | None",
-        "xml": "cbc:JobTitle"
-      },
-      {
         "field": "nationality_id",
-        "type": "str | None",
+        "type": "<class 'str'>",
         "xml": "cbc:NationalityID"
       },
       {
         "field": "organization_department",
-        "type": "str | None",
+        "type": "<class 'str'>",
         "xml": "cbc:OrganizationDepartment"
+      },
+      {
+        "field": "job_title",
+        "type": "<class 'str'>",
+        "xml": "cbc:JobTitle"
+      },
+      {
+        "field": "verification_digit",
+        "type": "str | None",
+        "xml": "cbc:ID/@schemeID"
       }
     ]
   },
   {
     "model": "MandateRepresentation",
-    "context": "AAD11 de representación, salvo 043",
+    "context": "AAD11: representación explícita; notas generadas en 043/044",
     "fields": [
       {
         "field": "mandatee_name",
@@ -886,6 +948,32 @@
     ]
   },
   {
+    "model": "MandateTerminationDeclaration",
+    "context": "Mandatos 043/044: datos estructurados y notas generadas",
+    "fields": [
+      {
+        "field": "effective_date",
+        "type": "<class 'datetime.date'>",
+        "xml": "cbc:Note: fecha efectiva de terminación"
+      },
+      {
+        "field": "ratify_acts",
+        "type": "<class 'bool'>",
+        "xml": "cbc:Note[2]: ratificación en 441"
+      },
+      {
+        "field": "no_pending_acts",
+        "type": "bool | None",
+        "xml": "cbc:Note[2]: constancia en 442"
+      },
+      {
+        "field": "representation",
+        "type": "radiankore.models.events.notes.MandateRepresentation | None",
+        "xml": "cbc:Note[1]: representación explícita"
+      }
+    ]
+  },
+  {
     "model": "MandateTerminationEvent",
     "context": "Perfil de su familia; véase la tabla de eventos",
     "fields": [
@@ -900,19 +988,29 @@
         "xml": "cbc:CustomizationID"
       },
       {
-        "field": "sender_party",
-        "type": "<class 'radiankore.models.events.radian_common.RadianParty'>",
-        "xml": "cac:SenderParty"
+        "field": "mandator_party",
+        "type": "<class 'radiankore.models.events.mandate.MandateParty'>",
+        "xml": "SenderParty en 441/443 y notas de terminación"
       },
       {
-        "field": "representatives",
-        "type": "tuple[radiankore.models.events.radian_common.RadianPerson, ...]",
-        "xml": "cac:Person[]"
+        "field": "mandatee_party",
+        "type": "<class 'radiankore.models.events.mandate.MandateParty'>",
+        "xml": "SenderParty en 442 y notas de terminación"
       },
       {
         "field": "reference",
         "type": "<class 'radiankore.models.events.radian_common.RadianEventReference'>",
         "xml": "cac:DocumentReference (componente tipado)"
+      },
+      {
+        "field": "declaration",
+        "type": "<class 'radiankore.models.events.mandate_termination.MandateTerminationDeclaration'>",
+        "xml": "cbc:Note: declaraciones generadas"
+      },
+      {
+        "field": "additional_notes",
+        "type": "tuple[radiankore.models.events.notes.EventNote, ...]",
+        "xml": "cbc:Note adicionales después de declaraciones"
       }
     ]
   },

@@ -50,15 +50,15 @@ def test_event_code_is_derived_and_inputs_are_frozen(
 @pytest.mark.parametrize(
     "variant,change,error",
     [
-        ("441", {"representatives": ()}, ValueError),
+        ("441", {"declaration": None}, TypeError),
         ("441", {"header": None}, TypeError),
         ("035", {"beneficiaries": (None,)}, TypeError),
         ("451", {"additional_sender_parties": []}, TypeError),
         ("451", {"currency": "COP"}, TypeError),
         ("371", {"endorsers": (None,)}, TypeError),
-        ("441", {"representatives": (None,)}, TypeError),
+        ("441", {"mandatee_party": None}, TypeError),
         ("441", {"reference": None}, TypeError),
-        ("441", {"sender_party": None}, TypeError),
+        ("441", {"mandator_party": None}, TypeError),
         ("361", {"payment_state": None}, TypeError),
         ("362", {"direct_buyer": None}, TypeError),
         ("451", {"payer": ()}, TypeError),
@@ -107,8 +107,12 @@ def test_required_declarations_and_maturity(
     for variant in ("441", "442", "443", "402", "372", "038", "039"):
         event = radian_event_factory(variant)
         assert not isinstance(event, (InvoiceResponseEvent, MandateEvent))
-        with pytest.raises(ValueError, match="declaration"):
-            replace(event, header=replace(event.header, notes=()))
+        if isinstance(event, MandateTerminationEvent):
+            with pytest.raises(TypeError, match="declaration"):
+                replace(event, declaration=None)  # type: ignore[arg-type]
+        else:
+            with pytest.raises(ValueError, match="declaration"):
+                replace(event, header=replace(event.header, notes=()))
     for variant in ("361", "451", "046", "371", "047"):
         event = radian_event_factory(variant)
         assert not isinstance(event, (InvoiceResponseEvent, MandateEvent))
@@ -292,8 +296,8 @@ def test_radian_sender_requires_typed_named_party(
     error: type[Exception],
     message: str,
 ) -> None:
-    event = radian_event_factory("441")
-    assert isinstance(event, MandateTerminationEvent)
+    event = radian_event_factory("361")
+    assert isinstance(event, RadianRegistrationEvent)
     with pytest.raises(error, match=message):
         replace(event, sender_party=replace(event.sender_party, **{field: value}))  # type: ignore[arg-type]
 
@@ -323,8 +327,8 @@ def test_event_generator_requires_nit(
 ) -> None:
     from radiankore.catalogs import IdentificationType
 
-    mandate = radian_event_factory("441")
-    assert isinstance(mandate, MandateTerminationEvent)
+    mandate = radian_event_factory("361")
+    assert isinstance(mandate, RadianRegistrationEvent)
     with pytest.raises(ValueError, match=r"generator.*NIT"):
         replace(
             mandate,

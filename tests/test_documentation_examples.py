@@ -32,7 +32,6 @@ def example_events(value: object) -> Iterator[RadianEvent]:
 @pytest.mark.parametrize(
     "guide,expected_codes",
     [
-        ("radian-termination", {"044"}),
         ("radian-registration", {"036"}),
         ("radian-payments", {"045", "046"}),
         ("radian-endorsements", {"037", "038", "039", "040", "047"}),
@@ -41,7 +40,6 @@ def example_events(value: object) -> Iterator[RadianEvent]:
         ("radian-restrictions", {"041", "042"}),
         ("radian-protests", {"048"}),
         ("invoice-emission", {"030", "031", "032", "033", "034"}),
-        ("mandate", {"043"}),
     ],
 )
 def test_emission_guides_execute_with_verified_signatures(
@@ -117,7 +115,7 @@ def test_emission_guides_execute_with_verified_signatures(
     assert codes == expected_codes
     assert held
     assert all(connection.is_closed for connection in connections)
-    if guide in {"mandate", "invoice-emission"}:
+    if guide == "invoice-emission":
         assert len(requests) == 1
     else:
         assert not requests

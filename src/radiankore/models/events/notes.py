@@ -105,9 +105,7 @@ def validate_event_notes(
     note_inputs(
         notes, maximum=10_000 if code in {"030", "031", "032", "033", "034"} else 5000
     )
-    allowed = {_K.ADDITIONAL, *_SPECIFIC.get(code, ())}
-    if code != "043":
-        allowed.add(_K.MANDATE_REPRESENTATION)
+    allowed = {_K.ADDITIONAL, _K.MANDATE_REPRESENTATION, *_SPECIFIC.get(code, ())}
     if code in {"037", "038", "039", "040", "047"}:
         allowed.add(_K.ACTING_CAPACITY)
     kinds = [note.kind for note in notes]

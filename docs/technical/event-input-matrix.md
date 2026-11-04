@@ -291,7 +291,7 @@ Perfil de su familia; véase la tabla de eventos
 | --- | --- | --- |
 | `document_id` | `<class 'str'>` | cac:LineReference/cac:DocumentReference/cbc:ID |
 | `embedded_bytes` | `<class 'bytes'>` | cbc:EmbeddedDocumentBinaryObject/text() codificado Base64 |
-| `issuers` | `tuple[radiankore.models.events.mandate.MandatePerson, ...]` | cac:LineReference/cac:DocumentReference/cac:IssuerParty/cac:Person[] |
+| `issuers` | `tuple[radiankore.models.events.mandate.MandateNotary, ...]` | cac:LineReference/cac:DocumentReference/cac:IssuerParty/cac:Person[] |
 | `effective_date` | `datetime.date \| None` | cac:LineResponse/cac:Response/cbc:EffectiveDate (contrato) |
 
 ### MandateDocumentReference
@@ -317,7 +317,7 @@ Perfil de su familia; véase la tabla de eventos
 | `event_number` | `<class 'str'>` | cbc:ID |
 | `issue_date` | `<class 'datetime.date'>` | cbc:IssueDate |
 | `issue_time` | `<class 'datetime.time'>` | cbc:IssueTime |
-| `notes` | `tuple[radiankore.models.events.notes.EventNote, ...]` | cbc:Note[] / EventNote |
+| `declaration` | `<class 'radiankore.models.events.mandate.MandateDeclaration'>` | cbc:Note: declaraciones generadas |
 | `sender_party` | `<class 'radiankore.models.events.mandate.MandateParty'>` | cac:SenderParty |
 | `mandatee_party` | `<class 'radiankore.models.events.mandate.MandateParty'>` | cac:DocumentResponse/cac:IssuerParty/cac:PowerOfAttorney |
 | `effective_date` | `<class 'datetime.date'>` | cac:Response/cbc:EffectiveDate (contexto del componente) |
@@ -327,6 +327,7 @@ Perfil de su familia; véase la tabla de eventos
 | `attached_contract` | `<class 'radiankore.models.events.mandate.MandateAttachedDocument'>` | cac:LineResponse con LineID=1 |
 | `acceptance` | `<class 'bool'>` | cac:LineResponse/cac:Response/cbc:ResponseCode=ACEPTA |
 | `attached_validity_note` | `radiankore.models.events.mandate.MandateAttachedDocument \| None` | cac:LineResponse con LineID=2 (poder general) |
+| `additional_notes` | `tuple[radiankore.models.events.notes.EventNote, ...]` | cbc:Note adicionales después de declaraciones |
 
 ### MandateParty
 
@@ -334,7 +335,7 @@ Perfil de su familia; véase la tabla de eventos
 
 | Campo | Tipo | Correspondencia / condición |
 | --- | --- | --- |
-| `name` | `<class 'str'>` | cbc:RegistrationName del mandante; la declaración del mandatario se aporta en notes |
+| `name` | `<class 'str'>` | cbc:RegistrationName del mandante; el nombre del mandatario interviene en la declaración generada |
 | `tax_number` | `<class 'str'>` | cac:PowerOfAttorney/cbc:ID y CompanyID del mandante |
 | `identification_type` | `<enum 'IdentificationType'>` | ID/CompanyID/@schemeName |
 | `role` | `radiankore.catalogs.mandates.MandatorType \| radiankore.catalogs.mandates.MandateeType` | cac:PowerOfAttorney/cac:AgentParty/cac:PartyIdentification/cbc:ID y Description derivada |
@@ -353,14 +354,15 @@ Person del mandante, agente o notario / AAF22–30, AAH69–77, AAH95–ABH27
 | `identification_type` | `<enum 'IdentificationType'>` | cbc:ID/@schemeName |
 | `first_name` | `<class 'str'>` | cbc:FirstName |
 | `family_name` | `<class 'str'>` | cbc:FamilyName |
+| `nationality_id` | `<class 'str'>` | cbc:NationalityID |
+| `organization_department` | `<class 'str'>` | cbc:OrganizationDepartment |
+| `job_title` | `<class 'str'>` | cbc:JobTitle |
 | `verification_digit` | `str \| None` | cbc:ID/@schemeID |
-| `job_title` | `str \| None` | cbc:JobTitle |
-| `nationality_id` | `str \| None` | cbc:NationalityID |
-| `organization_department` | `str \| None` | cbc:OrganizationDepartment |
 
 ### MandateRepresentation
 
-AAD11 de representación, salvo 043
+AAD11 de representación; en 043 se genera siempre antes de su declaración particular;
+en 044 se aporta opcionalmente en `declaration.representation`.
 
 | Campo | Tipo | Correspondencia / condición |
 | --- | --- | --- |
@@ -383,9 +385,11 @@ Perfil de su familia; véase la tabla de eventos
 | --- | --- | --- |
 | `header` | `<class 'radiankore.models.events.radian_common.RadianEventHeader'>` | cabecera ApplicationResponse / RadianEventHeader |
 | `operation_type` | `<enum 'RadianOperationType'>` | cbc:CustomizationID |
-| `sender_party` | `<class 'radiankore.models.events.radian_common.RadianParty'>` | cac:SenderParty |
-| `representatives` | `tuple[radiankore.models.events.radian_common.RadianPerson, ...]` | cac:Person[] |
+| `mandator_party` | `<class 'radiankore.models.events.mandate.MandateParty'>` | SenderParty en 441/443 y notas de terminación |
+| `mandatee_party` | `<class 'radiankore.models.events.mandate.MandateParty'>` | SenderParty en 442 y notas de terminación |
 | `reference` | `<class 'radiankore.models.events.radian_common.RadianEventReference'>` | cac:DocumentReference (componente tipado) |
+| `declaration` | `<class 'radiankore.models.events.mandate_termination.MandateTerminationDeclaration'>` | cbc:Note: declaraciones generadas |
+| `additional_notes` | `tuple[radiankore.models.events.notes.EventNote, ...]` | cbc:Note adicionales después de declaraciones |
 
 ### MandateValidityPeriod
 
@@ -622,8 +626,8 @@ aportados por la aplicación. Un literal obligatorio no se expone como texto lib
 | ReceiverParty de DIAN en los perfiles correspondientes | Identidad y nombre literales; no modificables por la aplicación | Pruebas por evento y ambiente |
 | ResponseCode, Description y atributos de motivo/forma/restricción | Código de evento, descripción obligatoria y catálogos separados | Oráculo independiente por evento |
 | DocumentReference/DocumentTypeCode, UUID/@schemeName | 01 para factura RADIAN, 96 para evento; FE admite 01–04; CUFE/CUDE diferenciados | Pruebas de referencias incorrectas y signos serializados |
-| Mandato: referencias ALL | ID 1; sin UUID ni DocumentTypeCode; entradas de hash conservan sus constantes | Modalidades ONE/MULTIPLE/ALL y CUDE oficial |
-| PowerOfAttorney/Description, AgentParty/PartyIdentification/ID/@schemeDataURI | Rol explícito y descripción del catálogo; URI de lista de mandante/mandatario | 043, tablas 14.2.5/8 y pruebas de variantes |
+| Mandato: referencias ALL | ID 1; sin UUID ni DocumentTypeCode (tabla 14.2.6); entradas de hash conservan sus constantes | Modalidades ONE/MULTIPLE/ALL y CUDE oficial |
+| PowerOfAttorney/Description, AgentParty/PartyIdentification/ID | Rol explícito y descripción del catálogo; se omite schemeDataURI en los identificadores del rol del mandante y del mandatario | 043, tablas 14.2.5/8 y pruebas de variantes |
 | Mandato: ValidityPeriod/DescriptionCode/Description | Tipo de tiempo derivado de operación y fechas | 431–434; fechas ausentes/presentes |
 | Mandato: bloques de facultades ResponseCode/Description y referencias | `MandateScope.powers`, agrupación estable por alcance, sin deduplicar referencias | Alcances individuales/comunes y XSD |
 | Mandato: aceptación y LineID | ACEPTA y descripción obligatoria; LineID 1; aceptación explícita True | AAL09–14; las alternativas rechazadas no se generan |
@@ -680,3 +684,37 @@ los ejemplos y XSD laxos no se interpretan como autorización para campos distin
 Los originales no se modifican. No se consulta DIAN durante tests ni preparación.
 Habilitación de participantes, confianza/vigencia de certificados, antecedentes,
 facultades, plazos y verdad de las declaraciones requieren evidencia externa.
+
+### MandateDeclaration
+
+Mandatos 043/044: datos estructurados y notas generadas
+
+| Campo | Tipo | Correspondencia / condición |
+| --- | --- | --- |
+| `declarant` | `<class 'radiankore.models.events.mandate.MandatePerson'>` | selección explícita de Person del mandatario; Note[2] |
+| `contract_form` | `<enum 'MandateContractForm'>` | cbc:Note[2]: verbal o escrito |
+| `chamber_of_commerce_city` | `str \| None` | cbc:Note[2]: Cámara de Comercio |
+
+### MandateNotary
+
+Mandatos 043/044: datos estructurados y notas generadas
+
+| Campo | Tipo | Correspondencia / condición |
+| --- | --- | --- |
+| `identification_number` | `<class 'str'>` | cbc:ID (NIT, schemeName=31) |
+| `verification_digit` | `<class 'str'>` | cbc:ID/@schemeID |
+| `first_name` | `<class 'str'>` | cbc:FirstName |
+| `family_name` | `<class 'str'>` | cbc:FamilyName |
+| `job_title` | `<class 'str'>` | cbc:JobTitle |
+| `office_number` | `<class 'str'>` | cbc:OrganizationDepartment (número de notaría) |
+
+### MandateTerminationDeclaration
+
+Mandatos 043/044: datos estructurados y notas generadas
+
+| Campo | Tipo | Correspondencia / condición |
+| --- | --- | --- |
+| `effective_date` | `<class 'datetime.date'>` | cbc:Note: fecha efectiva de terminación |
+| `ratify_acts` | `<class 'bool'>` | cbc:Note[2]: ratificación en 441 |
+| `no_pending_acts` | `bool \| None` | cbc:Note[2]: constancia en 442 |
+| `representation` | `radiankore.models.events.notes.MandateRepresentation \| None` | cbc:Note[1]: representación explícita |

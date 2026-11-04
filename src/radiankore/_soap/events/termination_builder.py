@@ -1,5 +1,7 @@
 """RADIAN 044 and 040 serializers for references to existing events."""
 
+from dataclasses import replace
+
 from lxml import etree
 
 from radiankore._soap.events.common import _person
@@ -14,6 +16,7 @@ from radiankore.environment import Environment
 from radiankore.models.events import (
     EndorsementCancellationEvent,
     MandateTerminationEvent,
+    RadianParty,
     RadianSoftware,
 )
 
@@ -31,7 +34,9 @@ def build_termination(
         else event.receiver_party
     )
     root = event_root(
-        event.header,
+        replace(event.header, notes=event.notes)
+        if isinstance(event, MandateTerminationEvent)
+        else event.header,
         code=event.code,
         operation_type=event.operation_type.value,
         reference=event.reference,
@@ -40,10 +45,23 @@ def build_termination(
         software=software,
         environment=environment,
     )
+    party = event.sender_party
+    sender_party = (
+        RadianParty(
+            name=party.name,
+            tax_number=party.tax_number,
+            identification_type=party.identification_type,
+            verification_digit=party.verification_digit,
+            organization_type=party.organization_type,
+            tax_scheme=party.tax_scheme,
+        )
+        if isinstance(event, MandateTerminationEvent)
+        else event.sender_party
+    )
     sender = named_xml_party(
         root,
         "SenderParty",
-        event.sender_party,
+        sender_party,
         additional_parties=event.additional_sender_parties
         if isinstance(event, EndorsementCancellationEvent)
         else (),

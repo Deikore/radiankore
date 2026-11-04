@@ -147,6 +147,13 @@ participantes, facultades, vigencia y adjuntos. Se importa desde
 La guía documenta sus campos y variantes. `RadianSoftware.pin` y los bytes de
 los artefactos preparados se excluyen de `repr`.
 
+`MandatePerson` exige `nationality_id` y `organization_department` como cadenas
+no vacías, en los representantes. `job_title` también es obligatorio. Los notarios usan
+`MandateNotary`, con NIT, DV y `office_number`, sin nacionalidad. No tienen valores
+predeterminados ni admiten `None`. Sus longitudes máximas son 100 y 200
+caracteres, respectivamente. Al migrar, aporta ambos argumentos explícitamente;
+el SDK no deduce la nacionalidad ni el área a partir de otros campos.
+
 `MandateParty` añade `organization_type=OrganizationType.LEGAL_PERSON` y
 `tax_scheme=PartyTaxScheme.VAT` o `RadianTaxDetails` para hijos opcionales. Permiten declarar la condición del mandante
 sin inferirla de su identificación; los valores predeterminados conservan el

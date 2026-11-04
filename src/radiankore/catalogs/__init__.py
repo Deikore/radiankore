@@ -7,6 +7,7 @@ from radiankore.catalogs.identification import IdentificationType
 from radiankore.catalogs.invoice_events import InvoiceClaimReason
 from radiankore.catalogs.mandates import (
     MandateChannel,
+    MandateContractForm,
     MandateeType,
     MandateNature,
     MandateOperationType,
@@ -40,6 +41,7 @@ __all__ = [
     "IdentificationType",
     "InvoiceClaimReason",
     "MandateChannel",
+    "MandateContractForm",
     "MandateNature",
     "MandateOperationType",
     "MandatePower",

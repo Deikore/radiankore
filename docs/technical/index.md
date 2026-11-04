@@ -76,6 +76,7 @@ sustituye la comprobación de facultades o antecedentes de negocio.
 ../technical-references
 ../event-reference-map
 xml-conformance
+mandate-conformance
 event-input-matrix
 ../guides/evidence
 ```

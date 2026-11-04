@@ -9,11 +9,12 @@ from lxml import etree
 
 from radiankore import DianClient, DigitalCertificate, Environment
 from radiankore._soap.namespaces import CAC, CBC
-from radiankore.catalogs import OrganizationType, PartyTaxScheme
+from radiankore.catalogs import EventNoteKind, OrganizationType, PartyTaxScheme
 from radiankore.models.events import (
     EconomicRightsPaymentEvent,
     EconomicRightsTransferEvent,
     EndorsementEvent,
+    EventNote,
     InvoicePaymentEvent,
     MandateEvent,
     RadianEvent,
@@ -124,16 +125,22 @@ def test_mandate_note_reference_and_person_bounds(mandate_event: MandateEvent) -
     assert (
         len(
             replace(
-                mandate_event, notes=(replace(mandate_event.notes[0], text="X" * 5000),)
+                mandate_event,
+                additional_notes=(
+                    EventNote(kind=EventNoteKind.ADDITIONAL, text="X" * 5000),
+                ),
             )
-            .notes[0]
+            .additional_notes[0]
             .text
         )
         == 5000
     )
     with pytest.raises(ValueError, match="5000"):
         replace(
-            mandate_event, notes=(replace(mandate_event.notes[0], text="X" * 5001),)
+            mandate_event,
+            additional_notes=(
+                EventNote(kind=EventNoteKind.ADDITIONAL, text="X" * 5001),
+            ),
         )
     ref = mandate_event.document_references[0]
     assert len(replace(ref, document_number="X" * 50).document_number) == 50
@@ -165,6 +172,7 @@ def test_mandate_note_reference_and_person_bounds(mandate_event: MandateEvent) -
         mandatee_party=replace(
             mandate_event.mandatee_party, representatives=(long_person,)
         ),
+        declaration=replace(mandate_event.declaration, declarant=long_person),
     )
 
 

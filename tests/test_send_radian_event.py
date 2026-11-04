@@ -200,10 +200,7 @@ def test_size_limit_and_no_fe_same_day_restriction(
     client.prepare_radian_event(event=event, software=radian_software)
     oversized = replace(
         event,
-        header=replace(
-            event.header,
-            notes=event.header.notes + additional_notes(*("x" * 5000,) * 101),
-        ),
+        additional_notes=additional_notes(*("x" * 5000,) * 101),
     )
     with pytest.raises(ValueError, match="500,000"):
         client.prepare_radian_event(event=oversized, software=radian_software)

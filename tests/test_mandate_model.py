@@ -1,6 +1,6 @@
 """Input constraints for mandate preparation, using synthetic identities."""
 
-from dataclasses import FrozenInstanceError, replace
+from dataclasses import FrozenInstanceError, asdict, replace
 from datetime import date, datetime
 
 import pytest
@@ -19,10 +19,30 @@ from radiankore.models.events import (
     MandateAttachedDocument,
     MandateDocumentReference,
     MandateEvent,
+    MandatePerson,
     MandateScope,
     MandateValidityPeriod,
     RadianSoftware,
 )
+
+
+@pytest.mark.parametrize("field", ["nationality_id", "organization_department"])
+def test_mandate_person_requires_nationality_and_department(
+    mandate_event: MandateEvent, field: str
+) -> None:
+    person = mandate_event.sender_party.representatives[0]
+    inputs = asdict(person)
+    inputs.pop(field)
+    with pytest.raises(TypeError, match=field):
+        MandatePerson(**inputs)
+    for invalid in (None, 123):
+        with pytest.raises(TypeError, match=field):
+            replace(person, **{field: invalid})  # type: ignore[arg-type]
+    for invalid_text in ("", " ", "\t\n"):
+        with pytest.raises(ValueError, match=field):
+            replace(person, **{field: invalid_text})  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="job_title"):
+        replace(person, job_title=None)  # type: ignore[arg-type]
 
 
 @pytest.mark.parametrize(
@@ -30,7 +50,7 @@ from radiankore.models.events import (
     [
         {"acceptance": False},
         {"acceptance": 1},
-        {"notes": ()},
+        {"declaration": None},
         {"event_number": ""},
         {"document_references": ()},
         {"reference_type": MandateReferenceType.ALL},

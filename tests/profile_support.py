@@ -196,6 +196,35 @@ def assert_profile(root: etree._Element, code: str, environment: Environment) ->
         )
         kind = ref.findtext(f"{{{CBC}}}DocumentTypeCode")
         assert kind in ({"96"} if previous_event else {"01", "02", "03", "04"})
+    if code == "043":
+        operation = root.findtext(f"{{{CBC}}}CustomizationID")
+        limited = operation in {"431", "433"}
+        mode = response.find(f"{{{CBC}}}ResponseCode")
+        assert mode is not None
+        for ref in references:
+            if mode.get("listID") == "3":
+                assert ref.findtext(f"{{{CBC}}}ID") == "1"
+                assert ref.find(f"{{{CBC}}}UUID") is None
+                assert ref.find(f"{{{CBC}}}DocumentTypeCode") is None
+            period = ref.find(f"{{{CAC}}}ValidityPeriod")
+            assert period is not None
+            assert period.findtext(f"{{{CBC}}}Description") == (
+                "Lapso de vigencia del Mandato-Limitado"
+                if limited
+                else "Lapso de vigencia del Mandato-Ilimitado"
+            )
+        for block in root.findall(f"{{{CAC}}}DocumentResponse")[1:]:
+            assert block.findtext(f"{{{CAC}}}Response/{{{CBC}}}Description") == (
+                "Mandato por documento General"
+                if operation in {"431", "432"}
+                else "Mandato por documento Limitado"
+            )
+        notes = root.findall(f"{{{CBC}}}Note")
+        assert len(notes) >= 2
+        assert (
+            notes[0].text and " OBRANDO EN NOMBRE Y REPRESENTACION DE " in notes[0].text
+        )
+        assert notes[1].text and "expresamente manifiesto" in notes[1].text
     if code in {"045", "051"}:
         assert len(root.findall(f"{{{CAC}}}SenderParty/{{{CAC}}}PartyLegalEntity")) == 1
         assert response.find(f"{{{CBC}}}EffectiveDate") is not None

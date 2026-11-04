@@ -1,5 +1,29 @@
 # Historial de cambios
 
+## 0.7.4 — 2026-11-04
+
+- **Cambio incompatible:** 043 exige `declaration=MandateDeclaration(...)`;
+  `event.notes` pasa a ser de solo lectura y genera representación y declaración
+  en ese orden. El declarante debe pertenecer a los representantes del mandatario;
+  la ciudad de Cámara de Comercio es obligatoria solo para mandatario jurídico.
+- **Cambio incompatible:** 044 exige `MandateTerminationDeclaration`, ambas partes
+  originales y `header.notes=()`. Deriva emisor y representantes según la operación:
+  mandante en 441/443 y mandatario en 442. Solo 441 admite ratificación y 442 exige
+  `no_pending_acts=True`; las observaciones van en `additional_notes` en 043/044.
+- **Cambio incompatible:** `MandatePerson` exige cargo, nacionalidad y departamento
+  como cadenas no vacías. Los soportes generales usan `MandateNotary`, con NIT/DV
+  y número de notaría, en lugar de representantes empresariales. SPECIAL omite
+  notarios, fecha de escritura y nota de vigencia; GENERAL exige esos datos.
+- Valida el DV de NIT de partes, representantes y notarios de mandato sin
+  corregirlo, y limita a 600 caracteres los códigos de facultades y canales.
+- Corrige el XML 043: referencias ALL sin UUID ni DocumentTypeCode, conservando
+  `1` y `01` en el CUDE; literales de vigencia y descripción de facultades conforme
+  al perfil; omite `schemeDataURI` en los identificadores de rol de las partes.
+- Amplía las guías con base común, participantes, soportes, notas, migración,
+  48 casos de constitución, ocho de terminación y recetas complementarias.
+  Las pruebas ejecutan el código publicado con certificados sintéticos, XSD,
+  firmas serializadas y MockTransport, sin contactar DIAN.
+
 ## 0.7.3 — 2026-11-04
 
 - Alcanza el 100% de cobertura de líneas y ramas en Python 3.13–3.15, sin

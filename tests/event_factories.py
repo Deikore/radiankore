@@ -47,7 +47,6 @@ def radian_event_factory() -> Callable[[str], RadianEvent]:
         RadianParticipation,
         RadianParty,
         RadianPdfAttachment,
-        RadianPerson,
         RadianRegistrationEvent,
         RegistrationPaymentState,
         RestrictionDocumentReference,
@@ -74,12 +73,6 @@ def radian_event_factory() -> Callable[[str], RadianEvent]:
     )
     reference = RadianInvoiceReference(
         document_number="FE-TEST-1", uuid="a" * 96, due_date=date(2026, 12, 31)
-    )
-    person = RadianPerson(
-        identification_number="100000004",
-        identification_type=IdentificationType.CITIZENSHIP_CARD,
-        first_name="Synthetic",
-        family_name="Representative",
     )
     endorsers = (
         RadianParticipation(party=party, amount=Decimal("60000.00")),
@@ -244,13 +237,44 @@ def radian_event_factory() -> Callable[[str], RadianEvent]:
         )
 
     def _mandate_termination(op: RadianOperationType) -> RadianEvent:
+        from radiankore.catalogs import MandateeType, MandatorType
+        from radiankore.models.events import (
+            MandateParty,
+            MandatePerson,
+            MandateTerminationDeclaration,
+        )
+
+        rep = MandatePerson(
+            identification_number="100000004",
+            identification_type=IdentificationType.CITIZENSHIP_CARD,
+            first_name="Synthetic",
+            family_name="Representative",
+            nationality_id="CO",
+            organization_department="Legal",
+            job_title="Representante Legal",
+        )
+        mandator = MandateParty(
+            name="Synthetic Mandator",
+            tax_number="900000001",
+            verification_digit="2",
+            identification_type=IdentificationType.NIT,
+            role=MandatorType.INVOICE_ISSUER,
+            representatives=(rep,),
+        )
+        mandatee = replace(
+            mandator,
+            role=MandateeType.ELECTRONIC_NEGOTIATION_SYSTEM,
+            name="Synthetic Mandatee",
+        )
         return MandateTerminationEvent(
-            header=replace(
-                header, notes=synthetic_notes(op.event_type.value, op.value)
-            ),
+            header=replace(header, notes=()),
             operation_type=op,
-            sender_party=party,
-            representatives=(person,),
+            mandator_party=mandator,
+            mandatee_party=mandatee,
+            declaration=MandateTerminationDeclaration(
+                effective_date=date(2026, 10, 22),
+                no_pending_acts=True if op.value == "442" else None,
+            ),
             reference=RadianEventReference(
                 document_number="MANDATE-TEST-1", uuid="b" * 96
             ),

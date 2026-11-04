@@ -152,6 +152,7 @@ reales, conforme a las convenciones y las ejemplificaciones.
 | AAI07b y las fórmulas de tasa/factor difieren de los importes de los ejemplos | Conservar precio, tasa/factor y medio explícitos; no inventar una fórmula de cálculo | Aceptación financiera pendiente de evidencia DIAN |
 | Alcances múltiples de mandato y tamaños incompatibles con literales/tablas | Conservar facultades y sus descripciones completas, orden y repeticiones; no truncar textos derivados para satisfacer una celda contradictoria | Interpretación explícita; sin garantía de aceptación remota |
 | Metadatos PDF de mandato frente a tablas estructurales | Usar literales de rechazo de §9.2.12; 041/042/048 conservan sus propios literales | Comprobado en tests de bytes y atributos |
+| Ejemplos de mandato ALL omiten DocumentTypeCode | Aplicar la regla específica 14.2.6 para listID=3: omitir DocumentTypeCode y UUID, conservar ID 1 y constante 01 para el CUDE | Comprobado con XSD y firma serializada; muestras originales intactas |
 | Perfil FE frente a muestras RADIAN antiguas para 030–034 | Prevalecen AAD03, AAH04 y tablas FE 1.9; motivos de tabla 13.3.12 | Comprobado; muestras intactas |
 | Vigencia, facultades, antecedentes, plazos hábiles, existencia de CUFE/CUDE y veracidad de declaraciones | Datos y comprobaciones del consumidor y validación DIAN; no se consultan ni se certifican localmente | Dependencia externa |
 

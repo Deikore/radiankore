@@ -23,11 +23,13 @@ from radiankore.catalogs import (
     MandateOperationType,
     MandatePower,
     MandateReferenceType,
+    OrganizationType,
 )
 from radiankore.models.events import (
     MandateAttachedDocument,
     MandateDocumentReference,
     MandateEvent,
+    MandateNotary,
     MandateScope,
     MandateValidityPeriod,
     RadianSoftware,
@@ -63,6 +65,7 @@ def verify(xml: bytes, certificate: DigitalCertificate) -> None:
     context.verify(signature)
 
 
+@pytest.mark.parametrize("organization", list(OrganizationType))
 @pytest.mark.parametrize("operation", list(MandateOperationType))
 @pytest.mark.parametrize("nature", list(MandateNature))
 @pytest.mark.parametrize("mode", list(MandateReferenceType))
@@ -72,6 +75,7 @@ def test_all_mandate_variants(
     radian_software: RadianSoftware,
     digital_certificate: DigitalCertificate,
     ubl_schema: etree.XMLSchema,
+    organization: OrganizationType,
     operation: MandateOperationType,
     nature: MandateNature,
     mode: MandateReferenceType,
@@ -104,10 +108,13 @@ def test_all_mandate_variants(
     contract = mandate_event.attached_contract
     note = None
     if nature is MandateNature.GENERAL:
-        notary = replace(
-            mandate_event.sender_party.representatives[0],
+        notary = MandateNotary(
+            identification_number="900000001",
+            verification_digit="2",
+            first_name="Synthetic",
+            family_name="Notary",
             job_title="Notario",
-            organization_department="1",
+            office_number="1",
         )
         contract = replace(
             contract, issuers=(notary,), effective_date=date(2026, 10, 21)
@@ -119,6 +126,15 @@ def test_all_mandate_variants(
         )
     event = replace(
         mandate_event,
+        mandatee_party=replace(
+            mandate_event.mandatee_party, organization_type=organization
+        ),
+        declaration=replace(
+            mandate_event.declaration,
+            chamber_of_commerce_city="Bogotá"
+            if organization is OrganizationType.LEGAL_PERSON
+            else None,
+        ),
         operation_type=operation,
         nature=nature,
         reference_type=mode,
@@ -141,6 +157,38 @@ def test_all_mandate_variants(
     assert ubl_schema.validate(parsed), str(ubl_schema.error_log)
     verify(raw, digital_certificate)
     assert_profile(parsed, "043", environment)
+    mandator_role = parsed.find(
+        f"{{{CAC}}}SenderParty/{{{CAC}}}PowerOfAttorney/{{{CAC}}}AgentParty/"
+        f"{{{CAC}}}PartyIdentification/{{{CBC}}}ID"
+    )
+    assert mandator_role is not None
+    assert mandator_role.text == event.sender_party.role.value
+    assert "schemeDataURI" not in mandator_role.attrib
+    mandatee_role = parsed.find(
+        f"{{{CAC}}}DocumentResponse/{{{CAC}}}IssuerParty/{{{CAC}}}PowerOfAttorney/"
+        f"{{{CAC}}}AgentParty/{{{CAC}}}PartyIdentification/{{{CBC}}}ID"
+    )
+    assert mandatee_role is not None
+    assert mandatee_role.text == event.mandatee_party.role.value
+    assert "schemeDataURI" not in mandatee_role.attrib
+    for path, people in (
+        (f"{{{CAC}}}SenderParty/{{{CAC}}}Person", event.sender_party.representatives),
+        (
+            f"{{{CAC}}}DocumentResponse/{{{CAC}}}IssuerParty/{{{CAC}}}PowerOfAttorney/"
+            f"{{{CAC}}}AgentParty/{{{CAC}}}Person",
+            event.mandatee_party.representatives,
+        ),
+    ):
+        serialized_people = parsed.findall(path)
+        assert len(serialized_people) == len(people)
+        for serialized, person in zip(serialized_people, people, strict=True):
+            assert (
+                serialized.findtext(f"{{{CBC}}}NationalityID") == person.nationality_id
+            )
+            assert (
+                serialized.findtext(f"{{{CBC}}}OrganizationDepartment")
+                == person.organization_department
+            )
     assert (
         parsed.findtext(f"{{{CBC}}}ProfileExecutionID")
         == environment.profile_execution_id
@@ -157,10 +205,22 @@ def test_all_mandate_variants(
     if mode is MandateReferenceType.ALL:
         assert xml_refs[0].findtext(f"{{{CBC}}}ID") == "1"
         assert xml_refs[0].find(f"{{{CBC}}}UUID") is None
-        assert xml_refs[0].find(f"{{{CBC}}}DocumentTypeCode") is None
-    assert len(
-        xml_refs[0].findall(f"{{{CAC}}}ValidityPeriod/{{{CBC}}}StartDate")
-    ) == int(limited)
+    assert all(
+        ref.findtext(f"{{{CBC}}}DocumentTypeCode")
+        == (None if mode is MandateReferenceType.ALL else "01")
+        for ref in xml_refs
+    )
+    for reference in xml_refs:
+        period = reference.find(f"{{{CAC}}}ValidityPeriod")
+        assert period is not None
+        assert period.findtext(f"{{{CBC}}}DescriptionCode") == ("1" if limited else "2")
+        assert period.findtext(f"{{{CBC}}}Description") == (
+            "Lapso de vigencia del Mandato-Limitado"
+            if limited
+            else "Lapso de vigencia del Mandato-Ilimitado"
+        )
+        assert len(period.findall(f"{{{CBC}}}StartDate")) == int(limited)
+        assert len(period.findall(f"{{{CBC}}}EndDate")) == int(limited)
     assert (
         scope_block.findtext(
             f"{{{CAC}}}LineResponse/{{{CAC}}}Response/{{{CBC}}}ResponseCode"
