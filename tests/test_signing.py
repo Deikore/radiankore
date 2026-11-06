@@ -1,8 +1,12 @@
 """Cryptographic verification of serialized requests, not template-only checks."""
 
+import os
+import subprocess
+import sys
 from base64 import b64decode
 from datetime import datetime, timedelta
 from hashlib import sha256
+from pathlib import Path
 
 import pytest
 import xmlsec
@@ -186,3 +190,32 @@ def test_native_signing_error_preserves_cause(
             environment=Environment.PRODUCTION,
         )
     assert isinstance(error.value.__cause__, xmlsec.Error)
+
+
+@pytest.mark.parametrize(
+    "node",
+    [
+        "tests/test_signing.py::test_each_request_has_fresh_ids",
+        "tests/test_mandate_xml.py::test_tampering_invalidates_signature",
+    ],
+)
+def test_signing_survives_debug_memory_allocator(node: str) -> None:
+    """Allocator misuse must be reported without crashing the parent process."""
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            "-q",
+            "--no-cov",
+            "-p",
+            "no:cacheprovider",
+            node,
+        ],
+        cwd=Path(__file__).resolve().parents[1],
+        env={**os.environ, "PYTHONMALLOC": "debug", "PYTHONFAULTHANDLER": "1"},
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr

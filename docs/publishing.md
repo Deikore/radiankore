@@ -61,7 +61,30 @@ la página del proyecto en PyPI antes de anunciar la versión. Los números de v
 publicados no se reutilizan; las correcciones se publican como una versión nueva.
 La integración real con DIAN requiere comprobaciones autorizadas aparte de CI.
 
-## Release 0.7.4
+## Release 0.7.5
+
+El manifiesto, el lockfile y el changelog deben identificar `0.7.5`; la etiqueta
+correspondiente es `v0.7.5`. Esta versión de mantenimiento conserva la API pública
+y los modelos de eventos de 0.7.4; no requiere una migración adicional.
+
+Las notas deben destacar el registro de IDs SOAP y UBL mediante
+`SignatureContext.register_id`, que evita la llamada a `xmlsec.tree.add_ids`
+con mezcla de asignadores de memoria detectada en xmlsec 1.3.17/1.3.18. Se
+conservan los algoritmos, las referencias XML y los bytes firmados.
+
+Compruebe las 3010 pruebas y el 100% de cobertura de líneas y ramas. Las
+regresiones ejecutan la firma en subprocesos con `PYTHONMALLOC=debug`; los
+verificadores resuelven las referencias independientemente del firmante y
+rechazan documentos modificados después de serializarse. CI debe validar
+Python 3.13–3.15 y la suite completa contra el wheel instalado.
+
+El tag debe apuntar al mismo commit que pasó CI. Después de publicar, compruebe
+el workflow y una instalación de `radiankore==0.7.5` desde PyPI en un entorno
+limpio, fuera del árbol fuente. Compare los SHA-256 publicados en PyPI con los
+artefactos validados de esa ejecución; no reconstruya ni sustituya una
+distribución ya publicada.
+
+## Antecedente: release 0.7.4
 
 El manifiesto, el lockfile y el changelog deben identificar `0.7.4`; la etiqueta
 correspondiente es `v0.7.4`. Esta versión incluye cambios incompatibles en las
@@ -168,7 +191,7 @@ publicados contra transporte simulado y la documentación con advertencias como
 errores. Los scripts de benchmark son herramientas del checkout, no comandos
 instalados con el wheel. No ejecute mediciones remotas en CI.
 
-Un commit local no publica el paquete. La etiqueta `v0.7.4` y la release de
+Un commit local no publica el paquete. La etiqueta `v0.7.5` y la release de
 GitHub se crean después de revisar las validaciones; publicar esa release activa
 el workflow. Mantenga los artefactos de construcción y los registros de pruebas
 fuera del commit.

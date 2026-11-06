@@ -11,7 +11,7 @@ from cryptography.hazmat.primitives.serialization import Encoding
 from lxml import etree
 
 from radiankore._soap.namespaces import DS, EXT, XADES
-from radiankore._soap.signing import certificate_key
+from radiankore._soap.signing import certificate_key, register_ids
 from radiankore.certificate import DigitalCertificate
 from radiankore.exceptions import DianSignatureError
 
@@ -194,8 +194,8 @@ def sign_application_response(
             f"{{{EXT}}}ExtensionContent",
         )
         content.append(signature)
-        xmlsec.tree.add_ids(application_response, ["Id"])
         context = xmlsec.SignatureContext()
+        register_ids(context, application_response)
         context.key = certificate_key(certificate)
         context.sign(signature)
     except xmlsec.Error as exc:

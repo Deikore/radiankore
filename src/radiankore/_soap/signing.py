@@ -69,12 +69,21 @@ def sign_envelope(
             URI=f"#{token_id}",
             ValueType=X509_V3,
         )
-        xmlsec.tree.add_ids(envelope, ["Id"])
         context = xmlsec.SignatureContext()
+        register_ids(context, envelope)
         context.key = certificate_key(certificate, certificate_lock=certificate_lock)
         context.sign(signature)
     except xmlsec.Error as exc:
         raise DianSignatureError("Unable to sign the SOAP request.") from exc
+
+
+def register_ids(context: xmlsec.SignatureContext, root: etree._Element) -> None:
+    """Register constructed document IDs without xmlsec.tree.add_ids allocations."""
+    for element in root.iter():
+        for attribute in element.attrib:
+            name = etree.QName(attribute)
+            if name.localname == "Id":
+                context.register_id(element, name.localname, name.namespace)
 
 
 def certificate_key(

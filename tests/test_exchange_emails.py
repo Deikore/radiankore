@@ -35,6 +35,7 @@ from radiankore._soap.namespaces import (
     XSI,
 )
 from radiankore.models.responses import ExchangeEmailsResult
+from tests.signature_support import register_references
 
 URL = "https://downloads.example.invalid/directory.zip?sig=abc%2F123%2B456&expires=10"
 
@@ -259,10 +260,10 @@ def test_signed_query_and_immediate_download(
     assert root.findtext(f"{{{SOAP}}}Header/{{{WSA}}}To") == environment.addressing_to
     operation = root.find(f"{{{SOAP}}}Body/{{{WCF}}}GetExchangeEmails")
     assert operation is not None and len(operation) == 0
-    xmlsec.tree.add_ids(root, ["Id"])
     signature = root.find(f".//{{{DS}}}Signature")
     assert signature is not None
     context = xmlsec.SignatureContext()
+    register_references(context, root)
     context.key = xmlsec.Key.from_memory(
         certificate.certificate.public_bytes(Encoding.PEM),
         xmlsec.constants.KeyDataFormatCertPem,

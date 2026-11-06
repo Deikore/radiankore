@@ -1,5 +1,14 @@
 # Historial de cambios
 
+## 0.7.5 — 2026-11-05
+
+- Registra los IDs SOAP y UBL directamente en el contexto nativo de firma,
+  evitando la mezcla de asignadores de memoria de `xmlsec.tree.add_ids` en
+  xmlsec 1.3.17/1.3.18. Conserva algoritmos, referencias y bytes firmados.
+- Añade regresiones en subprocesos con el asignador de memoria de depuración,
+  firmas serializadas y rechazo de modificaciones. Los verificadores de prueba
+  resuelven las referencias independientemente del registro del firmante.
+
 ## 0.7.4 — 2026-11-04
 
 - **Cambio incompatible:** 043 exige `declaration=MandateDeclaration(...)`;

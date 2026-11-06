@@ -35,6 +35,7 @@ from radiankore.models.events import (
     RadianSoftware,
 )
 from tests.profile_support import assert_profile
+from tests.signature_support import register_references
 
 
 @pytest.fixture(scope="module")
@@ -53,10 +54,10 @@ def ubl_schema() -> etree.XMLSchema:
 def verify(xml: bytes, certificate: DigitalCertificate) -> None:
     """Verify the serialized signature with a fresh, public-key-only context."""
     root = etree.fromstring(xml)
-    xmlsec.tree.add_ids(root, ["Id"])
     signature = root.find(f".//{{{DS}}}Signature")
     assert signature is not None
     context = xmlsec.SignatureContext()
+    register_references(context, root)
     context.key = xmlsec.Key.from_memory(
         certificate.certificate.public_bytes(Encoding.PEM),
         xmlsec.constants.KeyDataFormatCertPem,
