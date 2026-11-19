@@ -14,6 +14,7 @@ from lxml import etree
 
 from radiankore import (
     AsyncDianClient,
+    AsyncDianLimiter,
     DianTransportError,
     DigitalCertificate,
     Environment,
@@ -26,7 +27,7 @@ from radiankore.models.events import (
     RadianEvent,
     RadianSoftware,
 )
-from tests.async_support import install_http
+from tests.async_support import RecordingAdmission, install_http
 from tests.event_support import result_xml
 from tests.profile_support import assert_profile
 from tests.signature_support import verify_signature
@@ -71,14 +72,18 @@ def test_async_prepare_and_single_send(
     else:
         event = radian_event_factory(variant)
 
+    admission = RecordingAdmission()
+
     async def exercise() -> None:
         async with AsyncDianClient(
-            digital_certificate, environment=environment
+            digital_certificate,
+            environment=environment,
+            limiter=AsyncDianLimiter(admission=admission),
         ) as client:
             prepared = await client.prepare_radian_event(
                 event=event, software=radian_software
             )
-            assert not clients
+            assert not clients and not admission.starts
             verify_event_signature(prepared.xml_bytes, digital_certificate)
             assert_profile(
                 etree.fromstring(prepared.xml_bytes), prepared.code.value, environment
@@ -106,6 +111,8 @@ def test_async_prepare_and_single_send(
                 )
             assert len(requests) == 1
         assert all(c.is_closed for c in clients)
+        assert admission.starts == [environment.endpoint]
+        assert not admission.closed
 
     asyncio.run(exercise())
 

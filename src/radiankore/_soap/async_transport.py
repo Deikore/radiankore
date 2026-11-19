@@ -1,6 +1,7 @@
 """Owned asynchronous SOAP/download pools; no retries or shared cookies."""
 
 import asyncio
+import logging
 from http.cookiejar import Cookie, CookieJar, DefaultCookiePolicy
 from urllib.request import Request
 
@@ -13,6 +14,8 @@ from radiankore.async_limiter import AsyncDianLimiter
 from radiankore.async_models import DianTimeouts
 from radiankore.exceptions import DianTransportError
 from radiankore.limits import DianResponseLimits
+
+_logger = logging.getLogger(__name__)
 
 
 class _RejectCookies(DefaultCookiePolicy):
@@ -99,7 +102,7 @@ class AsyncSoapTransport:
                 },
                 follow_redirects=False,
             ) as response:
-                self._observe(response, endpoint)
+                await self._observe(response, endpoint)
                 data = await read_async_body(
                     response, self._response_limits.soap_bytes, "SOAP"
                 )
@@ -115,7 +118,7 @@ class AsyncSoapTransport:
         client = await self.ready("download")
         try:
             async with client.stream("GET", url, follow_redirects=False) as response:
-                self._observe(response, service)
+                await self._observe(response, service)
                 if not response.is_success:
                     await self._processor.run(check_response, response, b"", False)
                 return await read_async_body(
@@ -124,11 +127,16 @@ class AsyncSoapTransport:
         except httpx.RequestError as exc:
             raise DianTransportError("Unable to download the DIAN archive.") from exc
 
-    def _observe(self, response: httpx.Response, service: str) -> None:
+    async def _observe(self, response: httpx.Response, service: str) -> None:
         if response.is_error:
             delay = retry_after(response.headers.get("Retry-After"))
             if delay is not None:
-                self._limiter._defer(service, delay)
+                try:
+                    await self._limiter._record_retry_after(service, delay)
+                except Exception:
+                    # Never disclose provider URLs or callback exception messages.
+                    # Failed feedback remains observable without masking HTTP errors.
+                    _logger.warning("External DIAN Retry-After propagation failed.")
 
     async def aclose(self) -> None:
         # Drain every initializer, including abandoned ones, before processor shutdown.

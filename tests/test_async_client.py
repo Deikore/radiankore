@@ -13,6 +13,7 @@ from lxml import etree
 
 from radiankore import (
     AsyncDianClient,
+    AsyncDianLimiter,
     DianResponseError,
     DianSoapFaultError,
     DianTimeouts,
@@ -23,7 +24,7 @@ from radiankore import (
 )
 from radiankore._soap.namespaces import EXCHANGE_EMAIL_RESPONSE, WCF
 from radiankore.catalogs import IdentificationType
-from tests.async_support import install_http
+from tests.async_support import RecordingAdmission, install_http
 from tests.signature_support import verify_signature
 
 
@@ -75,8 +76,12 @@ def test_eight_queries_and_isolated_download(
 
     clients = install_http(monkeypatch, handle)
 
+    admission = RecordingAdmission()
+
     async def exercise() -> None:
-        async with AsyncDianClient.from_certificate(digital_certificate) as client:
+        async with AsyncDianClient.from_certificate(
+            digital_certificate, limiter=AsyncDianLimiter(admission=admission)
+        ) as client:
             assert client.environment is Environment.PRODUCTION
             assert client.certificate is digital_certificate
             events = await client.get_invoice_events("  CUFE  ")
@@ -103,6 +108,10 @@ def test_eight_queries_and_isolated_download(
             assert len(clients) == 2
             assert all(not list(c.cookies.jar) for c in clients)
         assert len(requests) == 9 and all(c.is_closed for c in clients)
+        assert admission.starts == [Environment.PRODUCTION.endpoint] * 8 + [
+            "https://download.invalid/"
+        ]
+        assert not admission.closed and not admission.cooldowns
         await client.aclose()
         with pytest.raises(RuntimeError, match="closed"):
             await client.get_invoice_events("after close")

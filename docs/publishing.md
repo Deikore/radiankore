@@ -61,7 +61,35 @@ la página del proyecto en PyPI antes de anunciar la versión. Los números de v
 publicados no se reutilizan; las correcciones se publican como una versión nueva.
 La integración real con DIAN requiere comprobaciones autorizadas aparte de CI.
 
-## Release 0.7.5
+## Release 0.7.6
+
+El manifiesto, el lockfile y el changelog deben identificar `0.7.6`, con etiqueta
+`v0.7.6` y fecha `2026-11-19`. Esta ampliación compatible conserva los usos
+existentes de `AsyncDianClient(limiter=...)` y los modelos de eventos.
+
+Las notas deben presentar `AsyncDianRequestAdmission` y el parámetro opcional
+`AsyncDianLimiter(admission=...)`: admisión antes de cada HTTP SOAP, envío y
+descarga; preparación local sin consumo; recursos externos prestados; límites
+locales vigentes; y propagación observable de `Retry-After` que conserva el error
+original del proveedor. No presenta un coordinador distribuido incorporado ni
+reintentos automáticos. Enlace la [guía asíncrona](guides/async.md).
+
+Ejecute las 3019 pruebas con certificados sintéticos y transporte simulado en
+Python 3.13–3.15 y exija el 100% de líneas y ramas. Verifique además la firma
+serializada y la cancelación física existentes, la concurrencia de admisiones,
+los fallos del coordinador y la suite completa contra el wheel `0.7.6` instalado
+fuera del checkout. Los resultados de una versión anterior no validan esta
+distribución. Compile la documentación con advertencias como errores y revise
+con Twine únicamente el wheel y el sdist de `0.7.6` de una carpeta limpia.
+
+El tag debe apuntar al commit validado. El workflow de la release reconstruye y
+valida sus propios artefactos antes de Trusted Publishing; los hashes locales
+no sustituyen los hashes de esa ejecución. Después de publicar, compruebe una
+instalación limpia de `radiankore==0.7.6` desde PyPI y los SHA-256 publicados,
+antes de actualizar el pin y los hashes del consumidor. No reutilice el número
+de versión ni sustituya distribuciones ya publicadas.
+
+## Antecedente: release 0.7.5
 
 El manifiesto, el lockfile y el changelog deben identificar `0.7.5`; la etiqueta
 correspondiente es `v0.7.5`. Esta versión de mantenimiento conserva la API pública
@@ -191,7 +219,7 @@ publicados contra transporte simulado y la documentación con advertencias como
 errores. Los scripts de benchmark son herramientas del checkout, no comandos
 instalados con el wheel. No ejecute mediciones remotas en CI.
 
-Un commit local no publica el paquete. La etiqueta `v0.7.5` y la release de
+Un commit local no publica el paquete. La etiqueta `v0.7.6` y la release de
 GitHub se crean después de revisar las validaciones; publicar esa release activa
 el workflow. Mantenga los artefactos de construcción y los registros de pruebas
 fuera del commit.

@@ -251,7 +251,52 @@ consulta ni una cola ilimitada de trabajos nativos.
 Un `AsyncDianLimiter` compartido limita intercambios HTTP entre clientes y
 permite una tasa global de inicios. `service_limits` utiliza el endpoint SOAP
 exacto o el origen de descarga terminado en `/`; nunca la URL firmada completa.
-La configuración se fija al construirlo. No coordina procesos o máquinas.
+La configuración se fija al construirlo. Estos controles locales no coordinan
+procesos o máquinas. Para añadir un presupuesto compartido, el consumidor puede
+prestar una implementación de `AsyncDianRequestAdmission`:
+
+```python
+from radiankore import AsyncDianLimiter, AsyncDianRequestAdmission
+
+
+class SharedAdmission(AsyncDianRequestAdmission):
+    async def wait_for_start(self, *, service: str) -> None:
+        # Esperar aquí el permiso de un coordinador propio de la aplicación.
+        ...
+
+    async def record_retry_after(self, *, service: str, seconds: float) -> None:
+        # Propagar aquí el cooldown al mismo coordinador.
+        ...
+
+
+limiter = AsyncDianLimiter(admission=SharedAdmission())
+```
+
+El ejemplo define el contrato; sus cuerpos deben sustituirse por un coordinador
+real antes de utilizarlo. El SDK no incluye Redis, permisos ni persistencia. Una
+implementación no debe enviar HTTP, reintentar solicitudes ni cerrar el cliente.
+La aplicación crea y cierra la admisión prestada; cerrar el cliente no la cierra.
+Cuando la tasa local está desactivada, las llamadas al coordinador pueden esperar
+simultáneamente hasta el límite de concurrencia del cliente. La implementación
+prestada debe admitir esa concurrencia. Si existe una tasa local, el SDK conserva
+su separación de inicios aunque el coordinador tenga latencias distintas.
+
+`wait_for_start` se espera antes de cada intercambio HTTP: consultas SOAP, envíos
+de eventos y descargas. La preparación local de documentos no consume permisos.
+`service` contiene el endpoint SOAP o el origen de descarga terminado en `/`,
+sin la ruta ni los parámetros de una URL firmada. Los controles locales de tasa,
+concurrencia y cooldown siguen vigentes junto al control externo; un permiso
+concedido no garantiza el instante exacto de salida de paquetes a la red. Una
+admisión fallida impide iniciar esa solicitud. Sus esperas consumen el plazo total
+y se pueden cancelar.
+
+El SDK comunica un `Retry-After` válido antes de leer el cuerpo de error. Una
+excepción ordinaria del callback no sustituye el error original del proveedor:
+se emite el aviso `External DIAN Retry-After propagation failed.` mediante el
+logger `radiankore._soap.async_transport`, sin URL ni detalles de la excepción.
+El consumidor debe supervisar también su coordinador y bloquear nuevas admisiones
+cuando no pueda garantizar el estado compartido. La cancelación conserva su
+semántica habitual; el SDK no introduce reintentos automáticos.
 
 Esperar un cupo de servicio no reserva capacidad global: otro servicio disponible
 puede avanzar. Cancelar una espera libera los cupos ya adquiridos.

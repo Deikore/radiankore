@@ -1,5 +1,22 @@
 # Historial de cambios
 
+## 0.7.6 — 2026-11-19
+
+- Añade el protocolo público `AsyncDianRequestAdmission` y el argumento opcional
+  `AsyncDianLimiter(admission=...)` para coordinar el inicio de cada solicitud
+  HTTP asíncrona con un control externo de la aplicación. Cubre consultas SOAP,
+  envíos de eventos y descargas; la preparación local no consume admisiones.
+- Conserva los controles locales de concurrencia, tasa y cooldown y la propiedad
+  de los recursos prestados. Sin tasa local, las esperas externas pueden avanzar
+  concurrentemente hasta el límite del cliente; con tasa local, se conserva la
+  separación entre inicios.
+- Comunica `Retry-After` válido al coordinador. Si falla su propagación, conserva
+  el error original del proveedor y emite un aviso sin datos sensibles. No añade
+  reintentos automáticos, Redis ni persistencia al SDK.
+- Documenta los contratos de admisión, cancelación y cierre, y añade regresiones
+  con transporte simulado para SOAP, envíos, descargas y coordinación concurrente.
+  Los usos existentes de `AsyncDianClient(limiter=...)` siguen siendo válidos.
+
 ## 0.7.5 — 2026-11-05
 
 - Registra los IDs SOAP y UBL directamente en el contexto nativo de firma,

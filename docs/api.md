@@ -122,7 +122,8 @@ Consulte [configuración y errores de tamaño](guides/response-limits.md).
 ## API asíncrona
 
 `AsyncDianClient` conserva los argumentos y resultados de las operaciones anteriores
-mediante `await`. `AsyncDianLimiter`, `DianTimeouts` y `QueryResult` son exports
+mediante `await`. `AsyncDianLimiter`, `AsyncDianRequestAdmission`, `DianTimeouts`
+y `QueryResult` son exports
 públicos adicionales. Consulte el [contrato async](guides/async.md) para fábricas,
 configuración, cierre, streaming, cancelación y límites.
 

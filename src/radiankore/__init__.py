@@ -1,7 +1,7 @@
 """Public interface for the radiankore library."""
 
 from radiankore.async_client import AsyncDianClient
-from radiankore.async_limiter import AsyncDianLimiter
+from radiankore.async_limiter import AsyncDianLimiter, AsyncDianRequestAdmission
 from radiankore.async_models import DianTimeouts, QueryResult
 from radiankore.certificate import DigitalCertificate, DigitalCertificateError
 from radiankore.client import DianClient
@@ -18,6 +18,7 @@ from radiankore.limits import DianResponseLimits
 __all__ = [
     "AsyncDianClient",
     "AsyncDianLimiter",
+    "AsyncDianRequestAdmission",
     "DianClient",
     "DianError",
     "DianResponseError",
