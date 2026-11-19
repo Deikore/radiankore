@@ -16,6 +16,8 @@
 - Documenta los contratos de admisión, cancelación y cierre, y añade regresiones
   con transporte simulado para SOAP, envíos, descargas y coordinación concurrente.
   Los usos existentes de `AsyncDianClient(limiter=...)` siguen siendo válidos.
+- Fija CI en Ubuntu 26.04 y utiliza su paquete nativo `libxmlsec1-openssl1`,
+  conservando la compilación compatible de XMLSec y la matriz Python 3.13–3.15.
 
 ## 0.7.5 — 2026-11-05
 
